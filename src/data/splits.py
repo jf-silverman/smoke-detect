@@ -163,3 +163,52 @@ def grouped_split(
     if not report.is_clean:
         raise AssertionError(f"site leaked across partitions: {report}")
     return df, report
+
+
+def loso_folds(df: pd.DataFrame, *, val_frac: float = 0.15, seed: int = 0):
+    """Leave-one-site-out cross-validation. The headline evaluation.
+
+    pyro-sdis has only 8 physical sites, and they are badly skewed (brison alone is
+    ~38% of the corpus). A single held-out-site test set is therefore dominated by
+    whichever one tower landed in it -- the resulting score says more about that
+    tower than about the model's ability to generalize.
+
+    With 8 groups the sound move is to hold out each site in turn and report the mean
+    and the spread. The spread is not noise to be averaged away: it is the finding.
+    A model that scores 0.85 on one tower and 0.55 on another has not learned smoke,
+    it has learned terrain, and only per-site results reveal that.
+
+    Yields (fold_name, dataframe-with-split-column) for each of the N sites.
+    """
+    df = prepare(df)
+    sites = sorted(df["site"].unique())
+
+    for held_out in sites:
+        fold = df.copy()
+        is_test = fold["site"] == held_out
+
+        # carve a val set out of the remaining sites, by site where possible so val
+        # is also background-disjoint from train
+        train_pool = sorted(set(sites) - {held_out})
+        pool_sizes = fold[~is_test].groupby("site").size().reindex(train_pool)
+        target = pool_sizes.sum() * val_frac
+        val_sites: list[str] = []
+        acc = 0.0
+        # smallest-first so val lands near the target instead of overshooting
+        for site, n in pool_sizes.sort_values().items():
+            if acc >= target:
+                break
+            val_sites.append(site)
+            acc += float(n)
+
+        fold["split"] = "train"
+        fold.loc[fold["site"].isin(val_sites), "split"] = "val"
+        fold.loc[is_test, "split"] = "test"
+
+        s = {k: set(fold.loc[fold.split == k, "site"]) for k in ("train", "val", "test")}
+        report = SplitReport(
+            f"LOSO holdout={held_out}", _summarize(fold), s["train"], s["val"], s["test"]
+        )
+        if not report.is_clean:
+            raise AssertionError(f"site leaked in fold {held_out}: {report}")
+        yield held_out, fold, report

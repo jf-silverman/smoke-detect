@@ -11,3 +11,4 @@ venv/
 .DS_Store
 runs/
 wandb/
+!data/README.md
