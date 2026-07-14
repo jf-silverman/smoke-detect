@@ -1,0 +1,13 @@
+data/raw/
+data/interim/
+data/processed/
+*.pt
+*.pth
+*.ckpt
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+venv/
+.DS_Store
+runs/
+wandb/
