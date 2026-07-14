@@ -75,10 +75,14 @@ degrade the sensor. No rigorous published statistics on maintenance-driven downt
 confirmed-fire monitoring and perimeter awareness, not the ignition window cameras target.
 
 ### False alarms and the human cost
-**The single most important number in this review:** SmokeyNet, field-tested on 65 HPWREN cameras
-over nine days (Oct 2019), produced notifications of which **only 21% showed smoke from a real
-fire — a 79% false-positive rate — and misses were never quantified.**
-https://www.mdpi.com/2072-4292/14/4/1007
+**The single most important number in this review** (attribution verified against the source —
+it is commonly misattributed to SmokeyNet): an earlier detector, **Govil et al. 2020**, was
+field-tested on 65 HPWREN cameras over nine days (Oct 2019). "After suppressing repeat detections
+in a one-hour timespan, only 21% of notifications showed smoke from real fires (i.e., a 79% false
+positive rate)." Misses were never quantified.
+
+**SmokeyNet — the benchmark leader — was never field-deployed at all.** Its 83.49% accuracy is a
+test-set result. https://ar5iv.labs.arxiv.org/html/2112.08598
 
 Alarm fatigue is a documented human-factors failure pathway. In wildfire ops, "human operators
 must manually validate many false alarms" and FP volume "significantly burdens the workload of
