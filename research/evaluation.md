@@ -2,12 +2,20 @@
 
 ## The headline finding
 
-SmokeyNet — the most-cited academic benchmark, ~83% F1 on FIgLib — was field-tested across
-65 HPWREN cameras over nine days in October 2019. **Only 21% of its notifications
-corresponded to real fires. A 79% false-positive rate.**
+**Verified against the SmokeyNet paper (ar5iv/2112.08598) — the widely-repeated attribution
+of this number to SmokeyNet is wrong, and the truth is sharper.**
 
-That is the gap between benchmark performance and field performance, and it should shape
-the entire design of this project. A model can score well and still be unusable.
+An earlier deployed detector (**Govil et al. 2020**, the Fuego/Open-Climate-Tech lineage) was
+field-tested on 65 HPWREN cameras over nine days in October 2019. The SmokeyNet paper reports:
+"After suppressing repeat detections in a one-hour timespan, only 21% of notifications showed
+smoke from real fires (i.e., a 79% false positive rate)."
+
+**SmokeyNet itself was never field-deployed.** Its 83.49% accuracy / 82.59% F1 / 3.12-min
+time-to-detection are controlled test-set results only.
+
+So the state of the art is: the one system we have a field number for produced ~4 false alerts
+for every real one, and the benchmark leader has no field number at all. That gap between
+benchmark and deployment should shape this entire project.
 
 ## Metrics by task framing
 
@@ -45,7 +53,8 @@ it's small, and whether human reviewers keep trusting the dashboard at all.
 |---|---|---|
 | SmokeyNet (FIgLib) | detection usually within 15 min of ignition, <1 false positive/camera/day after suppression logic | peer-reviewed |
 | SmokeyNet multimodal | 83.49% acc, F1 82.59%, precision 89.84%, recall 76.45%; time-to-detection 4.70 min, → 3.66 min with weather data | reported-by-source |
-| SmokeyNet **field test** | **79% of notifications were false positives** (65 cameras, 9 days, Oct 2019) | the number that matters |
+| **Govil et al. 2020** (field, 65 cameras, 9 days) | **79% of notifications were false positives** | the only real field number |
+| SmokeyNet field | **never deployed** — test-set results only | the gap |
 | YOLO v5–v10 on D-Fire | mAP@0.5 ~0.89–0.91; mAP@0.5:0.95 ~0.62–0.68 | reported-by-source |
 | Pyronear PYRONEAR-2025 (hard, in-the-wild) | **F1 ~70%** | peer-reviewed |
 | Pyronear community YOLOv8 (curated holdout) | precision 0.922, recall 0.898, F1 0.910 | **community blog, not peer-reviewed** |
@@ -99,6 +108,8 @@ between them is itself the interesting result.
 ## Sources
 
 - SmokeyNet: https://arxiv.org/abs/2112.08598 · https://www.mdpi.com/2072-4292/14/4/1007
+  (verified: the 79% FP field result is Govil et al. 2020, cited *within* this paper, NOT
+  SmokeyNet's own; SmokeyNet was never field-deployed)
 - Multimodal SmokeyNet: https://arxiv.org/pdf/2212.14143
 - YOLO on D-Fire: https://pmc.ncbi.nlm.nih.gov/articles/PMC11398105/
 - SKLFS-WildFire: https://arxiv.org/html/2311.10116v3
