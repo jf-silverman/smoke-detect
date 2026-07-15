@@ -86,6 +86,32 @@ def sweep(scores: np.ndarray, y_true: np.ndarray, thresholds: np.ndarray) -> lis
     return rows
 
 
+def precision_at_base_rate(tpr: float, fpr: float, p: float) -> float:
+    """Precision the model WOULD show at deployment base rate p.
+
+    Aggregate precision on a smoke-heavy test set is flattered by the base rate.
+    Real towers see smoke on a tiny fraction of frames, so the honest question is:
+    given this recall (TPR) and this false-alarm rate on clean frames (FPR), what
+    precision results when positives are rare? This is the precision-collapse made
+    explicit -- and it is the number that predicts field usability.
+    """
+    num = tpr * p
+    den = tpr * p + fpr * (1.0 - p)
+    return num / den if den else float("nan")
+
+
+def base_rate_table(rows: list[dict], base_rates=(0.05, 0.01, 0.005)) -> list[dict]:
+    out = []
+    for r in rows:
+        entry = {"threshold": r["threshold"], "recall": r["recall"],
+                 "fpr_on_negatives": r["false_alarm_rate_on_negatives"]}
+        for p in base_rates:
+            entry[f"precision@{p}"] = round(
+                precision_at_base_rate(r["recall"], r["false_alarm_rate_on_negatives"], p), 4)
+        out.append(entry)
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--weights", required=True)
@@ -119,10 +145,24 @@ def main() -> None:
         print(f"{r['threshold']:.2f}   {r['precision']:.3f}  {r['recall']:.3f}   "
               f"{r['f1']:.3f}  {r['false_alarm_rate_on_negatives'] * 100:5.1f}%")
 
+    br = base_rate_table(rows)
+    test_p = float(y_true.mean())
+    print(f"\nprecision-collapse: aggregate precision above is inflated by this test set's")
+    print(f"{test_p * 100:.0f}%-positive base rate. At realistic deployment base rates:")
+    print(f"  conf   recall   FPR   | prec@5%  prec@1%  prec@0.5%")
+    for e in br:
+        if e["threshold"] not in (0.05, 0.10, 0.20, 0.30, 0.50):
+            continue
+        print(f"  {e['threshold']:.2f}   {e['recall']:.3f}  {e['fpr_on_negatives']:.3f} | "
+              f"{e['precision@0.05'] * 100:6.1f}%  {e['precision@0.01'] * 100:6.1f}%  "
+              f"{e['precision@0.005'] * 100:6.1f}%")
+
     out = Path(args.out) if args.out else ROOT / "runs" / f"eval_{args.split}_{args.part}.json"
     out.write_text(json.dumps({"split": args.split, "part": args.part,
                                "n_images": len(images), "n_positive": int(y_true.sum()),
-                               "best": best, "sweep": rows}, indent=2))
+                               "test_base_rate": round(test_p, 4),
+                               "best": best, "sweep": rows,
+                               "base_rate_corrected": br}, indent=2))
     print(f"\nsaved -> {out}")
 
 
