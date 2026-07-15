@@ -12,3 +12,6 @@ venv/
 runs/
 wandb/
 !data/README.md
+!runs/eval_*.json
+!results/*.json
+!results/*.csv
