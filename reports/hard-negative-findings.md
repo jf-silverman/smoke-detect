@@ -58,12 +58,15 @@ teaching the model what a false alarm looks like. That is the intended, literatu
 
 ## What this sets up
 
-The false-alarm floor is now lower but still real, and recall gave a little ground. The next
-move — the **temporal model** — attacks both at once: the report's evidence (SmokeyNet's +26
-precision points from frame-to-frame context) says the remaining false alarms are mostly static
-haze that a single frame cannot distinguish from a growing plume, and temporal context recovers
-recall rather than trading it away. This hard-negative result and the baseline together are the
-two single-frame reference points that model has to beat.
+The false-alarm floor is now lower but still real, and recall gave a little ground. The
+literature pointed to a **temporal model** as the next fix (SmokeyNet's +26 precision points
+from frame-to-frame context). We built it — and on pyro-sdis it did **not** beat the
+single-frame detector at matched recall. [The temporal findings](temporal-findings.md) explain
+why: the remaining false alarms are *persistent* structures (76% of them), not the flicker a
+temporal model suppresses, and this dataset's short bursts lack the ignition-onset dynamics
+that make temporal context pay off on FIgLib. So hard-negative mining — teaching the detector
+what a false alarm looks like — turned out to be the move that actually attacked the persistent
+confusers, while the time axis did not. That is the honest ordering of what worked here.
 
 ## Reproduce
 

@@ -1,0 +1,36 @@
+{
+  "targets": [
+    0.8,
+    0.7,
+    0.6,
+    0.5,
+    0.4,
+    0.3
+  ],
+  "methods": {
+    "single-frame": {
+      "recall_0.8": 0.578,
+      "recall_0.7": 0.4324,
+      "recall_0.6": 0.3243,
+      "recall_0.5": 0.2058,
+      "recall_0.4": 0.1227,
+      "recall_0.3": 0.0644
+    },
+    "persistence": {
+      "recall_0.8": 0.6091,
+      "recall_0.7": 0.4241,
+      "recall_0.6": 0.3202,
+      "recall_0.5": 0.2723,
+      "recall_0.4": 0.1871,
+      "recall_0.3": 0.1019
+    },
+    "temporal-gru": {
+      "recall_0.8": 0.6029,
+      "recall_0.7": 0.447,
+      "recall_0.6": 0.3285,
+      "recall_0.5": 0.2141,
+      "recall_0.4": 0.1206,
+      "recall_0.3": 0.0665
+    }
+  }
+}

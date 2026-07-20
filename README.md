@@ -40,16 +40,23 @@ performance is really measured, and when these tools do and don't work.
 
 The single-frame baseline false-alarms on ~60% of clean training frames — the documented
 "smoke is not an object" precision collapse. [Mining those hard negatives](reports/hard-negative-findings.md)
-(clouds, fog, glare) and retraining halved the false-alarm rate. The next planned step is a
-temporal model, which the literature indicates should suppress the remaining false alarms
-(static haze a single frame can't distinguish from a growing plume) while recovering recall.
+(clouds, fog, glare) and retraining halved the false-alarm rate.
+
+The next step was a **temporal model** — the literature's headline fix (SmokeyNet's +26
+precision points from frame-to-frame context). We built it and it **did not transfer to this
+dataset**, and [the report explains why](reports/temporal-findings.md): 76% of the false
+alarms are *persistent* structures (fixed cloud banks, glare, ridge haze), not the flicker a
+persistence model suppresses, and pyro-sdis's short bursts lack the ignition-onset dynamics
+that power temporal gains on FIgLib. At matched recall, no temporal method beats the
+single-frame detector here. That is reported as a **negative result**, because it is one —
+on pyro-sdis the leverage is in the negatives, not the time axis.
 
 ## Layout
 
 - [`reports/`](reports/) — the state-of-the-field report + per-stage findings
 - [`research/`](research/) — detailed source material behind the report
 - [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining
-- [`src/models/`](src/models/) — training and operator-framed evaluation
+- [`src/models/`](src/models/) — training, operator-framed evaluation, temporal model + comparison
 - [`results/`](results/) — eval sweeps + mined hard-negative list
 - `data/` — datasets (gitignored; regenerate with `src/data/export_yolo.py`)
 

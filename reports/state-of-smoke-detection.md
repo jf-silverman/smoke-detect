@@ -187,8 +187,23 @@ stretch section, not as the thesis).
 
 **The one-sentence pitch this project earns you:** *"Everyone reports 92% mAP on curated smoke
 benchmarks. I measured what happens on cameras the model has never seen, found the precision
-collapse, showed it's caused by clouds, and fixed most of it with temporal context — here is the
-false-alarm rate an operator would actually live with."*
+collapse, showed it's caused by clouds, cut the false-alarm rate in half by mining hard
+negatives — and when I tested the temporal fix everyone assumes, I found it doesn't transfer to
+this dataset and explained why. Here is the false-alarm rate an operator would actually live
+with."*
+
+---
+
+> **Update (post-experiment).** This section is the research *plan*, written before building
+> anything. The experiments revised it on one major point. Stage 2 predicted a temporal model
+> would be "the differentiator" that fixes the precision collapse. It was built and it **did not
+> transfer to pyro-sdis** — at matched recall no temporal method beat the single-frame detector,
+> because 76% of the false alarms are *persistent* confusers (not the flicker temporal models
+> suppress) and this dataset's short bursts lack FIgLib's ignition-onset dynamics. The fix that
+> actually worked was Stage-4-style **hard-negative mining** (false alarms 42% → 20%). The
+> temporal literature summary above (§4) remains accurate *for FIgLib*; the lesson is that the
+> temporal advantage is dataset-dependent, not universal. See
+> [`temporal-findings.md`](temporal-findings.md) and [`hard-negative-findings.md`](hard-negative-findings.md).
 
 ---
 
