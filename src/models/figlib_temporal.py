@@ -116,7 +116,11 @@ def auc(scores: np.ndarray, y: np.ndarray) -> float:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--extract", action="store_true", help="run detector + cache features")
+    ap.add_argument("--features", default=str(FIGLIB / "features.npz"),
+                    help="feature archive to use (e.g. features_tiled_embed.npz)")
+    ap.add_argument("--tag", default="", help="suffix for the output json (e.g. _tiled)")
     ap.add_argument("--window", type=int, default=8)
+    ap.add_argument("--conf-only", action="store_true", help="GRU over conf alone (drop embedding)")
     ap.add_argument("--epochs", type=int, default=60)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
@@ -129,7 +133,8 @@ def main() -> None:
         extract_features(df)
         return
 
-    arch = np.load(FIGLIB / "features.npz", allow_pickle=True)
+    print(f"features: {args.features}")
+    arch = np.load(args.features, allow_pickle=True)
     idx = {s: i for i, s in enumerate(arch["stems"].astype(str))}
     df = df[df["stem"].map(lambda s: s in idx)].reset_index(drop=True)
     rows = df["stem"].map(idx).to_numpy()
@@ -150,6 +155,9 @@ def main() -> None:
     device = pick_device()
     # standardize on train frames only (leak-safe)
     full = np.concatenate([feats, confs[:, None]], axis=1).astype(np.float32)
+    if args.conf_only:
+        full = confs[:, None].astype(np.float32)
+        print("  conf-only GRU: 1-d per-frame feature")
     df["feat"] = list(full)
     tr_feat = np.stack(df.loc[df.split == "train", "feat"].to_numpy())
     mu, sigma = tr_feat.mean(0), tr_feat.std(0) + 1e-6
@@ -195,7 +203,7 @@ def main() -> None:
             cells.append(f"{pr*100:12.2f}%" if not np.isnan(pr) else f"{'n/a':>13s}")
         print(f"{tr:.2f}  " + "  ".join(cells))
 
-    out = RESULTS / "figlib_temporal_comparison.json"
+    out = RESULTS / f"figlib_temporal_comparison{args.tag}.json"
     out.write_text(json.dumps(table, indent=2))
     print(f"\nsaved -> {out}")
 

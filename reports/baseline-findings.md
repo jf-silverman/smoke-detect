@@ -58,9 +58,31 @@ thing a naive "94% precision!" portfolio project would hide.
    growing plume; the report's evidence (SmokeyNet's +26 precision points from temporal fusion)
    says this is where the false-alarm rate actually falls. This baseline exists to be beaten by it.
 
+## Resolution is a hidden lever (added after the FIgLib work)
+
+The FIgLib work showed that downscaling to 640 px was destroying small onset plumes. That
+prompted the obvious question: does the same thing hurt pyro-sdis? It does. pyro-sdis is
+1280×720, and its smoke boxes are small — median shorter side 28 px natively, **~14 px at 640,
+with 60% of boxes under 16 px at 640.** Re-running the same detector at native 1280:
+
+| inference | precision | recall | F1 | false alarms |
+|---|---:|---:|---:|---:|
+| 640 (downscaled) | 0.938 | 0.676 | 0.786 | 42% |
+| 1280 (native) | 0.911 | **0.859** | **0.884** | 78% |
+
+Native resolution lifts recall by **+18 points** — 640 literally cannot see smoke it detects at
+1280 (its recall caps at 0.68). But it is a trade, not a free win: at *matched* recall inside the
+overlap, 640 is actually more precise (42% vs 56% false alarms at recall 0.68), because the
+detector was *trained* at 640 and over-fires when run at 1280. So resolution buys **recall
+headroom** (catching small/distant smoke) at a precision cost, and capturing it cleanly would
+mean *training* at higher resolution or tiling — not just upscaling inference. A real lever for a
+future full-scale model, quantified here rather than assumed.
+
 ## Reproduce
 
     python src/models/train.py --split grouped --epochs 40           # full baseline
     python src/models/evaluate.py --weights runs/grouped/weights/best.pt --split grouped
+    python src/models/evaluate.py --weights runs/grouped/weights/best.pt --split grouped \
+        --imgsz 1280 --out results/eval_grouped_proof_test_1280.json  # resolution probe
 
 Raw sweep + base-rate table: `runs/eval_grouped_test.json`.

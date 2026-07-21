@@ -76,10 +76,16 @@ and now we can show exactly which.
 - **Domain shift is real but not disqualifying.** The tiled base signal is AUC 0.658, not 0.85+
   — a France-trained detector only partly transfers to California. Absolute false-alarm rates
   are still soft; the *matched-recall deltas and their sign* are the trustworthy part.
-- **Learned GRU still deferred.** The GRU needs a per-frame feature *vector*; we only extracted
-  tiled max-*confidence* (a scalar) for this probe. Proving the learned model — not just the
-  persistence rule — beats single-frame is the natural follow-up: cache tiled *embeddings* per
-  frame and re-run the GRU comparison. The persistence sign-flip predicts it will win.
+- **The learned GRU loses to the parameter-free rule — a data-size story.** We did cache tiled
+  *embeddings* (the max-confidence tile per frame) and ran the learned GRU. It underperformed
+  both single-frame and the persistence rule (e.g. at recall 0.60, false alarms 77% vs
+  persistence's 14%). A conf-only GRU did better than the embedding version but still lost to
+  persistence. The reason is data, not mechanism: 18 fires is ~867 training windows, far too few
+  to fit a sequence model, so a hand-built inductive bias (require persistence) beats a learned
+  one. The temporal *signal* is real and strong — the persistence rule proves it — but a learned
+  temporal *model* needs far more fires to earn its keep. (This mirrors the pyro-sdis GRU, which
+  also drowned in noisy embedding dims.) Proving a *learned* model wins would need many more
+  sequences or an in-domain detector; the persistence result already confirms the mechanism.
 - **18 sequences, 4 held-out test fires.** Small; magnitudes are noisy, the direction is clear.
 - Proof scale throughout (underfit, zero-shot detector as the feature source).
 

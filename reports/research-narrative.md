@@ -77,6 +77,13 @@ The AI had the mechanism right (temporal helps on onset data) but had misattribu
 to something expensive to fix. The human's instinct about resolution — cheap to test, easy to
 overlook — was the difference between "confounded, needs a big retrain" and "confirmed."
 
+The insight then paid a second dividend. The human asked whether resolution had been costing us
+on pyro-sdis all along. It had: re-running the baseline at native 1280 instead of 640 lifted
+recall from 0.68 to 0.86 (+18 points) — the detector had simply been blind to smoke too small to
+survive downscaling. One question, asked once, surfaced a lever on both datasets. That is the
+pattern: the human keeps asking "are we sure we're not throwing information away?", and the AI
+can answer each instance in minutes.
+
 ## Why this is the interesting story
 
 The finished results table is respectable. But the *reason* it exists is a loop that a solo
