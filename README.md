@@ -71,7 +71,8 @@ such public corpus exists, so `results/confuser_corpus.csv` is a small original 
 - [`reports/`](reports/) — the state-of-the-field report + per-stage findings (baseline,
   hard-negative, temporal, confuser corpus, FIgLib, [resolution & recall-first](reports/resolution-findings.md)),
   and a [**research narrative**](reports/research-narrative.md) tracing how the project actually
-  unfolded (including the human resolution insight that rescued the FIgLib control)
+  unfolded (including the human resolution insight that rescued the FIgLib control). Open threads
+  are tracked in the [backlog](reports/backlog.md).
 - [`research/`](research/) — detailed source material behind the report
 - [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining, confuser corpus
 - [`src/models/`](src/models/) — training, operator-framed evaluation, temporal model + comparison
