@@ -51,11 +51,17 @@ that power temporal gains on FIgLib. At matched recall, no temporal method beats
 single-frame detector here. That is reported as a **negative result**, because it is one —
 on pyro-sdis the leverage is in the negatives, not the time axis.
 
+So we went *into* the negatives and built a [**typed confuser corpus**](reports/confuser-corpus.md):
+clustering the 2,305 frames the detector false-alarms on into named failure modes. The result
+is one clean number — **74% of the false alarms are clouds** (cumulus, backlit stratus, broken
+overcast) — the literature's "it screams smoke at every cloud," measured. The report found no
+such public corpus exists, so `results/confuser_corpus.csv` is a small original contribution.
+
 ## Layout
 
 - [`reports/`](reports/) — the state-of-the-field report + per-stage findings
 - [`research/`](research/) — detailed source material behind the report
-- [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining
+- [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining, confuser corpus
 - [`src/models/`](src/models/) — training, operator-framed evaluation, temporal model + comparison
 - [`results/`](results/) — eval sweeps + mined hard-negative list
 - `data/` — datasets (gitignored; regenerate with `src/data/export_yolo.py`)
