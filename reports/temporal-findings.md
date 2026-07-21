@@ -32,6 +32,10 @@ separates the two (91% vs 76%)** — because the false alarms are not flicker. T
 structures: a cloud bank sitting behind a ridge, a fixed sun-glare, a hazy valley. They look
 the same frame after frame, exactly like real smoke does. Requiring persistence keeps them.
 
+![Temporal context does not beat a single frame on pyro-sdis: at matched recall the three
+methods overlap and persistence is worse at tight operating points; the false alarms are 76%
+persistent, not flicker.](figures/temporal_result.png)
+
 ## The model confirms it, at matched recall
 
 Comparing a temporal model to a single-frame one by each one's own threshold is misleading —
