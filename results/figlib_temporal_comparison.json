@@ -1,0 +1,38 @@
+{
+  "single_frame_auc": 0.4539,
+  "n_sequences": 18,
+  "targets": [
+    0.9,
+    0.8,
+    0.7,
+    0.6,
+    0.5,
+    0.4
+  ],
+  "methods": {
+    "single-frame": {
+      "recall_0.9": 0.9938,
+      "recall_0.8": 0.9437,
+      "recall_0.7": 0.775,
+      "recall_0.6": 0.6875,
+      "recall_0.5": 0.5188,
+      "recall_0.4": 0.2625
+    },
+    "persistence": {
+      "recall_0.9": 1.0,
+      "recall_0.8": 0.9563,
+      "recall_0.7": 0.6875,
+      "recall_0.6": 0.675,
+      "recall_0.5": 0.3812,
+      "recall_0.4": 0.2625
+    },
+    "temporal-gru": {
+      "recall_0.9": 1.0,
+      "recall_0.8": 1.0,
+      "recall_0.7": 0.9625,
+      "recall_0.6": 0.8562,
+      "recall_0.5": 0.8187,
+      "recall_0.4": 0.7625
+    }
+  }
+}

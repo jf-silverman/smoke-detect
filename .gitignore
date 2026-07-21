@@ -1,6 +1,7 @@
 data/raw/
 data/interim/
 data/processed/
+data/figlib/
 *.pt
 *.pth
 *.ckpt

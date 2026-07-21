@@ -51,6 +51,14 @@ that power temporal gains on FIgLib. At matched recall, no temporal method beats
 single-frame detector here. That is reported as a **negative result**, because it is one —
 on pyro-sdis the leverage is in the negatives, not the time axis.
 
+As a check on that claim, we ran the same pipeline on [**FIgLib**](reports/figlib-findings.md),
+the onset-sequence dataset the temporal literature used. The clean control was confounded (a
+pyro-sdis detector is blind on California FIgLib, AUC 0.45 — whole-frame features miss the tiny
+early plumes that SmokeyNet tiles to catch), but the one model-independent signal *flips sign
+exactly as predicted*: requiring temporal persistence **hurts** on pyro-sdis (+6.6 pts false
+alarms) and **helps** on FIgLib (−13.8 pts). Same rule, opposite sign, split by whether the data
+contains ignition onset — the mechanism, confirmed from the other direction.
+
 So we went *into* the negatives and built a [**typed confuser corpus**](reports/confuser-corpus.md):
 clustering the 2,305 frames the detector false-alarms on into named failure modes. The result
 is one clean number — **74% of the false alarms are clouds** (cumulus, backlit stratus, broken

@@ -77,7 +77,9 @@ largely absent, and where a scene *is* ambiguous, it is ambiguous in a temporall
 
 The temporal advantage is **real but dataset-dependent**: it needs sequences that capture
 onset against a clean background, and confusers that are transient. pyro-sdis provides neither
-at the scale FIgLib does.
+at the scale FIgLib does. We tested this directly — see [figlib-findings.md](figlib-findings.md):
+the same persistence rule that *hurts* here flips to *helping* by up to 13.8 points on FIgLib's
+onset sequences, confirming the mechanism from the opposite direction.
 
 ## Honest caveats
 
