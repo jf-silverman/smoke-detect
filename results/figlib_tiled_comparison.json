@@ -1,0 +1,31 @@
+{
+  "inference": "tiled native-res 640",
+  "single_frame_auc": 0.6579,
+  "whole_frame_auc": 0.454,
+  "targets": [
+    0.9,
+    0.8,
+    0.7,
+    0.6,
+    0.5,
+    0.4
+  ],
+  "methods": {
+    "single-frame": {
+      "recall_0.9": 0.9,
+      "recall_0.8": 0.7063,
+      "recall_0.7": 0.4562,
+      "recall_0.6": 0.3187,
+      "recall_0.5": 0.2188,
+      "recall_0.4": 0.175
+    },
+    "persistence": {
+      "recall_0.9": 1.0,
+      "recall_0.8": 0.8938,
+      "recall_0.7": 0.2687,
+      "recall_0.6": 0.1437,
+      "recall_0.5": 0.0625,
+      "recall_0.4": 0.05
+    }
+  }
+}

@@ -52,12 +52,13 @@ single-frame detector here. That is reported as a **negative result**, because i
 on pyro-sdis the leverage is in the negatives, not the time axis.
 
 As a check on that claim, we ran the same pipeline on [**FIgLib**](reports/figlib-findings.md),
-the onset-sequence dataset the temporal literature used. The clean control was confounded (a
-pyro-sdis detector is blind on California FIgLib, AUC 0.45 — whole-frame features miss the tiny
-early plumes that SmokeyNet tiles to catch), but the one model-independent signal *flips sign
-exactly as predicted*: requiring temporal persistence **hurts** on pyro-sdis (+6.6 pts false
-alarms) and **helps** on FIgLib (−13.8 pts). Same rule, opposite sign, split by whether the data
-contains ignition onset — the mechanism, confirmed from the other direction.
+the onset-sequence dataset the temporal literature used. The first run looked like a dead end —
+the detector scored AUC 0.45 (worse than random) — until a question about *resolution* found the
+real cause: we were downscaling FIgLib's native 3072×2048 frames to 640 px, pooling the tiny
+early plumes away. Running the same detector on native-resolution **tiles** lifted AUC to 0.658,
+and the positive control then landed: requiring temporal persistence **cuts** false alarms
+12–19 pts on FIgLib, where the very same rule **raised** them on pyro-sdis. Same rule, opposite
+sign, split by whether the data contains ignition onset — the mechanism, confirmed both ways.
 
 So we went *into* the negatives and built a [**typed confuser corpus**](reports/confuser-corpus.md):
 clustering the 2,305 frames the detector false-alarms on into named failure modes. The result
@@ -67,7 +68,9 @@ such public corpus exists, so `results/confuser_corpus.csv` is a small original 
 
 ## Layout
 
-- [`reports/`](reports/) — the state-of-the-field report + per-stage findings
+- [`reports/`](reports/) — the state-of-the-field report + per-stage findings, and a
+  [**research narrative**](reports/research-narrative.md) tracing how the project actually
+  unfolded (including the human resolution insight that rescued the FIgLib control)
 - [`research/`](research/) — detailed source material behind the report
 - [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining, confuser corpus
 - [`src/models/`](src/models/) — training, operator-framed evaluation, temporal model + comparison

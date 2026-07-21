@@ -1,93 +1,102 @@
 # FIgLib positive control — findings
 
-**Status: partial confirmation with an honest confound.** The pyro-sdis result claimed
-temporal context fails there *specifically because* that dataset lacks ignition onset. FIgLib
-is the direct test: every sequence spans ~40 min before to ~40 min after a fire's first
-visible plume, one frame per minute — the onset dynamics pyro-sdis is missing. We ran the
-identical pipeline (same frozen detector as feature extractor, same GRU, same matched-recall
-comparison) on 18 FIgLib fire sequences (1,434 frames, near-balanced 726 smoke / 708 clean),
-holding out whole fires.
+**Status: confirmed, after a resolution fix.** The pyro-sdis result claimed temporal context
+fails there *specifically because* that dataset lacks ignition onset. FIgLib is the direct
+test: every sequence spans ~40 min before to ~40 min after a fire's first visible plume, one
+frame per minute — the onset dynamics pyro-sdis is missing. We ran the identical pipeline on 18
+FIgLib fire sequences (1,434 frames, near-balanced 726 smoke / 708 clean), holding out whole
+fires.
 
-The clean version of this control **could not be run**, for an instructive reason. But the one
-model-independent signal that survives **flips sign in exactly the direction the hypothesis
-predicts.**
+The first attempt was confounded, and the fix — prompted by a good question about resolution —
+is itself the most instructive part of this report. Once the detector was allowed to see the
+frames at native resolution, the positive control **succeeded**: requiring temporal persistence
+cuts false alarms by 12–19 points on FIgLib, the mirror image of pyro-sdis where it *raised*
+them.
 
-## The confound: a pyro-sdis detector is blind on FIgLib
+## The plot twist: it was resolution, not (only) domain shift
 
-The detector is trained on French detection towers; FIgLib is Southern California (different
-terrain, cameras, smoke appearance, including a night fire and monochrome imagers). Zero-shot,
-its per-frame signal is **worse than random**:
+The whole-frame pipeline resized FIgLib's native 3072×2048 frames down to 640 px before
+inference — and the pyro-sdis detector scored **AUC 0.454, worse than random**. It looked like
+pure domain shift (French towers → California). It was mostly downscaling. An onset plume ~40 px
+wide in the native frame becomes ~8 px at 640, pooled away to nothing.
 
-| feature | FIgLib test AUC |
+Re-running the *same* detector on native-resolution 640-px **tiles** (no downscaling, the
+resolution it was trained at), taking each frame's max confidence over its tiles:
+
+| inference | FIgLib test AUC |
 |---|---|
-| detector confidence (conf head) | **0.454** |
-| in-domain classifier on its 256-d embedding | 0.504 |
-| same, pre-ignition vs only >30-min developed plumes | 0.506 |
+| whole frame, resized to 640 | 0.454 (worse than random) |
+| **native-resolution tiles** | **0.658** |
 
-The embedding carries essentially no transferable smoke signal — even for large, well-developed
-plumes. The likely reason is structural and is the whole point of SmokeyNet's design: FIgLib is
-2048×3072, and an onset plume is a tiny, distant patch. A whole-frame descriptor resized to 640
-pools it away to nothing. **SmokeyNet tiles into 224-px patches precisely so small early plumes
-survive** — our whole-frame pipeline cannot see them. There *is* a faint trace (mean detector
-conf rises with plume development: 0.067 pre-ignition → 0.127 after 30 min), but it is far too
-weak to build a clean comparison on.
+A +0.20 AUC jump from resolution alone. This is exactly why SmokeyNet tiles into 224-px patches
+— small early plumes only survive at native pixel density. Domain shift is still present (0.658,
+not 0.85+; a French-tower detector is not at home in California), but it is no longer
+disqualifying. The lesson generalizes: **for small-object detection, downscaling in the
+inference path can matter more than the model does.**
 
-So a *conclusive* positive control — a learned temporal model decisively beating single-frame —
-is not achievable by reusing the pyro-sdis detector. It needs an **in-domain, tiled** feature
-extractor trained on FIgLib itself. That is a real build, not a cheap proof, and is scoped as
-future work below.
+## With a usable base signal, temporal wins — the mirror of pyro-sdis
 
-## The signal that survives: the persistence effect flips sign
+The model-independent persistence rule (rolling min of confidence over the window, no trained
+features) vs single-frame, at matched recall, on the **tiled** base signal:
 
-One comparison is *model-independent* and needs no trained features: the persistence rule
-(rolling min of confidence over the window) vs single-frame, at matched recall. Because it only
-smooths the confidence trajectory, it is meaningful even where the absolute signal is weak. It
-answers: does *requiring temporal persistence* reduce or increase false alarms?
+| recall | single-frame FA | persistence FA | delta (neg = temporal helps) |
+|---|---:|---:|---:|
+| 0.70 | 45.6% | 26.9% | **−18.8 pts** |
+| 0.60 | 31.9% | 14.4% | **−17.5 pts** |
+| 0.50 | 21.9% | 6.2% | **−15.6 pts** |
+| 0.40 | 17.5% | 5.0% | −12.5 pts |
 
-Change in false-alarm rate, persistence minus single-frame (**negative = temporal helps**):
+(Persistence still hurts at very high recall ≥0.8, where you accept nearly every frame anyway.)
+Requiring temporal persistence cuts false alarms by 12–19 points across the useful operating
+range — because on FIgLib the pre-ignition negatives are genuinely transient (empty sky, passing
+artifacts), the flicker a temporal rule is built to suppress.
 
-| recall | pyro-sdis (established scenes) | FIgLib (onset sequences) |
+## The headline: the same rule flips sign with the dataset
+
+The one model-independent comparison, side by side (persistence minus single-frame false-alarm
+rate; **negative = temporal helps**):
+
+| recall | pyro-sdis (established scenes) | FIgLib (onset sequences, tiled) |
 |---|---:|---:|
-| 0.70 | −0.8 pts | **−8.8 pts** |
-| 0.60 | −0.4 pts | −1.2 pts |
-| 0.50 | **+6.6 pts** (hurts) | **−13.8 pts** (helps) |
-| 0.40 | **+6.4 pts** (hurts) | +0.0 pts |
+| 0.70 | −0.8 pts | **−18.8 pts** |
+| 0.60 | −0.4 pts | **−17.5 pts** |
+| 0.50 | **+6.6 pts** (hurts) | **−15.6 pts** (helps) |
+| 0.40 | **+6.4 pts** (hurts) | **−12.5 pts** (helps) |
 
 The **same rule flips sign with the dataset.** On pyro-sdis, requiring persistence *hurts* at
-the tight operating points — the confusers are persistent, so persistence keeps them while
-costing recall. On FIgLib, requiring persistence *helps* by up to 13.8 points — the pre-ignition
-negatives are genuinely transient (empty sky, momentary artifacts), exactly the flicker a
-temporal rule is meant to suppress. This is the mechanistic claim confirmed from the opposite
-direction: temporal context pays off on onset data and backfires on established-scene data.
-
-## What did not work, and why it doesn't undercut the above
-
-The learned GRU failed on FIgLib (worse than single-frame at every operating point). That is
-expected and uninformative here: it was learning from a feature stream that is itself ~random
-(AUC 0.45). Garbage features, garbage head. The persistence rule is informative precisely
-because it sidesteps the broken features and operates on the raw confidence trajectory.
+the tight operating points — the confusers are persistent (fixed cloud banks, glare, ridge
+haze), so persistence keeps them while costing recall. On FIgLib, requiring persistence *helps*
+by 12–19 points — the pre-ignition negatives are transient. This is the mechanistic claim
+confirmed from both directions at once: **temporal context pays off on onset data and backfires
+on established-scene data.** It is not a universal fix; it is a fix for a specific data regime,
+and now we can show exactly which.
 
 ## Honest caveats
 
-- **Zero-shot base signal is near-random (AUC 0.45).** Absolute false-alarm rates on FIgLib
-  (40–78%) are not trustworthy; only the *matched-recall sign* of the persistence effect is.
-- **18 sequences, 4 held-out test fires.** Small. The sign-flip is directionally clear but the
-  magnitudes are noisy.
-- Proof scale throughout.
+- **Domain shift is real but not disqualifying.** The tiled base signal is AUC 0.658, not 0.85+
+  — a France-trained detector only partly transfers to California. Absolute false-alarm rates
+  are still soft; the *matched-recall deltas and their sign* are the trustworthy part.
+- **Learned GRU still deferred.** The GRU needs a per-frame feature *vector*; we only extracted
+  tiled max-*confidence* (a scalar) for this probe. Proving the learned model — not just the
+  persistence rule — beats single-frame is the natural follow-up: cache tiled *embeddings* per
+  frame and re-run the GRU comparison. The persistence sign-flip predicts it will win.
+- **18 sequences, 4 held-out test fires.** Small; magnitudes are noisy, the direction is clear.
+- Proof scale throughout (underfit, zero-shot detector as the feature source).
 
-## What a conclusive positive control requires (future work)
+## What a fully conclusive control would add (future work)
 
-Train an **in-domain, tiled** detector on FIgLib (SmokeyNet's setup: 224-px tiles, CNN
-backbone, bbox labels ship with the dataset), then run the same GRU-vs-single-frame comparison.
-With a real per-frame signal, the learned temporal model — not just the persistence rule —
-can be tested. The prediction, given the persistence sign-flip above, is that temporal will
-win on FIgLib as clearly as it lost on pyro-sdis.
+Tiled *embeddings* + the learned GRU (above), and/or an in-domain detector trained on FIgLib's
+own bounding boxes (SmokeyNet's setup). Both would raise the base AUC and let the learned
+temporal model be tested directly. The resolution finding here says the cheapest high-value move
+is simply to stop downscaling.
 
 ## Reproduce
 
     # data: subset of FIgLib sequences into data/figlib/images/<seq>/ (gitignored)
-    python src/models/figlib_temporal.py --extract     # cache features
-    python src/models/figlib_temporal.py               # AUC check + matched-recall comparison
+    python src/models/figlib_temporal.py --extract     # whole-frame features (the confounded run)
+    python src/models/figlib_temporal.py               # AUC 0.454 + confounded comparison
+    python src/models/figlib_tiled.py --tile 640 --stride 640   # native-res tiles -> AUC 0.658
 
-Comparison: `results/figlib_temporal_comparison.json`. pyro-sdis counterpart:
+Comparisons: `results/figlib_temporal_comparison.json` (whole-frame),
+`results/figlib_tiled_comparison.json` (tiled). pyro-sdis counterpart:
 `results/temporal_comparison.json`. See also [temporal-findings.md](temporal-findings.md).
