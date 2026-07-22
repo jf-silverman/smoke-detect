@@ -154,3 +154,34 @@ the deployment envelope, not the backbone.**
 - No public data on camera downtime from lens dirt, weather, or power.
 - No NIST report specific to wildland smoke *detection* located (NIST's wildfire work found is
   WUI structure-ignition focused). Not claiming none exists — only that none was verified.
+
+## Works Cited
+
+- Dewangan, A., Pande, Y., Braun, H.-W., Vernon, F., Perez, I., Altintas, I., Cottrell, G. W., &
+  Nguyen, M. H. (2022). FIgLib & SmokeyNet: Dataset and deep learning model for real-time
+  wildland fire smoke detection. *Remote Sensing, 14*(4), 1007. https://doi.org/10.3390/rs14041007
+- Govil, K., Welch, M. L., Ball, J. T., & Pennypacker, C. R. (2020). Preliminary results from a
+  wildfire detection system using deep learning on remote camera images. *Remote Sensing, 12*(1),
+  166. https://doi.org/10.3390/rs12010166
+- Lostanlen, M., Isla, N., Guillen, J., Zanca, R., Veith, F., Buc, C., & Barriere, V. (2024).
+  Constructing a real-world benchmark for early wildfire detection with the new PYRONEAR-2025
+  dataset. *arXiv:2402.05349.* https://arxiv.org/abs/2402.05349
+- NASA. (n.d.). *FIRMS frequently asked questions.* Earthdata.
+  https://www.earthdata.nasa.gov/data/tools/firms/faq
+- U.S. Department of Agriculture, Forest Service. (n.d.). *Thermal imaging* [Fire Lab].
+  https://research.fs.usda.gov/firelab/about/thermal-imaging
+- U.S. Government Accountability Office. (2025). *Wildland fire: Technology and data to support
+  detection and response* (GAO-25-108161). https://www.gao.gov/products/gao-25-108161
+- University of California San Diego. (n.d.). *ALERTCalifornia.* UC San Diego Today.
+  https://today.ucsd.edu/story/alert-california
+- *Alberta wildfire reporting-delay cost study.* (n.d.). *PLOS ONE.*
+  https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0313200 (cited for the
+  suppression-cost-vs-delay figure; author list not individually verified)
+- *Wildfire detection review.* (2025). *Applied Sciences, 15*(18), 10255.
+  https://www.mdpi.com/2076-3417/15/18/10255 (author list not individually verified)
+- *Early wildfire detection survey.* (2025). *AI, 6*(10), 253. https://www.mdpi.com/2673-2688/6/10/253
+  (author list not individually verified)
+
+<sub>Titles marked "author list not individually verified" were located by URL during research
+but their full author lists were not confirmed against the source; treat those citations as
+provisional.</sub>

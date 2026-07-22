@@ -197,14 +197,30 @@ Four bars, one clean story.
 everyone has done it); satellite as the main project (different job, weak labels); CLIP/SAM
 zero-shot as the core bet (unvalidated).
 
-## Sources
-- SmokeyNet: https://ar5iv.labs.arxiv.org/html/2112.08598 · https://www.mdpi.com/2072-4292/14/4/1007
-- PyroNear2024: https://arxiv.org/html/2402.05349v2
-- Nemo: https://www.mdpi.com/2072-4292/14/16/3979 · https://github.com/SayBender/Nemo
-- SKLFS (Swin+CCPE, separable negative sampling): https://arxiv.org/html/2311.10116v3
-- Deep Smoke Segmentation: https://arxiv.org/pdf/1809.00774
-- Multimodal SmokeyNet: https://arxiv.org/pdf/2212.14143
-- Review: https://www.mdpi.com/2076-3417/15/18/10255
-- Pyronear: https://github.com/pyronear/pyro-vision · https://www.earthtoolsmaker.org/posts/protecting-the-forest-early-forest-fire-detector/
-- LangGas (semi-transparent zero-shot): https://arxiv.org/pdf/2503.02910
-- SAM OOD limits: https://arxiv.org/pdf/2401.08787
+## Works Cited
+
+- de Venâncio, P. V. A. B., Lisboa, A. C., & Barbosa, A. V. (2022). An automatic fire detection
+  system based on deep convolutional neural networks for low-power, resource-constrained devices
+  [D-Fire dataset]. *Neural Computing and Applications, 34*, 15349–15368.
+  https://doi.org/10.1007/s00521-022-07467-z
+- Dewangan, A., Pande, Y., Braun, H.-W., Vernon, F., Perez, I., Altintas, I., Cottrell, G. W., &
+  Nguyen, M. H. (2022). FIgLib & SmokeyNet: Dataset and deep learning model for real-time
+  wildland fire smoke detection. *Remote Sensing, 14*(4), 1007. https://doi.org/10.3390/rs14041007
+- Lostanlen, M., Isla, N., Guillen, J., Zanca, R., Veith, F., Buc, C., & Barriere, V. (2024).
+  Constructing a real-world benchmark for early wildfire detection with the new PYRONEAR-2025
+  dataset. *arXiv:2402.05349.* https://arxiv.org/abs/2402.05349
+- *Multimodal wildland fire smoke detection.* (2023). *Remote Sensing, 15*(11), 2790.
+  https://arxiv.org/abs/2212.14143 (author list not individually verified)
+- Pyronear. (n.d.). *pyro-vision* [Software]. GitHub. https://github.com/pyronear/pyro-vision
+- *SAM out-of-distribution limits for smoke.* (2024). *arXiv:2401.08787.*
+  https://arxiv.org/abs/2401.08787 (author list not individually verified)
+- *Semi-transparent object zero-shot detection (LangGas).* (2025). *arXiv:2503.02910.*
+  https://arxiv.org/abs/2503.02910 (author list not individually verified)
+- Wang, C., Xu, C., & Akram, A. (2023). Wildfire smoke detection system: Model architecture,
+  training mechanism, and dataset [SKLFS-WildFire; Cross Contrast Patch Embedding].
+  *arXiv:2311.10116.* https://arxiv.org/abs/2311.10116
+- Yazdi, A., Qin, H., Jordan, C. B., Yang, L., & Yan, F. (2022). Nemo: An open-source
+  transformer-supercharged benchmark for fine-grained wildfire smoke detection. *Remote Sensing,
+  14*(16), 3979. https://doi.org/10.3390/rs14163979
+- Yuan, F., Zhang, L., Xia, X., Wan, B., Huang, Q., & Li, X. (2019). Deep smoke segmentation.
+  *Neurocomputing, 357*, 248–260. https://arxiv.org/abs/1809.00774

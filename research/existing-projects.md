@@ -108,3 +108,29 @@ inline where a resource turned out to be stale, gated, or unverifiable.
   how to scope a small detector and report failure modes honestly.
 - **Systems thinking:** Pyronear.
 - **Don't try to reproduce:** ALERTWildfire, FireSat, Descartes Labs.
+
+## Works Cited
+
+- Abonia, S. (n.d.). *YOLOv8 fire and smoke detection* [Blog / code]. Medium & GitHub.
+  https://medium.com/@abonia/yolov8-fire-and-smoke-detection-d9b74b9d0d97 ·
+  https://github.com/Abonia1/YOLOv8-Fire-and-Smoke-Detection
+- AI For Mankind. (n.d.). *Wildfire smoke detection* [Software & dataset]. GitHub.
+  https://github.com/aiformankind
+- ALERTWildfire. (n.d.). *Wildfire camera network* [Live feeds]. https://www.alertwildfire.org/
+- Descartes Labs. (n.d.). *The satellites hunting for megafires* [Blog].
+  https://medium.com/descarteslabs-team/the-satellites-hunting-for-megafires-afa1305fdc2c
+- Dewangan, A., Pande, Y., Braun, H.-W., Vernon, F., Perez, I., Altintas, I., Cottrell, G. W., &
+  Nguyen, M. H. (2022). FIgLib & SmokeyNet: Dataset and deep learning model for real-time
+  wildland fire smoke detection. *Remote Sensing, 14*(4), 1007. https://doi.org/10.3390/rs14041007
+- Fekii, R. (n.d.). *Wildfire smoke detector* [Software; MLOps pipeline]. GitHub.
+  https://github.com/RihabFekii/wildfire-smoke-detector
+- FUEGO / Open Climate Tech. (n.d.). *firecam* [Software]. GitHub.
+  https://github.com/fuego-dev/firecam · https://github.com/open-climate-tech
+- Google Research. (n.d.). *FireSat* [Project]. https://sites.research.google/gr/wildfires/firesat/
+- Perez, I. (n.d.). *sage-smoke-detection* [Software]. GitHub.
+  https://github.com/iperezx/sage-smoke-detection
+- Pyronear. (n.d.). *pyro-vision / pyro-engine / pyro-api / pyro-platform* [Software]. GitHub.
+  https://github.com/pyronear
+- Yazdi, A., Qin, H., Jordan, C. B., Yang, L., & Yan, F. (2022). Nemo: An open-source
+  transformer-supercharged benchmark for fine-grained wildfire smoke detection. *Remote Sensing,
+  14*(16), 3979. https://doi.org/10.3390/rs14163979 · https://github.com/SayBender/Nemo

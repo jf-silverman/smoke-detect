@@ -46,3 +46,24 @@ roughly by leverage. Completed threads have their own findings reports (see the 
 - **Recall-first metric reporting.** Bake a recall-first operating point into `evaluate.py`
   (highest recall subject to a false-alarm budget) and report alarms-per-camera-per-day at a
   fixed high recall, with F1 demoted to context.
+
+## Public data sources for the temporal / time-to-detection thread
+
+Time-to-detection and a stronger temporal model both need onset *sequences* (and, ideally,
+continuous camera feeds), which pyro-sdis lacks. The public options, most useful first:
+
+- **HPWREN camera archive** (HPWREN, n.d.) — the richest public source: raw camera images (one
+  per minute, fixed cameras; every 10 s, PTZ) *and* compiled MP4 videos, downloadable back to
+  ~2000 at `http://c1.hpwren.ucsd.edu/archive/`. FIgLib is curated from this, so it is the path
+  to *more* onset sequences and to continuous feeds for time-to-detection.
+- **PYRONEAR-2025** (Lostanlen et al., 2024) — images *and videos*, ~640 wildfires from France,
+  Spain, Chile and the US; the same lineage as pyro-sdis.
+- **ALERTCalifornia / ALERTWildfire** — live feeds from 1,600+ cameras (`alertwest.live`) with
+  short in-browser timelapse replay; live/near-real-time rather than a bulk download (the bulk
+  archive is HPWREN's).
+- **Classic video clip datasets** for smaller temporal experiments: Bilkent VisiFire (40 clips),
+  FIRESENSE (49 videos, on Zenodo), MIVIA fire+smoke (180 videos).
+
+Note: Pano AI and most operational vendors do **not** release public feeds or imagery — their
+data is proprietary/customer-gated, and they have no peer-reviewed publications (patents and
+product pages only). So the public temporal data all traces back to HPWREN and PyroNear.

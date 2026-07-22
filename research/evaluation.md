@@ -105,18 +105,33 @@ between them is itself the interesting result.
 6. **False positives per camera per day** on held-out negative sequences.
 7. Report both an easy and a hard split.
 
-## Sources
+## Works Cited
 
-- SmokeyNet: https://arxiv.org/abs/2112.08598 · https://www.mdpi.com/2072-4292/14/4/1007
-  (verified: the 79% FP field result is Govil et al. 2020, cited *within* this paper, NOT
-  SmokeyNet's own; SmokeyNet was never field-deployed)
-- Multimodal SmokeyNet: https://arxiv.org/pdf/2212.14143
-- YOLO on D-Fire: https://pmc.ncbi.nlm.nih.gov/articles/PMC11398105/
-- SKLFS-WildFire: https://arxiv.org/html/2311.10116v3
-- PYRONEAR-2025: https://arxiv.org/abs/2402.05349
-- Pyronear community writeup: https://www.earthtoolsmaker.org/posts/protecting-the-forest-early-forest-fire-detector/
-- Incident leakage: https://arxiv.org/pdf/2605.18911
-- FUEGO: https://fuego.ssl.berkeley.edu/
+- Dewangan, A., Pande, Y., Braun, H.-W., Vernon, F., Perez, I., Altintas, I., Cottrell, G. W., &
+  Nguyen, M. H. (2022). FIgLib & SmokeyNet: Dataset and deep learning model for real-time
+  wildland fire smoke detection. *Remote Sensing, 14*(4), 1007. https://doi.org/10.3390/rs14041007
+  (Verified: the 79% field false-positive figure is Govil et al. (2020), cited *within* this
+  paper, not SmokeyNet's own — SmokeyNet was never field-deployed.)
+- Govil, K., Welch, M. L., Ball, J. T., & Pennypacker, C. R. (2020). Preliminary results from a
+  wildfire detection system using deep learning on remote camera images. *Remote Sensing, 12*(1),
+  166. https://doi.org/10.3390/rs12010166
+- Lostanlen, M., Isla, N., Guillen, J., Zanca, R., Veith, F., Buc, C., & Barriere, V. (2024).
+  Constructing a real-world benchmark for early wildfire detection with the new PYRONEAR-2025
+  dataset. *arXiv:2402.05349.* https://arxiv.org/abs/2402.05349
+- *Multimodal wildland fire smoke detection.* (2023). *Remote Sensing, 15*(11), 2790.
+  https://arxiv.org/abs/2212.14143 (author list not individually verified)
+- Pyronear. (n.d.). *Protecting the forest: An early forest-fire detector* [Community writeup].
+  https://www.earthtoolsmaker.org/posts/protecting-the-forest-early-forest-fire-detector/
+- University of California, Berkeley. (n.d.). *FUEGO: Fire Urgency Estimator in Geosynchronous
+  Orbit.* https://fuego.ssl.berkeley.edu/
+- Wang, C., Xu, C., & Akram, A. (2023). Wildfire smoke detection system: Model architecture,
+  training mechanism, and dataset [SKLFS-WildFire]. *arXiv:2311.10116.*
+  https://arxiv.org/abs/2311.10116
+- *YOLO-based fire and smoke detection on the D-Fire dataset.* (2024). *PMC11398105.*
+  https://pmc.ncbi.nlm.nih.gov/articles/PMC11398105/ (author list not individually verified;
+  D-Fire dataset by de Venâncio et al., 2022)
+- *Incident-level leakage in wildfire smoke benchmarks.* (2026). *arXiv:2605.18911.*
+  https://arxiv.org/abs/2605.18911 (author list not individually verified)
 
 ## Unverified — do not cite as fact
 

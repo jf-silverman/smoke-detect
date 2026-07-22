@@ -149,4 +149,44 @@ Train on **pyro-sdis** → evaluate on a **held-out-camera** split → evaluate 
 **FIgLib** and **D-Fire** to quantify domain shift → add a temporal head on **FIgLib** and
 report **time-to-detection** instead of accuracy.
 
+## Works Cited
+
+- AI For Mankind. (n.d.). *Wildfire smoke dataset* [Dataset]. GitHub / Roboflow.
+  https://github.com/aiformankind/wildfire-smoke-dataset
+- ALERTCalifornia / ALERTWildfire. (n.d.). *Wildfire camera network* [Live feeds]. University of
+  California San Diego. https://alertcalifornia.org/ · https://www.alertwest.live/
+- Bilkent University. (n.d.). *VisiFire sample clips* [Video dataset].
+  http://signal.ee.bilkent.edu.tr/VisiFire/
+- de Venâncio, P. V. A. B., Lisboa, A. C., & Barbosa, A. V. (2022). An automatic fire detection
+  system based on deep convolutional neural networks for low-power, resource-constrained devices
+  [D-Fire dataset]. *Neural Computing and Applications, 34*, 15349–15368.
+  https://doi.org/10.1007/s00521-022-07467-z
+- Dewangan, A., Pande, Y., Braun, H.-W., Vernon, F., Perez, I., Altintas, I., Cottrell, G. W., &
+  Nguyen, M. H. (2022). FIgLib & SmokeyNet: Dataset and deep learning model for real-time
+  wildland fire smoke detection. *Remote Sensing, 14*(4), 1007. https://doi.org/10.3390/rs14041007
+- FIRESENSE. (n.d.). *Database of videos for flame and smoke detection* [Dataset]. Zenodo.
+  https://zenodo.org/record/836749
+- HPWREN. (n.d.). *HPWREN Fire Ignition Library (FIgLib) and camera image archive* [Dataset].
+  University of California San Diego. http://hpwren.ucsd.edu/HPWREN-FIgLib/ ·
+  http://c1.hpwren.ucsd.edu/archive/
+- Lostanlen, M., Isla, N., Guillen, J., Zanca, R., Veith, F., Buc, C., & Barriere, V. (2024).
+  Constructing a real-world benchmark for early wildfire detection with the new PYRONEAR-2025
+  dataset. *arXiv:2402.05349.* https://arxiv.org/abs/2402.05349
+- MIVIA Lab, University of Salerno. (n.d.). *Fire and smoke detection datasets* [Video dataset].
+  https://mivia.unisa.it/
+- NASA. (n.d.). *Fire Information for Resource Management System (FIRMS)* [Data product].
+  https://firms.modaps.eosdis.nasa.gov/
+- NOAA Global Systems Laboratory. (n.d.). *SmokeViz* [Dataset].
+  https://openreview.net/forum?id=NheuvQEWDt
+- Pyronear. (2025). *pyro-sdis* [Dataset]. Hugging Face.
+  https://huggingface.co/datasets/pyronear/pyro-sdis
+- Yazdi, A., Qin, H., Jordan, C. B., Yang, L., & Yan, F. (2022). Nemo: An open-source
+  transformer-supercharged benchmark for fine-grained wildfire smoke detection. *Remote Sensing,
+  14*(16), 3979. https://doi.org/10.3390/rs14163979
+
+<sub>Also referenced above (not smoke-detection datasets we recommend, cited for completeness):
+FASDD (withdrawn preprint, https://doi.org/10.57760/sciencedb.j00104.00103), FireRisk
+(arXiv:2303.07035), FLAME/FLAME2 (IEEE DataPort), Smoke100k
+(https://bigmms.github.io/cheng_gcce19_smoke100k/), Corsican Fire DB, BoWFire.</sub>
+
 Four honest numbers and one uncomfortable, well-explained drop. Worth more than any 0.97 mAP.
