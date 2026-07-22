@@ -6,10 +6,10 @@ actually do in the field, not what it scores on a flattering benchmark.
 
 ## The one thing worth knowing
 
-The most-cited academic smoke detector (SmokeyNet) reports ~83% F1 on its benchmark — but
-was never field-deployed. The only comparable system with a published field number produced
-a **79% false-positive rate** in real deployment. That gap between benchmark and field is the
-problem this project is built around. See
+The most-cited academic smoke detector, SmokeyNet, reports ~83% F1 (82.59%) on its benchmark —
+but was never field-deployed (Dewangan et al., 2022). The comparable system with a published
+*field* number produced a **79% false-positive rate** in real deployment (Govil et al., 2020).
+That gap between benchmark and field is the problem this project is built around. See
 [`reports/state-of-smoke-detection.md`](reports/state-of-smoke-detection.md).
 
 ## What's here
@@ -19,7 +19,8 @@ backed by [`research/`](research/)) covering public datasets, modeling approache
 performance is really measured, and when these tools do and don't work.
 
 **A working pipeline on [pyro-sdis](https://huggingface.co/datasets/pyronear/pyro-sdis)**
-(33,636 images, French detection towers) that takes evaluation integrity seriously:
+(33,636 images, French detection towers; Pyronear, 2025) that takes evaluation integrity
+seriously:
 
 - **Leak-safe splits** ([`src/data/splits.py`](src/data/splits.py)). The 40 "cameras" are
   really 8 physical towers (each camera string is `tower-bearing`), so we hold out whole
@@ -46,7 +47,8 @@ false-alarm burden.** On the honest held-out towers:
 | + hard-negative mining (@640) | 0.68 | ~half the burden |
 
 <sub>*at an assumed 1% base rate and 500 frames/camera/day — an extrapolation, not a measured
-rate. Pano's operational target is < 1 FP/camera/day; the gap is the work that remains.</sub>
+rate. Pano AI's operational target is < 1 FP/camera/day (Pano AI, 2024); the gap is the work
+that remains.</sub>
 
 Two levers, two axes. **Resolution raises the detection *ceiling*** — the 640 model structurally
 caps at POD 0.68 (it never sees the small plumes), while native-resolution inference reaches 0.86
@@ -58,8 +60,8 @@ dominate, even the best proof config still adds only marginal value — the leve
 close the gap.
 
 The next step was a **temporal model** — the literature's headline fix (SmokeyNet's +26
-precision points from frame-to-frame context). We built it and it **did not transfer to this
-dataset**, and [the report explains why](reports/temporal-findings.md): 76% of the false
+precision points from frame-to-frame context; Dewangan et al., 2022). We built it and it **did
+not transfer to this dataset**, and [the report explains why](reports/temporal-findings.md): 76% of the false
 alarms are *persistent* structures (fixed cloud banks, glare, ridge haze), not the flicker a
 persistence model suppresses, and pyro-sdis's short bursts lack the ignition-onset dynamics
 that power temporal gains on FIgLib. At matched recall, no temporal method beats the
@@ -67,7 +69,7 @@ single-frame detector here. That is reported as a **negative result**, because i
 on pyro-sdis the leverage is in the negatives, not the time axis.
 
 As a check on that claim, we ran the same pipeline on [**FIgLib**](reports/figlib-findings.md),
-the onset-sequence dataset the temporal literature used. The first run looked like a dead end —
+the onset-sequence dataset the temporal literature used (Dewangan et al., 2022). The first run looked like a dead end —
 the detector scored AUC 0.45 (worse than random) — until a question about *resolution* found the
 real cause: we were downscaling FIgLib's native 3072×2048 frames to 640 px, pooling the tiny
 early plumes away. Running the same detector on native-resolution **tiles** lifted AUC to 0.658,
@@ -108,7 +110,27 @@ python src/models/evaluate.py --weights runs/grouped/weights/best.pt --split gro
 ## Data & credit
 
 [pyro-sdis](https://huggingface.co/datasets/pyronear/pyro-sdis) (Apache-2.0) by
-[Pyronear](https://pyronear.org/). Image data and model weights are gitignored.
+[Pyronear](https://pyronear.org/) (Pyronear, 2025). FIgLib imagery courtesy of HPWREN
+(Dewangan et al., 2022; credit `http://hpwren.ucsd.edu/`). Image data and model weights are
+gitignored.
 
 *Proof-scale results throughout: read the direction of the numbers, not the absolute values.
 Full-scale runs are one flag change (drop `--fraction`, raise `--epochs`).*
+
+## Works Cited
+
+- Dewangan, A., Pande, Y., Braun, H.-W., Vernon, F., Perez, I., Altintas, I., Cottrell, G. W., &
+  Nguyen, M. H. (2022). FIgLib & SmokeyNet: Dataset and deep learning model for real-time
+  wildland fire smoke detection. *Remote Sensing, 14*(4), 1007.
+  https://doi.org/10.3390/rs14041007
+- Govil, K., Welch, M. L., Ball, J. T., & Pennypacker, C. R. (2020). Preliminary results from a
+  wildfire detection system using deep learning on remote camera images. *Remote Sensing,
+  12*(1), 166. https://doi.org/10.3390/rs12010166
+- Pano AI. (2024). *Pano Rapid Detect: AI-based wildfire detection* [Product documentation].
+  https://www.pano.ai/
+- Pyronear. (2025). *pyro-sdis* [Dataset]. Hugging Face.
+  https://huggingface.co/datasets/pyronear/pyro-sdis
+
+<sub>Detailed per-topic sources — operational networks (Pano, ALERTCalifornia), NOAA GOES/NGFS,
+and meteorological verification (cost-loss / relative economic value) — are cited inline in
+[`reports/metrics.md`](reports/metrics.md) and [`research/`](research/).</sub>
