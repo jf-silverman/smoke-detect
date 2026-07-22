@@ -6,10 +6,15 @@ actually do in the field, not what it scores on a flattering benchmark.
 
 ## The one thing worth knowing
 
-The most-cited academic smoke detector, SmokeyNet, reports ~83% F1 (82.59%) on its benchmark —
-but was never field-deployed (Dewangan et al., 2022). The comparable system with a published
-*field* number produced a **79% false-positive rate** in real deployment (Govil et al., 2020).
-That gap between benchmark and field is the problem this project is built around. See
+The only comparable smoke detector with a published *field* number produced a **79%
+false-positive rate** in real deployment (Govil et al., 2020). The most-cited academic model,
+SmokeyNet, looks far stronger on paper — but it was never field-deployed, and its headline
+score is **F1, a metric that weights a missed fire exactly like a false alarm** (Dewangan et
+al., 2022). That is the wrong trade for wildfire, where a missed fire is catastrophic and a
+false alarm costs a watchstander a glance. The benchmark-vs-field gap — and the misleading
+yardstick behind it — is the problem this project is built around: it measures what a detector
+would actually do in the field (**detection rate and false-alarm burden**), not F1. See
+[`reports/metrics.md`](reports/metrics.md) and
 [`reports/state-of-smoke-detection.md`](reports/state-of-smoke-detection.md).
 
 ## What's here
