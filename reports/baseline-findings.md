@@ -9,28 +9,38 @@ They do, cleanly.
 
 - Train/val/test are **site-disjoint** (grouped split). Test sites = `marguerite` +
   `serre-de-barre`, seen in neither training nor validation.
-- Evaluated as an operator would: per-frame *alarm / no-alarm*, image-level
-  precision/recall/F1 over a confidence sweep, plus the false-alarm rate on the
-  true-negative (no-smoke) frames specifically.
+- Evaluated the way the field judges a detector — **recall-first**, not F1. A missed fire is
+  catastrophic; a false alarm costs a watchstander a glance. So the headline is **detection rate
+  (POD)** and the **false-alarm burden**, with F1 demoted to context. See
+  [metrics.md](metrics.md) for the full rationale and field grounding.
 
-## Result 1 — the model works, on unseen sites
+## Result 1 — the model detects smoke on unseen sites
 
-At the best-F1 operating point (conf 0.05) on held-out sites:
+On held-out sites, the recall-first view (max reachable detection rate, and its false-alarm
+burden):
 
-| precision | recall | F1 |
+| max POD (detection rate) | FP/camera/day @ max POD* | FAR |
 |---|---|---|
-| 0.938 | 0.676 | 0.786 |
+| 0.676 | ~208 | 0.062 |
 
-An F1 of 0.79 from an underfit proof model on **sites it has never seen** is a legitimately
-encouraging baseline — in the same range as the ~0.70 that PyroNear reports on their hard
-in-the-wild benchmark. A properly-trained model (full data, more epochs) should clear this.
+<sub>*assumed 1% base rate, 500 frames/camera/day — extrapolation, see [metrics.md](metrics.md).
+Pano's operational target is < 1 FP/camera/day.</sub>
 
-## Result 2 — the precision-collapse, quantified
+An underfit proof model reaching POD 0.68 on **sites it has never seen** is a legitimately
+encouraging baseline (in the range of the ~0.70 F1 PyroNear reports on their hard in-the-wild
+benchmark). But POD caps at 0.68 here — the model *cannot* be pushed to the ≥0.90 detection rate
+this domain wants, because it never detects the small plumes ([resolution](resolution-findings.md)
+raises that ceiling). *(For reference, the best-F1 point is conf 0.05: precision 0.938, recall
+0.676, F1 0.786 — but F1 weights a missed fire like a false alarm, which this domain does not.)*
 
-That 0.938 precision is **an artifact of the test set's 90%-positive base rate**, and it is
-misleading. The honest signal is that at the same operating point, **42% of the clean,
+## Result 2 — the false-alarm burden (the alarm-fatigue constraint)
+
+The 0.938 precision above is **an artifact of the test set's 90%-positive base rate** — not a
+field number. The honest signal is the burden: at that operating point, **42% of the clean,
 no-smoke frames triggered a false alarm** — the single-frame model firing on clouds, fog, and
-glare, exactly as the literature predicts.
+glare, exactly as the literature predicts. This is not a verdict that the model is "bad"; it is
+the *alarm-fatigue constraint* — how often a watchstander gets pinged — which is what governs
+whether a high-recall detector is actually reviewable.
 
 Real detection towers see smoke on a tiny fraction of frames. Recomputing precision from the
 measured recall (TPR) and false-alarm-rate (FPR) at realistic base rates:
@@ -42,21 +52,25 @@ measured recall (TPR) and false-alarm-rate (FPR) at realistic base rates:
 | 0.30 | 0.319 | 8.3% | 16.8% | 3.7% | 1.9% |
 | 0.50 | 0.099 | 0.8% | 38.5% | 10.7% | 5.6% |
 
-**At a 1% deployment base rate, best-F1 precision falls from 94% to ~2%.** This is the
-benchmark-vs-field gap the state-of-the-art report warned about, reproduced on our own model
-with our own data. It is not a bug — it is the central, honest finding, and it is exactly the
-thing a naive "94% precision!" portfolio project would hide.
+**At a 1% deployment base rate, the naive 94% precision would be ~2%.** This is the benchmark-vs-
+field gap the state-of-the-art report warned about, reproduced on our own model — and it is why a
+"94% precision!" headline is meaningless here. Framed correctly (see [metrics.md](metrics.md)),
+this is the alarm-fatigue constraint, and the relative-economic-value view makes the verdict
+sharp: at the cost-loss ratios where misses dominate, this detector adds only marginal value —
+it misses ~32% of fires *and* over-alarms — so both levers below are needed.
 
 ## What this tells us to do next
 
-1. **The base-rate-corrected table is the headline metric**, not aggregate precision. Every
-   future eval reports it (`base_rate_corrected` in the eval JSON).
-2. **The precision floor is set by the false-alarm rate on clean frames**, so the highest-value
-   next move is hard-negative mining: curate the frames the model false-alarms on (they will be
-   clouds/fog/glare) and retrain. This directly attacks the 42% number.
-3. **Temporal context is the differentiator.** A single frame cannot tell a static haze from a
-   growing plume; the report's evidence (SmokeyNet's +26 precision points from temporal fusion)
-   says this is where the false-alarm rate actually falls. This baseline exists to be beaten by it.
+1. **Report recall-first**, not F1 or aggregate precision: POD, the max-POD ceiling, false-alarm
+   burden as FP/camera/day, and relative economic value across cost-loss ratios (all in the eval
+   JSON). See [metrics.md](metrics.md).
+2. **Raise the detection ceiling.** POD caps at 0.68 because the model misses small plumes;
+   native-resolution inference/training lifts it to 0.86 ([resolution](resolution-findings.md)).
+3. **Lower the false-alarm burden.** The burden is set by the false-alarm rate on clean frames,
+   so hard-negative mining (curating the clouds/fog/glare it fires on) directly attacks the ~208
+   FP/camera/day. The [confuser corpus](confuser-corpus.md) shows 74% of them are clouds.
+4. **Temporal context** was the literature's proposed fix — but it did *not* transfer here
+   ([temporal](temporal-findings.md)); the leverage on pyro-sdis is in the negatives, not time.
 
 ## Resolution is a hidden lever
 

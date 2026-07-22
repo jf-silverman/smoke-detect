@@ -26,21 +26,36 @@ performance is really measured, and when these tools do and don't work.
   *sites* — a model is only ever tested on terrain it never trained on. Both a naive (leaky)
   and an honest (site-disjoint) split are produced, so the inflation from leakage can be
   *measured*, not just asserted.
-- **Operator-framed metrics** ([`src/models/evaluate.py`](src/models/evaluate.py)). Instead of
-  mAP (structurally wrong for a boundary-less object), evaluation asks "does this frame raise
-  an alarm?" and reports the false-alarm rate on clean frames plus **base-rate-corrected
-  precision** — what precision becomes once smoke is as rare as it is in the field.
+- **Recall-first, field-standard metrics** ([`src/models/evaluate.py`](src/models/evaluate.py)).
+  A missed fire is catastrophic; a false alarm costs a watchstander a glance (they review every
+  "found fire" before dispatch). So evaluation is **not F1** — which weights the two errors
+  equally, wrong for this domain — but what the field actually uses: **probability of detection
+  (POD)**, the false-alarm burden as **false-positives-per-camera-per-day** (Pano's operational
+  target is < 1), and **relative economic value across cost-loss ratios** (meteorology's score
+  for asymmetric costs). mAP and F1 are computed but demoted to context.
 
 ## Findings so far (proof scale — directional, not final)
 
-| | baseline | + hard-negative mining |
-|---|---|---|
-| False alarms on clean held-out frames | 42% | **20%** |
-| Precision @ 1% deployment base rate | 1.6% | **3.1%** |
+The right question isn't "what's the F1" — it's **how high can detection (POD) go, and at what
+false-alarm burden.** On the honest held-out towers:
 
-The single-frame baseline false-alarms on ~60% of clean training frames — the documented
-"smoke is not an object" precision collapse. [Mining those hard negatives](reports/hard-negative-findings.md)
-(clouds, fog, glare) and retraining halved the false-alarm rate.
+| configuration | max detection rate (POD) | false-alarm burden* |
+|---|---|---|
+| single-frame baseline (infer @640) | 0.68 | ~208 FP/camera/day |
+| + native-resolution inference (@1280) | **0.86** | ~388 FP/camera/day |
+| + hard-negative mining (@640) | 0.68 | ~half the burden |
+
+<sub>*at an assumed 1% base rate and 500 frames/camera/day — an extrapolation, not a measured
+rate. Pano's operational target is < 1 FP/camera/day; the gap is the work that remains.</sub>
+
+Two levers, two axes. **Resolution raises the detection *ceiling*** — the 640 model structurally
+caps at POD 0.68 (it never sees the small plumes), while native-resolution inference reaches 0.86
+([resolution](reports/resolution-findings.md)). **[Hard-negative mining](reports/hard-negative-findings.md)
+and the [confuser corpus](reports/confuser-corpus.md) lower the false-alarm *burden*** (the
+baseline false-alarms on ~60% of clean frames — 74% of them clouds — and mining halves that).
+Neither is operational yet, and that honesty is the point: at the cost-loss ratios where misses
+dominate, even the best proof config still adds only marginal value — the levers above are what
+close the gap.
 
 The next step was a **temporal model** — the literature's headline fix (SmokeyNet's +26
 precision points from frame-to-frame context). We built it and it **did not transfer to this
@@ -68,8 +83,9 @@ such public corpus exists, so `results/confuser_corpus.csv` is a small original 
 
 ## Layout
 
-- [`reports/`](reports/) — the state-of-the-field report + per-stage findings (baseline,
-  hard-negative, temporal, confuser corpus, FIgLib, [resolution & recall-first](reports/resolution-findings.md)),
+- [`reports/`](reports/) — the state-of-the-field report, a [metrics rationale](reports/metrics.md)
+  (why recall-first, not F1), and per-stage findings (baseline, hard-negative, temporal, confuser
+  corpus, FIgLib, [resolution & recall-first](reports/resolution-findings.md)),
   and a [**research narrative**](reports/research-narrative.md) tracing how the project actually
   unfolded (including the human resolution insight that rescued the FIgLib control). Open threads
   are tracked in the [backlog](reports/backlog.md).

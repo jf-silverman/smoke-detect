@@ -5,6 +5,12 @@ epochs, ~20% base data). The question was narrow: does emphasizing the frames th
 false-alarms on actually pull down the false-alarm rate on held-out clean frames? It does,
 substantially.
 
+In the [recall-first framing](metrics.md), this is the lever that lowers the **false-alarm
+burden** (FP/camera/day) at a held detection rate — the complement to resolution, which raises
+the detection *ceiling*. F1 barely moves here, which is exactly the point: F1 is the wrong metric
+for this domain (it weights a missed fire like a false alarm), so a change that halves the
+false-alarm burden while holding recall barely registers in F1.
+
 ## What was mined
 
 Running the baseline over the 3,852 clean (no-smoke) frames from the **training sites only**

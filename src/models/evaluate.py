@@ -1,18 +1,27 @@
-"""Evaluate a trained detector the way an operator would judge it.
+"""Evaluate a trained detector the way the wildfire field actually judges one.
 
-Ultralytics reports mAP, which the research showed is close to meaningless for an
-amorphous, boundary-less object like smoke. So this script reframes evaluation as the
-decision the system actually makes: *given this frame, do we raise an alarm?*
+Ultralytics reports mAP, meaningless for an amorphous object like smoke, and F1, which
+weights a missed fire and a false alarm equally -- wrong for a domain where a missed fire
+is catastrophic and a false alarm costs a watchstander a glance (they review every "found
+fire" before dispatch). Operational camera networks (Pano, ALERTCalifornia) and satellite
+products (NOAA) don't optimize F1; they run at high detection rate and report the
+false-alarm BURDEN in operator units, and meteorology scores value across cost-loss ratios.
 
-For each test image we ask: did the model emit any box above the confidence
-threshold? That is the alarm. Then, image-level:
+So the HEADLINE here is recall-first:
 
-  - precision / recall / F1 over a confidence sweep  -> the PR curve, not one dot
-  - false alarms on the TRUE-NEGATIVE subset specifically -> the precision-collapse
-    number. These images contain no smoke; every alarm on them is the model firing
-    on clouds/fog/haze/glare, which is the documented single-frame failure mode.
+  - POD (probability of detection = recall) over a confidence sweep, and the MAX POD the
+    detector can reach at all -- the recall-first ceiling.
+  - at a target POD, the false-alarm burden as FALSE POSITIVES PER CAMERA PER DAY (Pano's
+    operational target is < 1), plus FAR (false-alarm ratio) and POFD.
+  - Relative Economic Value across cost-loss ratios C/L -- the meteorological score for
+    asymmetric costs; small C/L (misses dominate) is the wildfire regime.
 
-    python src/models/evaluate.py --weights runs/grouped/weights/best.pt --split grouped
+F1 and base-rate-corrected precision are still computed, but demoted to CONTEXT: the
+base-rate ("precision-collapse") number is the alarm-fatigue constraint -- how often a
+human gets pinged -- not a verdict that the detector is bad.
+
+    python src/models/evaluate.py --weights runs/grouped/weights/best.pt --split grouped \
+        --target-pod 0.90 --base-rate 0.01 --frames-per-day 500
 """
 
 from __future__ import annotations
@@ -73,14 +82,19 @@ def sweep(scores: np.ndarray, y_true: np.ndarray, thresholds: np.ndarray) -> lis
         prec = tp / (tp + fp) if (tp + fp) else 1.0
         rec = tp / n_pos if n_pos else 0.0
         f1 = 2 * prec * rec / (prec + rec) if (prec + rec) else 0.0
+        pofd = fp / n_neg if n_neg else 0.0  # prob of false detection (FA rate on negatives)
+        far = fp / (tp + fp) if (tp + fp) else 0.0  # false-alarm RATIO = 1 - precision (met. std)
         rows.append(
             {
                 "threshold": round(float(t), 3),
                 "precision": round(prec, 4),
-                "recall": round(rec, 4),
+                "recall": round(rec, 4),          # == POD / probability of detection / hit rate
+                "pod": round(rec, 4),             # explicit field-standard name
+                "far": round(far, 4),             # false-alarm ratio FP/(FP+TP) = 1 - precision
                 "f1": round(f1, 4),
+                "csi": round(tp / (tp + fp + fn), 4) if (tp + fp + fn) else 0.0,  # critical success index
                 "false_alarms_on_negatives": fp,
-                "false_alarm_rate_on_negatives": round(fp / n_neg, 4) if n_neg else 0.0,
+                "false_alarm_rate_on_negatives": round(pofd, 4),  # == POFD
             }
         )
     return rows
@@ -112,6 +126,64 @@ def base_rate_table(rows: list[dict], base_rates=(0.05, 0.01, 0.005)) -> list[di
     return out
 
 
+# --- domain-correct, asymmetric-cost metrics ------------------------------------
+# In wildfire detection a missed fire costs far more than a false alarm (a watchstander
+# reviews every "found fire" before dispatch). So the field -- operational camera nets
+# (Pano, ALERTCalifornia) and satellite products (NOAA) -- does not optimize F1. It runs
+# at high POD and reports the false-alarm BURDEN in operator units (false positives per
+# camera per day), and meteorology scores value across cost-loss ratios (relative economic
+# value). These helpers report the model that way.
+
+def false_alarms_per_camera_day(pofd: float, base_rate: float, frames_per_day: float) -> float:
+    """Expected FALSE alarms per camera per day at a deployment base rate.
+
+    A camera images a bearing every couple of minutes in daylight, so frames_per_day is an
+    ASSUMPTION (pyro-sdis is not a continuous feed). False alarms come from the clean-frame
+    stream: frames/day * P(clean) * POFD. Pano's operational target is < 1 per camera/day.
+    """
+    return frames_per_day * (1.0 - base_rate) * pofd
+
+
+def relative_economic_value(pod: float, pofd: float, base_rate: float, alpha: float) -> float:
+    """Relative economic value (Richardson 2000) at cost-loss ratio alpha = C/L.
+
+    The meteorological answer to asymmetric costs. C is the cost of acting on an alarm
+    (a human review), L the loss from a missed fire; alpha = C/L is small when misses
+    dominate -- the wildfire regime. REV scores the forecast from 0 (no better than the
+    climatological default of always/never alarming) to 1 (perfect), for a user with this
+    alpha. s = base rate, H = POD, F = POFD.
+    """
+    s, H, F = base_rate, pod, pofd
+    e_forecast = alpha * (s * H + (1 - s) * F) + s * (1 - H)
+    e_climate = min(alpha, s)
+    e_perfect = alpha * s
+    den = e_climate - e_perfect
+    return (e_climate - e_forecast) / den if den else float("nan")
+
+
+def recall_first_point(rows: list[dict], base_rate: float, frames_per_day: float,
+                       target_pod: float = 0.90):
+    """Highest-POD operating point at/above target_pod, with its false-alarm burden.
+
+    Recall-first: pick the lowest threshold reaching the required detection rate, then
+    report what that costs in false alarms per camera per day. If target_pod is
+    unreachable, return the max-POD row instead (flagged)."""
+    reachable = [r for r in rows if r["recall"] >= target_pod]
+    if reachable:
+        r = min(reachable, key=lambda r: r["threshold"])  # lowest thr = highest recall margin
+        met = True
+    else:
+        r = max(rows, key=lambda r: r["recall"])
+        met = False
+    return {
+        "target_pod": target_pod, "target_met": met, "threshold": r["threshold"],
+        "pod": r["recall"], "far": r.get("far"),
+        "pofd": r["false_alarm_rate_on_negatives"],
+        "false_alarms_per_camera_day": round(
+            false_alarms_per_camera_day(r["false_alarm_rate_on_negatives"], base_rate, frames_per_day), 2),
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--weights", required=True)
@@ -119,6 +191,12 @@ def main() -> None:
     ap.add_argument("--part", default="test", choices=["test", "val", "train"])
     ap.add_argument("--imgsz", type=int, default=640)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--target-pod", type=float, default=0.90,
+                    help="recall-first operating point: minimum detection rate to hold")
+    ap.add_argument("--base-rate", type=float, default=0.01,
+                    help="assumed deployment base rate of smoke frames")
+    ap.add_argument("--frames-per-day", type=float, default=500.0,
+                    help="assumed frames imaged per camera-bearing per day (for FP/camera/day)")
     args = ap.parse_args()
 
     device = pick_device()
@@ -133,35 +211,50 @@ def main() -> None:
     thresholds = np.round(np.arange(0.05, 0.96, 0.05), 2)
     rows = sweep(scores, y_true, thresholds)
 
-    best = max(rows, key=lambda r: r["f1"])
-    print(f"\noperating point (best-F1 @ conf={best['threshold']}):")
-    print(f"  precision {best['precision']:.3f}  recall {best['recall']:.3f}  F1 {best['f1']:.3f}")
-    print(f"  false alarms on {int((1 - y_true).sum())} negatives: "
-          f"{best['false_alarms_on_negatives']} "
-          f"({best['false_alarm_rate_on_negatives'] * 100:.1f}% of clean frames)")
-
-    print("\nconf   prec   recall  F1     FA-on-neg")
-    for r in rows:
-        print(f"{r['threshold']:.2f}   {r['precision']:.3f}  {r['recall']:.3f}   "
-              f"{r['f1']:.3f}  {r['false_alarm_rate_on_negatives'] * 100:5.1f}%")
-
-    br = base_rate_table(rows)
     test_p = float(y_true.mean())
-    print(f"\nprecision-collapse: aggregate precision above is inflated by this test set's")
-    print(f"{test_p * 100:.0f}%-positive base rate. At realistic deployment base rates:")
-    print(f"  conf   recall   FPR   | prec@5%  prec@1%  prec@0.5%")
-    for e in br:
-        if e["threshold"] not in (0.05, 0.10, 0.20, 0.30, 0.50):
-            continue
-        print(f"  {e['threshold']:.2f}   {e['recall']:.3f}  {e['fpr_on_negatives']:.3f} | "
-              f"{e['precision@0.05'] * 100:6.1f}%  {e['precision@0.01'] * 100:6.1f}%  "
-              f"{e['precision@0.005'] * 100:6.1f}%")
+
+    # --- HEADLINE: recall-first, the domain-correct framing ---------------------
+    rf = recall_first_point(rows, args.base_rate, args.frames_per_day, args.target_pod)
+    max_pod = max(r["recall"] for r in rows)
+    print(f"\n=== RECALL-FIRST (a missed fire >> a false alarm) ===")
+    print(f"max reachable POD (detection rate): {max_pod:.3f}")
+    tag = "" if rf["target_met"] else "  [TARGET UNREACHABLE -- reporting max-POD point]"
+    print(f"operating point @ POD>={args.target_pod:.2f}{tag}  (conf {rf['threshold']}):")
+    print(f"  POD {rf['pod']:.3f}   FAR {rf['far']:.3f}   POFD {rf['pofd']:.3f}")
+    print(f"  false-alarm burden ~ {rf['false_alarms_per_camera_day']:.1f} FP/camera/day "
+          f"(@ base rate {args.base_rate}, {args.frames_per_day:.0f} frames/day)")
+    print(f"  Pano's operational target is < 1 FP/camera/day -- the gap is the work left.")
+
+    # --- Relative Economic Value across cost-loss ratios (asymmetric-cost score) -
+    alphas = (0.002, 0.01, 0.05, 0.1)
+    print(f"\nRelative Economic Value at the recall-first point, by cost-loss ratio C/L:")
+    print(f"  (small C/L = misses dominate = the wildfire regime; REV in [0,1], higher better)")
+    rf_row = next(r for r in rows if r["threshold"] == rf["threshold"])
+    rev = {}
+    for a in alphas:
+        v = relative_economic_value(rf_row["recall"], rf_row["false_alarm_rate_on_negatives"],
+                                    args.base_rate, a)
+        rev[a] = round(v, 4)
+        print(f"    C/L={a:<6}: REV={v:+.3f}")
+
+    # --- context (demoted): best-F1 and the alarm-fatigue / base-rate table ------
+    best = max(rows, key=lambda r: r["f1"])
+    br = base_rate_table(rows)
+    print(f"\n(context) best-F1 point: conf {best['threshold']}, POD {best['recall']:.3f}, "
+          f"FAR {best['far']:.3f}, F1 {best['f1']:.3f} -- F1 balances the two errors equally, "
+          f"which this domain does not.")
+    print(f"(context) alarm-fatigue check -- deployment precision at base rate {args.base_rate}: "
+          f"{precision_at_base_rate(rf_row['recall'], rf_row['false_alarm_rate_on_negatives'], args.base_rate)*100:.1f}%")
 
     out = Path(args.out) if args.out else ROOT / "runs" / f"eval_{args.split}_{args.part}.json"
     out.write_text(json.dumps({"split": args.split, "part": args.part,
                                "n_images": len(images), "n_positive": int(y_true.sum()),
                                "test_base_rate": round(test_p, 4),
-                               "best": best, "sweep": rows,
+                               "deployment_base_rate": args.base_rate,
+                               "frames_per_day": args.frames_per_day,
+                               "max_pod": round(max_pod, 4),
+                               "recall_first": rf, "rev_by_cost_loss": rev,
+                               "best_f1": best, "sweep": rows,
                                "base_rate_corrected": br}, indent=2))
     print(f"\nsaved -> {out}")
 
