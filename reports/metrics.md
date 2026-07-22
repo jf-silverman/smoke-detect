@@ -24,7 +24,7 @@ objective is not recall at any cost. It is:
 ## What the field actually reports
 
 - **Operational camera networks** — the closest analog to this project — headline two numbers,
-  and F1 is not among them. [Pano AI](https://www.pano.ai/) and
+  and F1 is not among them. [Pano AI](https://www.pano.ai/solution) and
   [ALERTCalifornia](https://www.kpbs.org/news/science-technology/2026/05/05/states-across-the-wildfire-prone-western-us-are-using-ai-for-early-detection)
   (1,060+ cameras) track **time-to-detection** and **false-positives-per-camera-per-day**. Pano's
   stated operating point: detection within ~15 min of ignition at **< 1 false positive per camera

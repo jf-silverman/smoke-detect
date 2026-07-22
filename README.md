@@ -133,8 +133,9 @@ Full-scale runs are one flag change (drop `--fraction`, raise `--epochs`).*
 - Govil, K., Welch, M. L., Ball, J. T., & Pennypacker, C. R. (2020). Preliminary results from a
   wildfire detection system using deep learning on remote camera images. *Remote Sensing,
   12*(1), 166. https://doi.org/10.3390/rs12010166
-- Pano AI. (2024). *Pano Rapid Detect: AI-based wildfire detection* [Product documentation].
-  https://www.pano.ai/
+- Pano AI. (2024). *Pano Rapid Detect: solution overview* [Product page]. https://www.pano.ai/solution
+  (dual-camera 360° stations, patented triangulation for GPS geolocation; the < 1 false-positive-
+  per-camera-per-day figure is Pano's own operational claim, not a peer-reviewed result).
 - Pyronear. (2025). *pyro-sdis* [Dataset]. Hugging Face.
   https://huggingface.co/datasets/pyronear/pyro-sdis
 
