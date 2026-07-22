@@ -23,7 +23,7 @@ representatives pulled per cluster, and each cluster labeled by eye from the mon
 
 The detector does not fail on a long tail of exotic edge cases. It fails, three times out of
 four, on **clouds** — bright cumulus, backlit stratus, broken overcast on a ridgeline. This is
-the literature's "it screams smoke at every cloud," measured and quantified on real camera data.
+the documented single-frame failure mode of firing on nearly every cloud, measured and quantified on real camera data.
 It is also *why the temporal model didn't help* ([temporal findings](temporal-findings.md)):
 clouds are persistent, not flicker, so no temporal smoothing removes them — but they are a
 learnable appearance, which is exactly why [hard-negative mining](hard-negative-findings.md)

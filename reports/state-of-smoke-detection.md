@@ -25,7 +25,7 @@ partitioning." A realistic, diverse benchmark sits around **70% F1**.
 The GAO's institutional verdict is bluntly agnostic: the effectiveness of these technologies
 "is still being assessed." And an Alberta study of 4,934 fires found each hour of
 reporting-delay reduction cut suppression cost by only **~0.25%** — which doesn't make
-detection worthless, but does mean the standard "early detection saves money" pitch is weakly
+detection worthless, but does mean the standard early-detection-saves-money pitch is weakly
 supported. The real payoff (avoided catastrophic tail events, evacuation lead time) is not
 what most papers measure.
 
@@ -65,7 +65,7 @@ SmokeyNet's ablation on FIgLib is unusually clean:
 
 Read the precision column, not the accuracy column. **Temporal context buys +26 points of
 precision over the single-frame CNN.** The single-frame model has 90% recall at 63% precision
-— it screams "smoke" at every cloud. The entire gain from temporal modeling is
+— it fires on every cloud. The entire gain from temporal modeling is
 **false-positive suppression**, exactly as the ambiguity argument predicts. PyroNear
 independently corroborates: their CNN-LSTM adds +9.3% recall at equal precision over a
 single-frame YOLOv8s, and cuts detection time from 1:46 to 1:05.
@@ -84,12 +84,12 @@ monitoring; ground cameras do early detection. Don't conflate them.
 |---|---|---|---|
 | **pyro-sdis** | 3.28 GB, 33,636 imgs (28,103 w/ smoke) | **Apache-2.0** | ✅ Best start. YOLO-ready, real tower imagery, far/small/low-contrast plumes. *Verified directly.* |
 | **D-Fire** | ~2–4 GB, 21,527 imgs | **CC0** | ✅ Best negatives — 9,838, incl. deliberate fire-like distractors. Varied cameras, so no fixed-background leakage. |
-| **FIgLib** | ~30 GB, ~25k imgs, 315 fires | none ("as-is") | ✅ Where the real problem lives: 81-frame sequences at ±40 min from ignition. Enables time-to-detection. |
+| **FIgLib** | ~30 GB, ~25k imgs, 315 fires | none (provided as-is) | ✅ Where the real problem lives: 81-frame sequences at ±40 min from ignition. Enables time-to-detection. |
 | **Nemo** | 1.12 GB, 2,934 imgs | Apache-2.0 | ✅ Only dataset with **density ordinals** (low/mid/high). Cheap novelty. |
 | FASDD | ~95k imgs | unclear | ⚠️ Preprint **withdrawn by its own authors**; aggregates other public sets (contaminated). |
 | FLAME | 41.7 GB | IEEE login | ⚠️ A *single prescribed burn* shot continuously. Near-degenerate; you'll hit 99% and it means nothing. |
 | Smoke100k / SMOKE5K | — | NC / unclear | ⚠️ Synthetic. Pretraining only; fatal if used for evaluation. |
-| "RIS-Fire" | — | — | ❌ **Does not appear to exist.** Nearest real thing is FireRisk, a land-cover task. |
+| RIS-Fire | — | — | ❌ **Does not appear to exist.** Nearest real thing is FireRisk, a land-cover task. |
 
 ### The trap you must not fall into
 
@@ -109,9 +109,9 @@ and its ~50/50 class balance is artificial. Real deployment has a minuscule prio
 a model tuned on FIgLib's balance will produce a far worse false-positive rate than its PR
 curve suggests.
 
-## 5. How to measure performance — and what "good" is
+## 5. How to measure performance — and what good means
 
-Do **not** lead with accuracy (a trivial "no smoke" classifier scores near-100% at real base
+Do **not** lead with accuracy (a trivial always-negative classifier scores near-100% at real base
 rates), and do not lead with mAP (IoU is structurally wrong for a boundary-less object).
 
 **Report instead:**
@@ -172,8 +172,8 @@ fixed point is not. **That is a causal story about the data, which is what disti
 scientist from someone who can call `.fit()`.**
 
 **Stage 3 — Report what nobody reports.** Time-to-detection, false-positives-per-camera-per-day,
-and a held-out-camera generalization number *even though it will be worse* ("94% on a random
-split, 71% when I hold out cameras"). Then evaluate zero-shot on D-Fire to quantify domain shift.
+and a held-out-camera generalization number *even though it will be worse* (94% on a random
+split, 71% when whole cameras are held out). Then evaluate zero-shot on D-Fire to quantify domain shift.
 
 **Optional high-leverage extension:** build a **curated hard-negative corpus** — fog banks,
 marine layer, dust, glare, contrails, prescribed burns — with per-confuser error breakdowns.
@@ -196,7 +196,7 @@ with."*
 
 > **Update (post-experiment).** This section is the research *plan*, written before building
 > anything. The experiments revised it on one major point. Stage 2 predicted a temporal model
-> would be "the differentiator" that fixes the precision collapse. It was built and it **did not
+> would be the differentiator that fixes the precision collapse. It was built and it **did not
 > transfer to pyro-sdis** — at matched recall no temporal method beat the single-frame detector,
 > because 76% of the false alarms are *persistent* confusers (not the flicker temporal models
 > suppress) and this dataset's short bursts lack FIgLib's ignition-onset dynamics. The fix that

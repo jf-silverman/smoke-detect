@@ -28,7 +28,7 @@ roughly by leverage. Completed threads have their own findings reports (see the 
   making over the frame stream: at each step, alarm or wait, with a reward that heavily penalizes
   a missed or late detection and only lightly penalizes a false alarm — the RL-shaped encoding of
   the [asymmetric-cost / recall-first](resolution-findings.md) objective. Closely related to
-  "early classification of time series." Builds directly on the temporal work
+  the early-classification-of-time-series problem. Builds directly on the temporal work
   ([temporal-findings.md](temporal-findings.md), [figlib-findings.md](figlib-findings.md)).
   Precedent for RL *around* detection (not the classifier): EcoWild (energy-adaptive sensing),
   ForestProtector (PTZ camera orientation control).

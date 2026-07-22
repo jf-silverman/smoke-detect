@@ -21,7 +21,7 @@ Neither half would have produced this arc alone.
 | # | Step | Result | Whose move |
 |--:|---|---|---|
 | 1 | Survey datasets, methods, metrics; write a state-of-the-field report | Framed the whole project around benchmark-vs-field honesty | Human set the frame; AI executed the survey |
-| 2 | Leak-safe splits on pyro-sdis | Caught that 40 "cameras" = 8 physical towers; held out whole sites | AI (bug caught by inspection) |
+| 2 | Leak-safe splits on pyro-sdis | Caught that 40 camera IDs = 8 physical towers; held out whole sites | AI (bug caught by inspection) |
 | 3 | Single-frame YOLO baseline | Reproduced the precision collapse: 42% false alarms on clean frames | AI |
 | 4 | Base-rate correction | Precision at 1% deployment base rate = **1.6%** — the field number | AI |
 | 5 | Hard-negative mining | False alarms **42% → 20%**; precision@1% doubled | Human said go; AI built |
@@ -32,13 +32,14 @@ Neither half would have produced this arc alone.
 
 ## The turns worth remembering
 
-**The honest frame came first, from the human.** The opening instruction was not "build a smoke
-detector" but "measure what a detector would actually do in the field." Every later decision —
+**The honest frame came first, from the human.** The opening instruction was not to build a
+smoke detector but to measure what a detector would actually do in the field. Every later
+decision —
 site-holdout splits, operator metrics, base-rate correction — descends from that frame. An AI
 left to optimize a number would have reported mAP and moved on.
 
-**The AI's job was partly to distrust itself.** Two subagents attributed a "79% field
-false-positive rate" to SmokeyNet; verification against the primary source showed it belonged to
+**The AI's job was partly to distrust itself.** Two subagents attributed a 79% field
+false-positive rate to SmokeyNet; verification against the primary source showed it belonged to
 a different system (Govil et al.), and SmokeyNet was never field-deployed at all. The class-id
 remap (pyro-sdis ships smoke as class `1`; Ultralytics expects `0`) would have silently trained
 the model on zero positives if it hadn't been caught. Speed is only useful with a verification
@@ -75,13 +76,13 @@ pyro-sdis, where the same rule *raised* them.
 
 The AI had the mechanism right (temporal helps on onset data) but had misattributed the failure
 to something expensive to fix. The human's instinct about resolution — cheap to test, easy to
-overlook — was the difference between "confounded, needs a big retrain" and "confirmed."
+overlook — was the difference between a confounded result needing a big retrain and a confirmed one.
 
 The insight then paid a second dividend. The human asked whether resolution had been costing us
 on pyro-sdis all along. It had: re-running the baseline at native 1280 instead of 640 lifted
 recall from 0.68 to 0.86 (+18 points) — the detector had simply been blind to smoke too small to
 survive downscaling. One question, asked once, surfaced a lever on both datasets. That is the
-pattern: the human keeps asking "are we sure we're not throwing information away?", and the AI
+pattern: the human keeps asking whether we are throwing information away, and the AI
 can answer each instance in minutes.
 
 ## Why this is the interesting story
@@ -91,7 +92,7 @@ human or a solo model would both have run more slowly and less well:
 
 - The AI could build a leak-safe pipeline, a base-rate correction, a hard-negative miner, a
   temporal model, a clustering corpus, and a tiled-inference probe in the time it takes to
-  discuss them — and could be trusted to say "this didn't work" out loud.
+  discuss them — and could be trusted to say plainly when something did not work.
 - The human kept the project pointed at honesty over vanity metrics, chose the threads that
   mattered, and supplied the one piece of physical intuition — *small objects die under
   downscaling* — that no amount of pipeline speed would have surfaced on its own.

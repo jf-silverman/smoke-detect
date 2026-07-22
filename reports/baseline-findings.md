@@ -38,7 +38,7 @@ raises that ceiling). *(For reference, the best-F1 point is conf 0.05: precision
 The 0.938 precision above is **an artifact of the test set's 90%-positive base rate** — not a
 field number. The honest signal is the burden: at that operating point, **42% of the clean,
 no-smoke frames triggered a false alarm** — the single-frame model firing on clouds, fog, and
-glare, exactly as the literature predicts. This is not a verdict that the model is "bad"; it is
+glare, exactly as the literature predicts. This is not a verdict that the model is failing; it is
 the *alarm-fatigue constraint* — how often a watchstander gets pinged — which is what governs
 whether a high-recall detector is actually reviewable.
 
@@ -54,7 +54,7 @@ measured recall (TPR) and false-alarm-rate (FPR) at realistic base rates:
 
 **At a 1% deployment base rate, the naive 94% precision would be ~2%.** This is the benchmark-vs-
 field gap the state-of-the-art report warned about, reproduced on our own model — and it is why a
-"94% precision!" headline is meaningless here. Framed correctly (see [metrics.md](metrics.md)),
+a headline of 94% precision is meaningless here. Framed correctly (see [metrics.md](metrics.md)),
 this is the alarm-fatigue constraint, and the relative-economic-value view makes the verdict
 sharp: at the cost-loss ratios where misses dominate, this detector adds only marginal value —
 it misses ~32% of fires *and* over-alarms — so both levers below are needed.

@@ -46,7 +46,7 @@ Three score functions, identical held-out towers ([`compare_temporal.py`](../src
 
 - **single-frame** — the detector's per-frame max confidence (the baseline)
 - **persistence** — rolling min of confidence over the last 8 frames (the interpretable
-  temporal rule: "only alarm if the evidence persisted")
+  temporal rule that only alarms if the evidence persisted)
 - **temporal-gru** — a learned GRU head over the confidence sequence
 
 False-alarm rate on clean frames (lower is better):

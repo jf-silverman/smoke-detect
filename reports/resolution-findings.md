@@ -3,7 +3,7 @@
 Two threads converge here. First, a question raised during the FIgLib work — *are we losing
 small smoke by downscaling?* — which turned out to matter on pyro-sdis too. Second, the
 domain-correct framing that in wildfire detection **a missed fire is far worse than a false
-alarm** (a watchstander reviews every "found fire" before resources are dispatched), so the
+alarm** (a watchstander reviews every candidate detection before resources are dispatched), so the
 objective is not best-F1 but **maximize recall subject to a false-alarm rate a human can still
 triage.** Resolution turns out to be a lever on exactly the thing that objective cares about:
 the *reachable recall range*.
@@ -18,7 +18,7 @@ running at native 1280 is the equivalent move.)
 
 ## Three configurations, and the recall-first lens
 
-Same honest grouped test set (held-out towers). "640-train" is the original proof baseline.
+Same honest grouped test set (held-out towers). The 640-train row is the original proof baseline.
 
 | configuration | **max reachable recall** | FA at recall 0.55 | notes |
 |---|---:|---:|---|

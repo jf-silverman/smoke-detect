@@ -8,7 +8,7 @@ field actually uses, and what we adopted.
 ## The asymmetric cost
 
 A **missed fire** can cost lives and millions of dollars. A **false alarm** costs a watchstander
-a few seconds — every operational system keeps a human in the loop who reviews each "found fire"
+a few seconds — every operational system keeps a human in the loop who reviews each candidate detection
 before suppression resources are dispatched. The loss function is steeply asymmetric, and any
 score that weights a false negative like a false positive (F1, accuracy, and the Critical Success
 Index all do) is miscalibrated for this domain.
@@ -16,7 +16,7 @@ Index all do) is miscalibrated for this domain.
 The reason false alarms are not *free*, though, is **alarm fatigue**: if the false-positive rate
 is high enough, operators stop trusting the alarms and real ones get ignored too — the failure
 mode behind the field's cautionary tale of a system with a 79% field false-positive rate. So the
-objective is not "recall at any cost." It is:
+objective is not recall at any cost. It is:
 
 > **maximize the detection rate subject to a false-alarm rate low enough that a human still
 > reviews every alarm** — i.e. false-positives-per-camera-per-day within a watchstander's budget.
@@ -31,7 +31,7 @@ objective is not "recall at any cost." It is:
   per day**.
 - **Academic smoke detection** (SmokeyNet / FIgLib, and the
   [multimodal work](https://arxiv.org/pdf/2212.14143)) leads with **time-to-detection** (3.7–4.9
-  min; "% of fires detected within 5 min") and **probability of detection (POD = recall)**.
+  min; the share of fires detected within 5 min) and **probability of detection (POD = recall)**.
 - **Government / satellite** ([NOAA GOES active fire](https://www.star.nesdis.noaa.gov/goesr/product_land_fire.php),
   the new [Next-Gen Fire System](https://www.noaa.gov/news-release/noaa-unveils-powerful-convergence-of-ai-and-science-with-revolutionary-next-generation-fire-system))
   validate against airborne truth with the meteorology triad: **POD** (hit rate), **FAR**
@@ -68,7 +68,7 @@ caveat):
 
 Read the last column — the misses-dominate regime this domain lives in. **No proof config reaches
 positive value there**: even at POD 0.86 you miss 14% of fires while generating ~388 false alarms
-a day, so "alarm on everything" still competes. The least-bad is the highest-POD config (native-
+a day, so alarming on everything still competes. The least-bad is the highest-POD config (native-
 resolution inference), because in that regime *reducing misses* is what buys value. That is the
 whole recall-first argument, quantified: push POD up (resolution, a converged full-scale model),
 then drive the false-alarm burden down (hard-negative mining, the confuser corpus) toward the < 1
