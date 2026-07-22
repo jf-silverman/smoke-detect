@@ -8,9 +8,9 @@ real sequence: what we tested, what broke, and which move unlocked the next.
 The through-line is a division of labor that kept paying off:
 
 - **The AI** supplied breadth and speed — surveying datasets, writing the pipeline, catching
-  silent bugs, running experiments, and (importantly) reporting negative results honestly
+  silent bugs, running experiments, and (importantly) reporting negative results in full
   instead of burying them.
-- **The human** supplied direction and domain judgment — setting the honest-evaluation frame,
+- **The human** supplied direction and domain judgment — setting the field-realistic-evaluation frame,
   choosing which thread to pull, and, at the decisive moment, asking the physics question that
   rescued an experiment the AI had written off.
 
@@ -20,19 +20,19 @@ Neither half would have produced this arc alone.
 
 | # | Step | Result | Whose move |
 |--:|---|---|---|
-| 1 | Survey datasets, methods, metrics; write a state-of-the-field report | Framed the whole project around benchmark-vs-field honesty | Human set the frame; AI executed the survey |
+| 1 | Survey datasets, methods, metrics; write a state-of-the-field report | Framed the whole project around the benchmark-vs-field gap | Human set the frame; AI executed the survey |
 | 2 | Leak-safe splits on pyro-sdis | Caught that 40 camera IDs = 8 physical towers; held out whole sites | AI (bug caught by inspection) |
 | 3 | Single-frame YOLO baseline | Reproduced the precision collapse: 42% false alarms on clean frames | AI |
 | 4 | Base-rate correction | Precision at 1% deployment base rate = **1.6%** — the field number | AI |
 | 5 | Hard-negative mining | False alarms **42% → 20%**; precision@1% doubled | Human said go; AI built |
-| 6 | Temporal model (the literature's expected fix) | **Negative result** — no gain on pyro-sdis; 76% of confusers are persistent, not flicker | Human said go; AI built *and* reported the null honestly |
+| 6 | Temporal model (the literature's expected fix) | **Negative result** — no gain on pyro-sdis; 76% of confusers are persistent, not flicker | Human said go; AI built *and* reported the null result plainly |
 | 7 | Typed confuser corpus | **74% of false alarms are clouds** — an original artifact | Human chose this direction |
 | 8 | FIgLib positive control (onset data) | First run confounded: detector AUC **0.454**, worse than random | Human asked to run it |
 | 9 | Native-resolution tiled inference | AUC **0.454 → 0.658**; positive control then lands, temporal cuts false alarms 12–19 pts | **Human's resolution question**; AI tested it |
 
 ## The turns worth remembering
 
-**The honest frame came first, from the human.** The opening instruction was not to build a
+**The field-realistic frame came first, from the human.** The opening instruction was not to build a
 smoke detector but to measure what a detector would actually do in the field. Every later
 decision —
 site-holdout splits, operator metrics, base-rate correction — descends from that frame. An AI
@@ -59,8 +59,8 @@ literature review had specifically flagged as missing from the field.
 
 **And then the decisive moment.** The FIgLib positive control — meant to confirm that temporal
 helps on onset data — came back broken: the detector scored AUC 0.454, worse than a coin flip.
-The AI diagnosed it as domain shift (a French-tower detector loose in California) and had begun
-scoping an expensive in-domain retrain as the only way forward. Then the human asked a plain
+The AI diagnosed it as distribution shift (a French-tower detector loose in California) and had begun
+scoping an expensive in-distribution retrain as the only way forward. Then the human asked a plain
 question:
 
 > *"Did you say there were high-res images? Would that be worth anything? I'm especially thinking
@@ -93,7 +93,7 @@ human or a solo model would both have run more slowly and less well:
 - The AI could build a leak-safe pipeline, a base-rate correction, a hard-negative miner, a
   temporal model, a clustering corpus, and a tiled-inference probe in the time it takes to
   discuss them — and could be trusted to say plainly when something did not work.
-- The human kept the project pointed at honesty over vanity metrics, chose the threads that
+- The human kept the project pointed at real-world value over vanity metrics, chose the threads that
   mattered, and supplied the one piece of physical intuition — *small objects die under
   downscaling* — that no amount of pipeline speed would have surfaced on its own.
 

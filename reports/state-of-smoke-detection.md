@@ -148,7 +148,7 @@ catalogue of camera-first detections.** That absence is itself a finding.
 - **Behind a ridge.** Invisible until the plume tops it — by which point early detection is moot.
 - **Already-large fires.** Detection is pointless; everyone already knows.
 
-**The honest framing:** on a clear afternoon with a good sky background, smoke detection is
+**The realistic framing:** on a clear afternoon with a good sky background, smoke detection is
 close to solved. What is *not* solved is the false-positive rate at operational base rates,
 night, generalization across cameras and geographies, and the human dispatch pipeline the alert
 lands in. **The bottleneck is the deployment envelope, not the backbone.** Every deployed system
@@ -173,7 +173,7 @@ scientist from someone who can call `.fit()`.**
 
 **Stage 3 — Report what nobody reports.** Time-to-detection, false-positives-per-camera-per-day,
 and a held-out-camera generalization number *even though it will be worse* (94% on a random
-split, 71% when whole cameras are held out). Then evaluate zero-shot on D-Fire to quantify domain shift.
+split, 71% when whole cameras are held out). Then evaluate zero-shot on D-Fire to quantify distribution shift.
 
 **Optional high-leverage extension:** build a **curated hard-negative corpus** — fog banks,
 marine layer, dust, glare, contrails, prescribed burns — with per-confuser error breakdowns.

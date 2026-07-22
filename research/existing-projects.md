@@ -67,7 +67,7 @@ inline where a resource turned out to be stale, gated, or unverifiable.
 - Tutorial: https://github.com/aiformankind/wildfire-smoke-detection-camera
 - TensorFlow Faster R-CNN / ResNet101 on 744 hand-annotated HPWREN images (XML bboxes).
   Published variants: SuperDuper-v1 (0.75 AP@0.5), v2 (0.87 AP), edge (0.68 AP).
-- Reports honest failure modes: 8.6% average false-positive rate, **39.8% in fog**.
+- Reports its failure modes plainly: 8.6% average false-positive rate, **39.8% in fog**.
 - Docs quality 4/5. Closest analog to a well-scoped portfolio project — small enough to
   train in Colab, structured as an explicit tutorial.
 - **Caveat:** TF 1.x-era Faster R-CNN code; check version pinning before depending on it.
@@ -105,7 +105,7 @@ inline where a resource turned out to be stale, gated, or unverifiable.
 
 - **Data:** FIgLib for authenticity, Roboflow's public set for a fast YOLO-formatted MVP.
 - **Structure:** RihabFekii for MLOps hygiene, Abonia1 for presentation, AI For Mankind for
-  how to scope a small detector and report failure modes honestly.
+  how to scope a small detector and report failure modes plainly.
 - **Systems thinking:** Pyronear.
 - **Don't try to reproduce:** ALERTWildfire, FireSat, Descartes Labs.
 

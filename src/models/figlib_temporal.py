@@ -19,9 +19,9 @@ Split is by FIRE (whole sequences held out), the leak-safe analogue of site-hold
     python src/models/figlib_temporal.py --extract   # once, caches features
     python src/models/figlib_temporal.py             # train + compare
 
-Caveat: the detector is pyro-sdis-trained, so this is also a zero-shot domain transfer
+Caveat: the detector is pyro-sdis-trained, so this is also a zero-shot distribution transfer
 (French towers -> California). We first check the single-frame signal is usable (AUC well
-above 0.5); if it were not, a null temporal result would be confounded by domain shift.
+above 0.5); if it were not, a null temporal result would be confounded by distribution shift.
 """
 
 from __future__ import annotations

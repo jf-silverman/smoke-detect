@@ -104,7 +104,7 @@ def precision_at_base_rate(tpr: float, fpr: float, p: float) -> float:
     """Precision the model WOULD show at deployment base rate p.
 
     Aggregate precision on a smoke-heavy test set is flattered by the base rate.
-    Real towers see smoke on a tiny fraction of frames, so the honest question is:
+    Real towers see smoke on a tiny fraction of frames, so the real question is:
     given this recall (TPR) and this false-alarm rate on clean frames (FPR), what
     precision results when positives are rare? This is the precision-collapse made
     explicit -- and it is the number that predicts field usability.

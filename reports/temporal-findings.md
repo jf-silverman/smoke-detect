@@ -81,7 +81,7 @@ at the scale FIgLib does. We tested this directly — see [figlib-findings.md](f
 the same persistence rule that *hurts* here flips to *helping* by up to 13.8 points on FIgLib's
 onset sequences, confirming the mechanism from the opposite direction.
 
-## Honest caveats
+## Caveats
 
 - **This is a frozen-detector head, not end-to-end.** We put a temporal head on the baseline
   detector's per-frame evidence rather than training a CNN+LSTM jointly on pixels. A fully

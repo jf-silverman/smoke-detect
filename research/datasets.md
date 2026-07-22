@@ -146,7 +146,7 @@ Free and open, but **no smoke labels**. Building them is a project unto itself. 
 ## Recommended project shape
 
 Train on **pyro-sdis** → evaluate on a **held-out-camera** split → evaluate zero-shot on
-**FIgLib** and **D-Fire** to quantify domain shift → add a temporal head on **FIgLib** and
+**FIgLib** and **D-Fire** to quantify distribution shift → add a temporal head on **FIgLib** and
 report **time-to-detection** instead of accuracy.
 
 ## Works Cited
@@ -189,4 +189,4 @@ FASDD (withdrawn preprint, https://doi.org/10.57760/sciencedb.j00104.00103), Fir
 (arXiv:2303.07035), FLAME/FLAME2 (IEEE DataPort), Smoke100k
 (https://bigmms.github.io/cheng_gcce19_smoke100k/), Corsican Fire DB, BoWFire.</sub>
 
-Four honest numbers and one uncomfortable, well-explained drop. Worth more than any 0.97 mAP.
+Four real numbers and one uncomfortable, well-explained drop. Worth more than any 0.97 mAP.

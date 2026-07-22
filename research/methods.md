@@ -71,14 +71,14 @@ threshold fragility (optimal confidence thresholds ranged **0.04–0.19**).
 Pyronear ships YOLOv8 on Raspberry Pi and found **YOLOv9/v10 did not beat v8.**
 
 ### Segmentation (U-Net / DeepLab / SegFormer) — the alpha-matte view
-Conceptually the most honest framing: predict per-pixel smoke *density*, not a box.
+Conceptually the most faithful framing: predict per-pixel smoke *density*, not a box.
 
 The field's most interesting trick and its biggest validity risk are the same thing:
 **synthetic compositing** (SYN70K). Linear alpha compositing is *not* how real smoke scatters
 light, so models trained on it may be fitting the compositing operator. MIFNet reports mIoU
 81.6% on SYN70K [abstract-only] — on synthetic data.
 
-Failure modes: synthetic→real domain gap; boundary mIoU is near-meaningless on a gradient;
+Failure modes: synthetic→real distribution gap; boundary mIoU is near-meaningless on a gradient;
 whole-sky fog becomes a whole-image mask.
 
 ### Temporal / spatiotemporal — **the key family**
@@ -132,7 +132,7 @@ alone under-model smoke.
 doing this was found. The nearest prior art is **LangGas** (language-guided zero-shot
 detection of semi-transparent *gas leaks*, https://arxiv.org/pdf/2503.02910) — same physics,
 plausible to port. Interesting as a stretch section; do **not** stake the project on it. (SAM
-is known to degrade badly out-of-domain: https://arxiv.org/pdf/2401.08787)
+is known to degrade badly out-of-distribution: https://arxiv.org/pdf/2401.08787)
 
 ### Satellite / multispectral — a *different problem*, not a harder one
 Physics, not appearance: MIR/TIR brightness-temperature contrast, reflectance ratios, aerosol
@@ -172,7 +172,7 @@ Ground cameras answer "is a fire starting now." Satellites answer "where is the 
 
 ## Recommendation
 
-**Baseline: tiled CNN classifier on FIgLib, evaluated honestly.** ResNet34/EfficientNet-B0
+**Baseline: tiled CNN classifier on FIgLib, evaluated rigorously.** ResNet34/EfficientNet-B0
 over 224×224 tiles, split by fire, reported as P/R/F1 + time-to-detection + false-alarms-per-day.
 **The point is not the number — it is to reproduce the precision collapse.** Showing 90%
 recall at 63% precision and diagnosing that every false positive is a cloud is a better
@@ -186,7 +186,7 @@ Because:
    interviews actually test.
 2. It forces every hard engineering decision to be visible: tile grid, tile-label derivation,
    sequence-aware splits, class imbalance.
-3. It gives you an honest hard-negative-mining chapter: mine the baseline's false positives
+3. It gives you a real hard-negative-mining chapter: mine the baseline's false positives
    (they'll be clouds), retrain with OHEM, show the precision curve move.
 4. It's cheap: 56.9M params, 51.6 ms/frame, public data.
 

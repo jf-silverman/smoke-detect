@@ -1,6 +1,6 @@
 """Grouped train/val/test splits for pyro-sdis.
 
-The whole point of this module is to make the evaluation honest.
+The whole point of this module is to make the evaluation leak-safe.
 
 pyro-sdis images come from fixed detection towers. Each record carries a `camera`
 string like `brison-200` or `cabanelle-125`, where the trailing number is the
@@ -17,7 +17,7 @@ means anything for deployment on a new tower.
 We deliberately produce two splits so the gap between them can be reported:
 
     random  -- the naive, leaky, flattering split (image-level shuffle)
-    grouped -- site-held-out, the honest one
+    grouped -- site-held-out, the leak-safe one
 
 The delta between those two numbers is a headline result, not an embarrassment.
 """
@@ -122,7 +122,7 @@ def grouped_split(
     test_frac: float = 0.15,
     seed: int = 0,
 ) -> tuple[pd.DataFrame, SplitReport]:
-    """Hold out whole SITES. The honest split.
+    """Hold out whole SITES. The leak-safe split.
 
     Sites are assigned greedily largest-first into whichever partition has the most
     unfilled capacity. Greedy beats a random draw here because site sizes are heavily
@@ -154,7 +154,7 @@ def grouped_split(
 
     sites = {k: set(df.loc[df.split == k, "site"]) for k in ("train", "val", "test")}
     report = SplitReport(
-        "grouped by site (HONEST)",
+        "grouped by site (LEAK-SAFE)",
         _summarize(df),
         sites["train"],
         sites["val"],

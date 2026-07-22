@@ -36,7 +36,7 @@ raises that ceiling). *(For reference, the best-F1 point is conf 0.05: precision
 ## Result 2 — the false-alarm burden (the alarm-fatigue constraint)
 
 The 0.938 precision above is **an artifact of the test set's 90%-positive base rate** — not a
-field number. The honest signal is the burden: at that operating point, **42% of the clean,
+field number. The real signal is the burden: at that operating point, **42% of the clean,
 no-smoke frames triggered a false alarm** — the single-frame model firing on clouds, fog, and
 glare, exactly as the literature predicts. This is not a verdict that the model is failing; it is
 the *alarm-fatigue constraint* — how often a watchstander gets pinged — which is what governs

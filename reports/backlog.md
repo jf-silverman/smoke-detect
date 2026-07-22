@@ -15,11 +15,11 @@ roughly by leverage. Completed threads have their own findings reports (see the 
 
 - **D-Fire zero-shot cross-dataset evaluation.** Train on pyro-sdis, evaluate *cold* on
   [D-Fire](https://github.com/gaiasd/DFireDataset) (~21k images, Brazil, YOLO-format smoke+fire
-  boxes) with no fine-tuning. Measures cross-dataset domain shift — the most honest
+  boxes) with no fine-tuning. Measures cross-dataset distribution shift — the most demanding
   generalization number in the project, extending the leak-safe theme from across-towers to
   across-datasets. Reuse `evaluate.py` almost verbatim; filter to the smoke class and note the
   label-definition mismatch (D-Fire leans closer-range and mixes fire). The FIgLib work already
-  gave an *accidental* domain-shift datapoint (pyro-sdis → FIgLib collapsed to AUC 0.45 before
+  gave an *accidental* distribution-shift datapoint (pyro-sdis → FIgLib collapsed to AUC 0.45 before
   the resolution fix); D-Fire turns that into a controlled, box-labelled result.
 
 - **RL for the alarm-timing decision (optimal stopping under asymmetric cost).** RL is a poor
@@ -35,7 +35,7 @@ roughly by leverage. Completed threads have their own findings reports (see the 
 
 ## Also noted (lower priority)
 
-- **In-domain tiled detector on FIgLib** (SmokeyNet setup: 224-px tiles, train on FIgLib's own
+- **In-distribution tiled detector on FIgLib** (SmokeyNet setup: 224-px tiles, train on FIgLib's own
   bounding boxes). Would raise the FIgLib base AUC above 0.658 and let the *learned* temporal
   model — not just the persistence rule — be tested. The persistence sign-flip predicts it wins.
 

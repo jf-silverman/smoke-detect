@@ -5,7 +5,7 @@ the clouds, fog, marine layer, and glare responsible for the baseline's 42%
 false-alarm rate on clean frames. Emphasizing them in a retrain is the direct,
 literature-backed attack on that number (cf. SKLFS separable negative sampling / OHEM).
 
-Two rules keep this honest:
+Two rules keep this leak-safe:
 
   1. Mine ONLY the training sites. Mining val/test negatives and adding them to
      training would leak the evaluation. We read the grouped_train manifest and

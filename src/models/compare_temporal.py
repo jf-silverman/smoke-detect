@@ -1,7 +1,7 @@
 """Definitive single-frame vs temporal comparison, at MATCHED RECALL.
 
 Comparing a temporal model to a single-frame detector by each one's own best-F1
-threshold is misleading -- they put their scores on different scales. The honest
+threshold is misleading -- they put their scores on different scales. The correct
 comparison holds recall fixed and asks the operator's real question: *at the recall
 you require, how many clean frames still false-alarm?* Lower is better.
 

@@ -1,8 +1,8 @@
 # Wildfire Smoke Detection
 
 A data-science portfolio project on early wildfire smoke detection from fixed-camera
-imagery. The theme throughout is **honest evaluation**: measuring what a detector would
-actually do in the field, not what it scores on a flattering benchmark.
+imagery. The theme throughout is **field-realistic evaluation**: measuring what a detector
+would actually do in the field, not what it scores on a flattering benchmark.
 
 ## The one thing worth knowing
 
@@ -30,7 +30,7 @@ seriously:
 - **Leak-safe splits** ([`src/data/splits.py`](src/data/splits.py)). The 40 camera IDs in the
   dataset are really 8 physical towers — each ID is a `tower-bearing` view of the same mast — so
   we hold out whole *sites* and a model is only ever tested on terrain it never trained on. Both a naive (leaky)
-  and an honest (site-disjoint) split are produced, so the inflation from leakage can be
+  and a leak-safe (site-disjoint) split are produced, so the inflation from leakage can be
   *measured*, not just asserted.
 - **Recall-first, field-standard metrics** ([`src/models/evaluate.py`](src/models/evaluate.py)).
   A missed fire is catastrophic; a false alarm costs a watchstander a glance, since a human
@@ -44,7 +44,7 @@ seriously:
 ## Findings so far (proof scale — directional, not final)
 
 The right question isn't the F1 score — it's **how high can detection (POD) go, and at what
-false-alarm burden.** On the honest held-out towers:
+false-alarm burden.** On the held-out towers:
 
 | configuration | max detection rate (POD) | false-alarm burden* |
 |---|---|---|
@@ -61,7 +61,7 @@ caps at POD 0.68 (it never sees the small plumes), while native-resolution infer
 ([resolution](reports/resolution-findings.md)). **[Hard-negative mining](reports/hard-negative-findings.md)
 and the [confuser corpus](reports/confuser-corpus.md) lower the false-alarm *burden*** (the
 baseline false-alarms on ~60% of clean frames — 74% of them clouds — and mining halves that).
-Neither is operational yet, and that honesty is the point: at the cost-loss ratios where misses
+Neither is operational yet, and that is the point: at the cost-loss ratios where misses
 dominate, even the best proof config still adds only marginal value — the levers above are what
 close the gap.
 
@@ -97,7 +97,8 @@ fires on nearly every cloud. The report found no such public corpus exists, so
   corpus, FIgLib, [resolution & recall-first](reports/resolution-findings.md)),
   and a [**research narrative**](reports/research-narrative.md) tracing how the project actually
   unfolded (including the human resolution insight that rescued the FIgLib control). Open threads
-  are tracked in the [backlog](reports/backlog.md).
+  are tracked in the [backlog](reports/backlog.md), and background primers in
+  [background-topics](reports/background-topics.md).
 - [`research/`](research/) — detailed source material behind the report
 - [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining, confuser corpus
 - [`src/models/`](src/models/) — training, operator-framed evaluation, temporal model + comparison

@@ -50,7 +50,7 @@ unforgiving — but the mining **roughly doubled** precision at every operating 
 teaching the model what a false alarm looks like. That is the intended, literature-backed effect
 (SKLFS separable negative sampling / OHEM), reproduced here.
 
-## Honest caveats
+## Caveats
 
 - **Not a perfectly controlled A/B.** The baseline trained on Ultralytics' internal random 20%
   sample; the hard-neg model on a fixed seeded 20% base + hard negatives. A fully rigorous
@@ -72,7 +72,7 @@ why: the remaining false alarms are *persistent* structures (76% of them), not t
 temporal model suppresses, and this dataset's short bursts lack the ignition-onset dynamics
 that make temporal context pay off on FIgLib. So hard-negative mining — teaching the detector
 what a false alarm looks like — turned out to be the move that actually attacked the persistent
-confusers, while the time axis did not. That is the honest ordering of what worked here.
+confusers, while the time axis did not. That is the actual ordering of what worked here.
 
 ## Reproduce
 

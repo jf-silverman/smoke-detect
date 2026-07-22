@@ -10,7 +10,7 @@ pyro-sdis turns out to support this directly. Frames arrive in bursts -- ~29 s a
 contiguous from one camera -- and 720 of 1,182 bursts contain the smoke *onset*
 (clear frames, then the plume appears). That is the signal this model learns.
 
-Design (deliberately lightweight, and honest about it):
+Design (deliberately lightweight, and clear about it):
 
   * The frozen BASELINE detector is a per-frame feature extractor (see
     extract_features.py). We never fine-tune it here, so any gain is attributable to

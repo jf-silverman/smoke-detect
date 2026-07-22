@@ -13,11 +13,11 @@ frames at native resolution, the positive control **succeeded**: requiring tempo
 cuts false alarms by 12–19 points on FIgLib, the mirror image of pyro-sdis where it *raised*
 them.
 
-## The plot twist: it was resolution, not (only) domain shift
+## The plot twist: it was resolution, not (only) distribution shift
 
 The whole-frame pipeline resized FIgLib's native 3072×2048 frames down to 640 px before
 inference — and the pyro-sdis detector scored **AUC 0.454, worse than random**. It looked like
-pure domain shift (French towers → California). It was mostly downscaling. An onset plume ~40 px
+pure distribution shift (French towers → California). It was mostly downscaling. An onset plume ~40 px
 wide in the native frame becomes ~8 px at 640, pooled away to nothing.
 
 Re-running the *same* detector on native-resolution 640-px **tiles** (no downscaling, the
@@ -29,7 +29,7 @@ resolution it was trained at), taking each frame's max confidence over its tiles
 | **native-resolution tiles** | **0.658** |
 
 A +0.20 AUC jump from resolution alone. This is exactly why SmokeyNet tiles into 224-px patches
-— small early plumes only survive at native pixel density. Domain shift is still present (0.658,
+— small early plumes only survive at native pixel density. Distribution shift is still present (0.658,
 not 0.85+; a French-tower detector is not at home in California), but it is no longer
 disqualifying. The lesson generalizes: **for small-object detection, downscaling in the
 inference path can matter more than the model does.**
@@ -71,9 +71,9 @@ confirmed from both directions at once: **temporal context pays off on onset dat
 on established-scene data.** It is not a universal fix; it is a fix for a specific data regime,
 and now we can show exactly which.
 
-## Honest caveats
+## Caveats
 
-- **Domain shift is real but not disqualifying.** The tiled base signal is AUC 0.658, not 0.85+
+- **Distribution shift is real but not disqualifying.** The tiled base signal is AUC 0.658, not 0.85+
   — a France-trained detector only partly transfers to California. Absolute false-alarm rates
   are still soft; the *matched-recall deltas and their sign* are the trustworthy part.
 - **The learned GRU loses to the parameter-free rule — a data-size story.** We did cache tiled
@@ -85,13 +85,13 @@ and now we can show exactly which.
   one. The temporal *signal* is real and strong — the persistence rule proves it — but a learned
   temporal *model* needs far more fires to earn its keep. (This mirrors the pyro-sdis GRU, which
   also drowned in noisy embedding dims.) Proving a *learned* model wins would need many more
-  sequences or an in-domain detector; the persistence result already confirms the mechanism.
+  sequences or an in-distribution detector; the persistence result already confirms the mechanism.
 - **18 sequences, 4 held-out test fires.** Small; magnitudes are noisy, the direction is clear.
 - Proof scale throughout (underfit, zero-shot detector as the feature source).
 
 ## What a fully conclusive control would add (future work)
 
-Tiled *embeddings* + the learned GRU (above), and/or an in-domain detector trained on FIgLib's
+Tiled *embeddings* + the learned GRU (above), and/or an in-distribution detector trained on FIgLib's
 own bounding boxes (SmokeyNet's setup). Both would raise the base AUC and let the learned
 temporal model be tested directly. The resolution finding here says the cheapest high-value move
 is simply to stop downscaling.

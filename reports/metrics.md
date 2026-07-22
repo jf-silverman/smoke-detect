@@ -57,7 +57,7 @@ objective is not recall at any cost. It is:
 
 ## The current picture, in these terms
 
-Honest grouped-test numbers (assumed 1% base rate, 500 frames/camera/day — an extrapolation, see
+Grouped-test numbers (assumed 1% base rate, 500 frames/camera/day — an extrapolation, see
 caveat):
 
 | configuration | max POD | FP/camera/day @ max POD | REV @ C/L=0.01 | REV @ C/L=0.002 |
@@ -74,7 +74,7 @@ whole recall-first argument, quantified: push POD up (resolution, a converged fu
 then drive the false-alarm burden down (hard-negative mining, the confuser corpus) toward the < 1
 FP/camera/day an operator can live with. Neither lever alone gets there.
 
-## Honest caveats
+## Caveats
 
 - **FP/camera/day is an extrapolation.** pyro-sdis is not a continuous feed, so it needs an
   assumed frame cadence (500/camera/day) and deployment base rate (1%). The *ratios between

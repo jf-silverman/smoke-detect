@@ -91,7 +91,7 @@ personnel."
 **Every deployed system found is human-in-the-loop: AI proposes, a trained watchstander confirms,
 only then does dispatch happen. The model is not the system.**
 
-## The honest framing
+## The realistic framing
 
 **Not solved — but the unsolved part is generalization and integration, not architecture.**
 

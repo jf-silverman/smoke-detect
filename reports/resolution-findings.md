@@ -18,7 +18,7 @@ running at native 1280 is the equivalent move.)
 
 ## Three configurations, and the recall-first lens
 
-Same honest grouped test set (held-out towers). The 640-train row is the original proof baseline.
+Same grouped test set (held-out towers). The 640-train row is the original proof baseline.
 
 | configuration | **max reachable recall** | FA at recall 0.55 | notes |
 |---|---:|---:|---|

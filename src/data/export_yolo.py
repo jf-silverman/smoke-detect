@@ -157,7 +157,7 @@ def main() -> None:
 
     g, grep_ = grouped_split(df)
     write_manifest(g, "grouped")
-    print(f"  grouped (HONEST): held-out sites {sorted(grep_.test_sites)}")
+    print(f"  grouped (LEAK-SAFE): held-out sites {sorted(grep_.test_sites)}")
 
     for site, fold, rep in loso_folds(prepare(df) if "site" not in df else df):
         write_manifest(fold, f"loso_{site}")

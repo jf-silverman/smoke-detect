@@ -1,6 +1,6 @@
 """Train a single-frame YOLO smoke detector on one split.
 
-This is the BASELINE. Its purpose is not to win -- it is to establish an honest
+This is the BASELINE. Its purpose is not to win -- it is to establish a rigorous
 single-frame number on held-out sites, so a temporal model later has something real
 to beat, and so the single-frame precision collapse (false positives on clouds/fog)
 is documented rather than assumed.
@@ -65,7 +65,7 @@ def main() -> None:
         patience=args.patience,
         # smoke is small and low-contrast: keep the augs that help, drop the ones
         # that fabricate implausible smoke (heavy mosaic can splice plumes onto
-        # backgrounds they never occur over). Conservative, honest defaults.
+        # backgrounds they never occur over). Conservative, physically-motivated defaults.
         mosaic=0.5,
         mixup=0.0,
         degrees=0.0,      # towers are gravity-aligned; rotation is unphysical

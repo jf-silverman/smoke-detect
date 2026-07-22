@@ -54,7 +54,7 @@ A few things worth reading off this:
   a general truth — a marine-layer coast (e.g. HPWREN's California cameras) would weight this
   far higher. A confuser corpus is site-dependent, and that is part of the point.
 
-## Honest caveats
+## Caveats
 
 - **Clusters partly track terrain, not only sky.** The global detector embedding encodes the
   whole scene, so the tower mast and each site's skyline leak into the clustering (the two

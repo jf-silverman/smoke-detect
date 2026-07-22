@@ -3,13 +3,13 @@
 The whole-frame pipeline resized 3072x2048 FIgLib frames to 640 px, which pools a
 small onset plume down to a few pixels -- the single-frame detector scored AUC 0.454
 (worse than random). This asks whether that is a downscaling artifact rather than pure
-domain shift: run the SAME detector on native-resolution 640-px TILES (no downscaling,
+distribution shift: run the SAME detector on native-resolution 640-px TILES (no downscaling,
 the resolution the detector was trained at), take each frame's max confidence over its
 tiles, and recompute AUC.
 
   * AUC jumps well above 0.5  -> resolution was a real culprit; tiled inference is the
     path to a valid positive control.
-  * AUC stays ~0.5            -> domain shift dominates; needs in-domain training.
+  * AUC stays ~0.5            -> distribution shift dominates; needs in-distribution training.
 
     python src/models/figlib_tiled.py --tile 640 --stride 640
 
