@@ -12,7 +12,7 @@ venv/
 .DS_Store
 runs/
 wandb/
-!data/README.md
+!data/data-profile.md
 !runs/eval_*.json
 !results/*.json
 !results/*.csv

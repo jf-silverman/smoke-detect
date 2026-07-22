@@ -93,7 +93,8 @@ such public corpus exists, so `results/confuser_corpus.csv` is a small original 
 - [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining, confuser corpus
 - [`src/models/`](src/models/) — training, operator-framed evaluation, temporal model + comparison
 - [`results/`](results/) — eval sweeps + mined hard-negative list
-- `data/` — datasets (gitignored; regenerate with `src/data/export_yolo.py`)
+- `data/` — datasets (gitignored; regenerate with `src/data/export_yolo.py`). The measured
+  data profile is in [`data/data-profile.md`](data/data-profile.md).
 
 ## Reproduce
 
