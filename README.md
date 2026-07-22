@@ -27,14 +27,15 @@ performance is really measured, and when these tools do and don't work.
 (33,636 images, French detection towers; Pyronear, 2025) that takes evaluation integrity
 seriously:
 
-- **Leak-safe splits** ([`src/data/splits.py`](src/data/splits.py)). The 40 "cameras" are
-  really 8 physical towers (each camera string is `tower-bearing`), so we hold out whole
-  *sites* — a model is only ever tested on terrain it never trained on. Both a naive (leaky)
+- **Leak-safe splits** ([`src/data/splits.py`](src/data/splits.py)). The 40 camera IDs in the
+  dataset are really 8 physical towers — each ID is a `tower-bearing` view of the same mast — so
+  we hold out whole *sites* and a model is only ever tested on terrain it never trained on. Both a naive (leaky)
   and an honest (site-disjoint) split are produced, so the inflation from leakage can be
   *measured*, not just asserted.
 - **Recall-first, field-standard metrics** ([`src/models/evaluate.py`](src/models/evaluate.py)).
-  A missed fire is catastrophic; a false alarm costs a watchstander a glance (they review every
-  "found fire" before dispatch). So evaluation is **not F1** — which weights the two errors
+  A missed fire is catastrophic; a false alarm costs a watchstander a glance, since a human
+  reviews every candidate detection before any suppression resources are dispatched. So
+  evaluation is **not F1** — which weights the two errors
   equally, wrong for this domain — but what the field actually uses: **probability of detection
   (POD)**, the false-alarm burden as **false-positives-per-camera-per-day** (Pano's operational
   target is < 1), and **relative economic value across cost-loss ratios** (meteorology's score
@@ -42,7 +43,7 @@ seriously:
 
 ## Findings so far (proof scale — directional, not final)
 
-The right question isn't "what's the F1" — it's **how high can detection (POD) go, and at what
+The right question isn't the F1 score — it's **how high can detection (POD) go, and at what
 false-alarm burden.** On the honest held-out towers:
 
 | configuration | max detection rate (POD) | false-alarm burden* |
@@ -85,8 +86,9 @@ sign, split by whether the data contains ignition onset — the mechanism, confi
 So we went *into* the negatives and built a [**typed confuser corpus**](reports/confuser-corpus.md):
 clustering the 2,305 frames the detector false-alarms on into named failure modes. The result
 is one clean number — **74% of the false alarms are clouds** (cumulus, backlit stratus, broken
-overcast) — the literature's "it screams smoke at every cloud," measured. The report found no
-such public corpus exists, so `results/confuser_corpus.csv` is a small original contribution.
+overcast) — a measured version of the documented single-frame failure mode, where the detector
+fires on nearly every cloud. The report found no such public corpus exists, so
+`results/confuser_corpus.csv` is a small original contribution.
 
 ## Layout
 
