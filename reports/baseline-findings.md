@@ -11,7 +11,7 @@ They do, cleanly.
   `serre-de-barre`, seen in neither training nor validation.
 - Evaluated the way the field judges a detector — **recall-first**, not F1. A missed fire is
   catastrophic; a false alarm costs a watchstander a glance. So the headline is **detection rate
-  (<abbr title="Probability of detection — the fraction of real fires the detector catches; equal to recall">POD</abbr>)** and the **false-alarm burden**, with F1 demoted to context. See
+  ([POD](#pod))** and the **false-alarm burden**, with F1 demoted to context. See
   [metrics.md](metrics.md) for the full rationale and field grounding.
 
 ## Result 1 — the model detects smoke on unseen sites
@@ -19,7 +19,7 @@ They do, cleanly.
 On held-out sites, the recall-first view (max reachable detection rate, and its false-alarm
 burden):
 
-| max POD (detection rate) | FP/camera/day @ max POD* | <abbr title="False-alarm ratio — FP/(FP+TP) = 1 − precision; the share of raised alarms that are wrong">FAR</abbr> |
+| max POD (detection rate) | FP/camera/day @ max POD* | [FAR](#far) |
 |---|---|---|
 | 0.676 | ~208 | 0.062 |
 
@@ -78,8 +78,9 @@ The FIgLib work prompted the question of whether downscaling to 640 also hurts p
 does — pyro-sdis smoke is small (median box shorter-side 28 px native, ~14 px at 640, 60% under
 16 px at 640), and running at native 1280 lifts the *reachable recall ceiling* from 0.68 to 0.86.
 This became its own thread, including a full 640-vs-1280 training comparison and the recall-first
-reframing (a missed fire costs far more than a false alarm). See
-[resolution-findings.md](resolution-findings.md).
+reframing (a missed fire costs far more than a false alarm). The converged full-scale 1280 run
+later confirmed it: max POD 0.827 at roughly half the false-alarm burden of downscaled-inference-
+only. See [resolution-findings.md](resolution-findings.md).
 
 ## Reproduce
 
@@ -92,16 +93,28 @@ Raw sweep + base-rate table: `runs/eval_grouped_test.json`.
 
 ## Glossary
 
-Hover tooltips appear on first use above (`<abbr>`); definitions are given here in text so they
-are reachable on touch devices and by screen readers. If a tooltip does not show on GitHub, its
-HTML sanitizer stripped the `title` attribute — this table is the source of truth. Full metric
-rationale: [metrics.md](metrics.md).
+Each term below is a linkable heading — the highlighted term in the text jumps here, and your browser's **Back** button returns you to where you were reading. Definitions are given in text (the reliable fallback, since GitHub does not render hover tooltips).
 
-| Term | Meaning |
-|---|---|
-| **POD** | Probability of detection — the fraction of real fires the detector catches. Equal to recall. The recall-first headline. |
-| **FAR** | False-alarm ratio — FP/(FP+TP) = 1 − precision. The share of raised alarms that are wrong. |
-| **FP/camera/day** | False-alarm burden: false positives per camera per day at a target POD (assumes 1% base rate, 500 frames/camera/day — an extrapolation). Pano's operational target is < 1. |
-| **base rate** | Fraction of frames that actually contain smoke in deployment (~1% assumed). The test set's ~90% positive rate inflates precision far above field values. |
-| **REV** | Relative Economic Value — a detector's value to a user with a given cost/loss ratio; 0 = no better than always/never alarming, 1 = perfect. |
-| **F1 / mAP** | Frame-level scores computed but demoted: F1 weights a missed fire like a false alarm; mAP relies on box-IoU, ill-defined for boundary-less smoke. |
+#### POD
+
+Probability of detection — the fraction of real fires the detector catches. Equal to recall. The recall-first headline.
+
+#### FAR
+
+False-alarm ratio — FP/(FP+TP) = 1 − precision. The share of raised alarms that are wrong.
+
+#### FP/camera/day
+
+False-alarm burden: false positives per camera per day at a target POD (assumes 1% base rate, 500 frames/camera/day — an extrapolation). Pano's operational target is < 1.
+
+#### base rate
+
+Fraction of frames that actually contain smoke in deployment (~1% assumed). The test set's ~90% positive rate inflates precision far above field values.
+
+#### REV
+
+Relative Economic Value — a detector's value to a user with a given cost/loss ratio; 0 = no better than always/never alarming, 1 = perfect.
+
+#### F1 / mAP
+
+Frame-level scores computed but demoted: F1 weights a missed fire like a false alarm; mAP relies on box-IoU, ill-defined for boundary-less smoke.

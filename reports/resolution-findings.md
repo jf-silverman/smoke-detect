@@ -25,6 +25,7 @@ Same grouped test set (held-out towers). The 640-train row is the original proof
 | 640-train, infer @640 (baseline) | 0.676 | 28.9% | can't see small smoke |
 | 640-train, infer @1280 | **0.859** | 44.7% | just stop downscaling at inference |
 | 1280-train, infer @1280 (proof) | 0.578 | 24.3% | **undertrained** — see below |
+| 1280-train, infer @1280 (full-scale) | 0.827 | **11.0%** | **converged** — the proof run's promise, realized |
 
 **The recall-first headline: simply running the existing detector at native 1280 lifts the
 reachable recall ceiling from 0.68 to 0.86.** For an objective that refuses to miss fires, that
@@ -40,7 +41,7 @@ against high-res training — until you read the training curve:
 
 | epoch | 11 | 12 | 13 | 14 | 15 |
 |---|---:|---:|---:|---:|---:|
-| val <abbr title="mean Average Precision at IoU 0.50 — the standard detection score at a 50% box-overlap threshold">mAP</abbr>50 | 0.550 | 0.547 | 0.505 | 0.541 | **0.563** |
+| val [mAP](#map)50 | 0.550 | 0.547 | 0.505 | 0.541 | **0.563** |
 | val recall | 0.548 | 0.541 | 0.498 | 0.534 | **0.561** |
 
 Both are **still climbing at the final epoch** — the model is undertrained. Higher-resolution
@@ -48,6 +49,16 @@ inputs are a harder optimization (more pixels, more to fit) and need more epochs
 converge. The proof budget that was plenty for 640 is not enough for 1280. So the fair reading
 is: *this run undersells 1280 training*, and a proper test needs more epochs (and ideally full
 data). It is not evidence that training at 1280 is bad — only that 15 epochs of it is too few.
+
+**Update — the full run confirms it.** Retrained on full data for 40 epochs at 1280 (to
+convergence), the model reaches **max recall 0.827** — a +0.25 jump over the undertrained proof
+run, essentially matching the 0.86 ceiling of downscaled-inference-only. And it does so with the
+**lowest false-alarm rate at matched recall of any config**: 11.0% at recall 0.55, versus 24.3%
+(proof), 28.9% (640 baseline), and 44.7% (640 infer @1280). So training at native resolution
+does not just recover the recall ceiling that inference-only reaches — it reaches it with roughly
+**half the false-alarm burden** (~173 vs ~388 FP/camera/day; see [metrics.md](metrics.md)). The
+cliffhanger above is resolved in the predicted direction: the proof run only looked worse because
+it had not converged.
 
 ## Resolution buys recall headroom, not deployability
 
@@ -64,8 +75,11 @@ is native resolution (for the recall ceiling) *plus* confuser-targeted false-ala
 
 1. **Immediate, free:** run inference at native 1280 — it raises the recall ceiling 0.68 → 0.86
    with no retraining. For a recall-first operator this is the single highest-value change.
-2. **Worth doing properly:** a full-scale 1280 training run (drop `--fraction`, raise epochs to
-   convergence). The proof run was undertrained; the curve says it had not stopped improving.
+2. **Done — hypothesis confirmed:** the full-scale 1280 run (40 epochs, full data) reached max
+   recall 0.827 with the lowest false-alarm rate at matched recall of any config (11% at recall
+   0.55) — roughly half the false-alarm burden of downscaled-inference-only at a near-identical
+   recall ceiling. Native-resolution *training*, not just inference, is the best config on every
+   axis (see [metrics.md](metrics.md)).
 3. **Report recall-first, not F1:** headline the false-alarm rate (and alarms-per-camera-per-day)
    at a fixed high recall, with F1 demoted to context. Best-F1 operating points understate a
    detector meant to run at recall ≥ 0.85 with a human in the loop.
@@ -84,16 +98,28 @@ Evals: `results/eval_grouped_proof_test.json` (640), `..._proof_test_1280.json` 
 
 ## Glossary
 
-Hover tooltips appear on first use above (`<abbr>`); definitions are given here in text so they
-are reachable on touch devices and by screen readers. If a tooltip does not show on GitHub, its
-HTML sanitizer stripped the `title` attribute — this table is the source of truth. Full metric
-rationale: [metrics.md](metrics.md).
+Each term below is a linkable heading — the highlighted term in the text jumps here, and your browser's **Back** button returns you to where you were reading. Definitions are given in text (the reliable fallback, since GitHub does not render hover tooltips).
 
-| Term | Meaning |
-|---|---|
-| **recall (POD)** | Probability of detection — the fraction of real fires the detector catches. The recall-first objective maximizes this subject to a triageable false-alarm rate. |
-| **recall ceiling** | The maximum reachable recall over all confidence thresholds. The 640 model caps at 0.68 because it never detects small plumes; native 1280 lifts it to 0.86. |
-| **mAP50** | mean Average Precision at IoU 0.50 — the standard detection score at a 50% box-overlap threshold; used here to read the training curve. |
-| **FA rate** | False-alarm rate on clean (no-smoke) frames = FP/(FP+TN); lower is better. |
-| **imgsz / 640 / 1280** | Inference/training image size in pixels. Downscaling pyro-sdis's native 1280 to 640 halves already-small plumes below the detectable size. |
-| **native resolution** | Running at the image's full pixel density (here 1280), or on native-resolution tiles, instead of downscaling — the lever that raises the recall ceiling. |
+#### recall (POD)
+
+Probability of detection — the fraction of real fires the detector catches. The recall-first objective maximizes this subject to a triageable false-alarm rate.
+
+#### recall ceiling
+
+The maximum reachable recall over all confidence thresholds. The 640 model caps at 0.68 because it never detects small plumes; native 1280 lifts it to 0.86.
+
+#### mAP
+
+mean Average Precision — the standard detection score; mAP50 is the value at IoU 0.50 (50% box overlap), used here to read the training curve.
+
+#### FA rate
+
+False-alarm rate on clean (no-smoke) frames = FP/(FP+TN); lower is better.
+
+#### imgsz / 640 / 1280
+
+Inference/training image size in pixels. Downscaling pyro-sdis's native 1280 to 640 halves already-small plumes below the detectable size.
+
+#### native resolution
+
+Running at the image's full pixel density (here 1280), or on native-resolution tiles, instead of downscaling — the lever that raises the recall ceiling.

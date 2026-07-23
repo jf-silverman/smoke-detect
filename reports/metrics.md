@@ -32,15 +32,15 @@ objective is not recall at any cost. It is:
 - **Academic smoke detection** (SmokeyNet / FIgLib, and the
   [multimodal work](https://arxiv.org/pdf/2212.14143)) leads with **time-to-detection** (3.7–4.9
   min; the share of fires detected within 5 min) and **probability of detection
-  (<abbr title="Probability of detection — the fraction of real fires the detector catches; equal to recall">POD</abbr> = recall)**.
+  ([POD](#pod) = recall)**.
 - **Government / satellite** ([NOAA GOES active fire](https://www.star.nesdis.noaa.gov/goesr/product_land_fire.php),
   the new [Next-Gen Fire System](https://www.noaa.gov/news-release/noaa-unveils-powerful-convergence-of-ai-and-science-with-revolutionary-next-generation-fire-system))
   validate against airborne truth with the meteorology triad: **POD** (hit rate),
-  **<abbr title="False-alarm ratio — FP/(FP+TP) = 1 − precision; the share of alarms that are wrong">FAR</abbr>**
+  **[FAR](#far)**
   (false-alarm *ratio* = FP/(FP+TP) = 1 − precision), and
-  **<abbr title="Critical Success Index — TP/(TP+FP+FN); a single skill score, but it weights misses and false alarms equally">CSI</abbr>** (Critical Success Index).
+  **[CSI](#csi)** (Critical Success Index).
 - **The formal answer to asymmetric cost** comes from meteorological forecast verification: the
-  **cost-loss ratio** and **relative economic value (<abbr title="Relative Economic Value — a forecast's value to a user with a given cost/loss ratio; 0 = no better than always- or never-alarming, 1 = perfect">REV</abbr>)**
+  **cost-loss ratio** and **relative economic value ([REV](#rev))**
   ([cost/loss & relative value](https://www.cawcr.gov.au/projects/verification/value/relativevalue_more.html);
   Richardson 2000). C is the cost of acting on an alarm, L the loss from a miss; α = C/L is
   *small* when misses dominate — the wildfire regime — and the theory says: at small α, operate
@@ -53,7 +53,7 @@ objective is not recall at any cost. It is:
   ceiling. A detector that caps at POD 0.68 cannot be operated safely no matter the threshold.
 - **False-alarm burden as FP/camera/day** at a target POD, next to Pano's < 1 target.
 - **Relative economic value across cost-loss ratios**, the asymmetric-cost score.
-- **FAR, <abbr title="Probability of false detection — false-alarm rate on negative (no-smoke) frames = FP/(FP+TN)">POFD</abbr>, CSI** reported per threshold (field vocabulary).
+- **FAR, [POFD](#pofd), CSI** reported per threshold (field vocabulary).
 - **F1 and base-rate-corrected precision demoted to context** — the base-rate precision number is
   the *alarm-fatigue constraint* (how often a human is pinged), not a verdict that the model is
   bad.
@@ -66,16 +66,21 @@ caveat):
 | configuration | max POD | FP/camera/day @ max POD | REV @ C/L=0.01 | REV @ C/L=0.002 |
 |---|---:|---:|---:|---:|
 | 640-train, infer @640 | 0.676 | ~208 | +0.26 | −1.05 |
-| 640-train, infer @1280 | **0.859** | ~388 | +0.08 | **−0.50** |
-| 1280-train, infer @1280 (proof) | 0.578 | ~120 | +0.34 | −1.37 |
+| 640-train, infer @1280 | **0.859** | ~388 | +0.08 | −0.50 |
+| 1280-train, infer @1280 (full-scale) | 0.827 | ~173 | **+0.48** | **−0.22** |
 
-Read the last column — the misses-dominate regime this domain lives in. **No proof config reaches
-positive value there**: even at POD 0.86 you miss 14% of fires while generating ~388 false alarms
-a day, so alarming on everything still competes. The least-bad is the highest-POD config (native-
-resolution inference), because in that regime *reducing misses* is what buys value. That is the
-whole recall-first argument, quantified: push POD up (resolution, a converged full-scale model),
-then drive the false-alarm burden down (hard-negative mining, the confuser corpus) toward the < 1
-FP/camera/day an operator can live with. Neither lever alone gets there.
+Read the last column — the misses-dominate regime this domain lives in. **No config reaches
+positive value there yet**; the least-bad is the full-scale 1280-trained model at −0.22, a clear
+step up from the −0.50/−1.05 of the others. And that model is the best config on every axis that
+matters: training at native 1280 to convergence **holds the recall ceiling** (POD 0.83, within a
+hair of the 0.86 from downscaled inference) while **roughly halving the false-alarm burden** (~173
+vs ~388 FP/camera/day) and posting the **best REV in both cost-loss columns** (+0.48 at C/L=0.01,
+−0.22 at C/L=0.002). That is the resolution lever paying off in *training*, not just inference —
+the earlier proof 1280 run only looked worse because it was undertrained (val metrics still
+climbing at epoch 15; see [resolution-findings](resolution-findings.md)). The remaining gap to
+positive value in the misses-dominate regime is the false-alarm burden: push POD up (native-
+resolution training) *and* drive false alarms down (hard-negative mining, the confuser corpus)
+toward the < 1 FP/camera/day an operator can live with. Neither lever alone gets there.
 
 ## Caveats
 
@@ -83,8 +88,10 @@ FP/camera/day an operator can live with. Neither lever alone gets there.
   assumed frame cadence (500/camera/day) and deployment base rate (1%). The *ratios between
   configs* are trustworthy; the absolute per-day numbers are illustrative.
 - **Time-to-detection is not yet computed.** It needs onset sequences; pyro-sdis lacks them, but
-  FIgLib has them, so <abbr title="Time-to-detection — minutes from a fire's ignition to the first alarm">TTD</abbr> is a natural addition on that data ([figlib-findings](figlib-findings.md)).
-- Proof scale throughout — direction over absolutes.
+  FIgLib has them, so [TTD](#ttd) is a natural addition on that data ([figlib-findings](figlib-findings.md)).
+- The **1280-train row is now a full-scale, converged run** (40 epochs, full data); the two
+  640-train rows remain proof scale. So the *training-resolution* comparison is trustworthy in
+  absolute terms; the cross-config false-alarm ratios still favor direction over absolutes.
 
 ## Reproduce
 
@@ -93,20 +100,44 @@ FP/camera/day an operator can live with. Neither lever alone gets there.
 
 ## Glossary
 
-Acronyms are also given as hover tooltips on first use above (`<abbr>`); the definitions live
-here in text so they are reachable on touch devices and by screen readers. If a tooltip does not
-appear on GitHub, its HTML sanitizer has stripped the `title` attribute — the table below is the
-source of truth.
+Each term below is a linkable heading — the highlighted term in the text jumps here, and your browser's **Back** button returns you to where you were reading. Definitions are given in text (the reliable fallback, since GitHub does not render hover tooltips).
 
-| Term | Meaning |
-|---|---|
-| **POD** | Probability of detection — the fraction of real fires the detector catches. Equal to recall / hit rate / true-positive rate. The recall-first headline. |
-| **FAR** | False-alarm ratio — FP/(FP+TP) = 1 − precision. The share of *raised alarms* that are wrong. (Meteorology's FAR; not the same as the false-alarm *rate*.) |
-| **POFD** | Probability of false detection — false-alarm *rate* on negative (no-smoke) frames = FP/(FP+TN). Drives the per-camera-per-day burden. |
-| **CSI** | Critical Success Index — TP/(TP+FP+FN), a single skill score. Reported for field vocabulary but weights misses and false alarms equally, so not the objective here. |
-| **REV** | Relative Economic Value — a forecast's value to a user with a given cost/loss ratio; 0 = no better than always- or never-alarming, 1 = perfect (Richardson, 2000). |
-| **C/L (α)** | Cost-loss ratio — cost of acting on an alarm ÷ loss from a miss. Small when misses dominate (the wildfire regime), which argues for a high-POD, low-threshold operating point. |
-| **TTD** | Time-to-detection — minutes from a fire's ignition to the first alarm. Needs onset sequences (FIgLib), so not yet computed on pyro-sdis. |
-| **FP / TP / FN / TN** | False positive / true positive / false negative / true negative. |
-| **mAP** | mean Average Precision — the standard object-detection score (area under the precision–recall curve, averaged over classes and IoU thresholds). Computed but demoted, because box-IoU is ill-defined for boundary-less smoke. |
-| **base rate** | The fraction of frames that actually contain smoke in deployment (~1% assumed here). Precision is highly sensitive to it; the test set's ~90% positive rate inflates precision far above field values. |
+#### POD
+
+Probability of detection — the fraction of real fires the detector catches. Equal to recall / hit rate / true-positive rate. The recall-first headline.
+
+#### FAR
+
+False-alarm ratio — FP/(FP+TP) = 1 − precision. The share of *raised alarms* that are wrong. (Meteorology's FAR; not the same as the false-alarm *rate*.)
+
+#### POFD
+
+Probability of false detection — false-alarm *rate* on negative (no-smoke) frames = FP/(FP+TN). Drives the per-camera-per-day burden.
+
+#### CSI
+
+Critical Success Index — TP/(TP+FP+FN), a single skill score. Reported for field vocabulary but weights misses and false alarms equally, so not the objective here.
+
+#### REV
+
+Relative Economic Value — a forecast's value to a user with a given cost/loss ratio; 0 = no better than always- or never-alarming, 1 = perfect (Richardson, 2000).
+
+#### C/L (α)
+
+Cost-loss ratio — cost of acting on an alarm ÷ loss from a miss. Small when misses dominate (the wildfire regime), which argues for a high-POD, low-threshold operating point.
+
+#### TTD
+
+Time-to-detection — minutes from a fire's ignition to the first alarm. Needs onset sequences (FIgLib), so not yet computed on pyro-sdis.
+
+#### FP / TP / FN / TN
+
+False positive / true positive / false negative / true negative.
+
+#### mAP
+
+mean Average Precision — the standard object-detection score (area under the precision–recall curve, averaged over classes and IoU thresholds). Computed but demoted, because box-IoU is ill-defined for boundary-less smoke.
+
+#### base rate
+
+The fraction of frames that actually contain smoke in deployment (~1% assumed here). Precision is highly sensitive to it; the test set's ~90% positive rate inflates precision far above field values.

@@ -39,9 +39,9 @@ Three structural facts drive every design decision:
 
 - **No boundary.** Smoke is semi-transparent and diffuse; a pixel is *partly* smoke. This is
   closer to alpha matting than object detection. Human annotators measurably disagree about
-  where a plume ends, which puts an **annotation-noise ceiling** on <abbr title="Intersection over Union — overlap between predicted and ground-truth boxes; ill-defined for a boundary-less object like smoke">IoU</abbr> — a perfect model
+  where a plume ends, which puts an **annotation-noise ceiling** on [IoU](#iou) — a perfect model
   cannot beat inter-annotator agreement. This is why the serious papers abandon standard
-  metrics: SKLFS evaluates at **AP@0.1**, and PyroNear drops <abbr title="mean Average Precision — the standard object-detection score; relies on box-IoU, which is ill-defined for smoke">mAP</abbr> entirely in favor of
+  metrics: SKLFS evaluates at **AP@0.1**, and PyroNear drops [mAP](#map) entirely in favor of
   precision/recall on smoke *presence*.
 - **Early smoke is tiny.** In PyroNear2024, smoke boxes average **1.04% of image area**. On a
   2048×3072 frame, an incipient plume does not survive downsampling to 224×224. Hence tiling.
@@ -107,7 +107,7 @@ share the entire background.
 Also note: **the canonical FIgLib benchmark is day-only** (the authors dropped 19 night fires),
 and its ~50/50 class balance is artificial. Real deployment has a minuscule prior on smoke, so
 a model tuned on FIgLib's balance will produce a far worse false-positive rate than its
-<abbr title="Precision–Recall curve — precision plotted against recall across confidence thresholds">PR curve</abbr> suggests.
+[PR curve](#pr-curve) suggests.
 
 ## 5. How to measure performance — and what good means
 
@@ -115,7 +115,7 @@ Do **not** lead with accuracy (a trivial always-negative classifier scores near-
 rates), and do not lead with mAP (IoU is structurally wrong for a boundary-less object).
 
 **Report instead:**
-1. **Precision, recall, F1, <abbr title="Area Under the Precision–Recall curve — a threshold-independent summary of the precision/recall trade-off">AUC-PR</abbr>** — with the full PR curve, and an explicitly justified
+1. **Precision, recall, F1, [AUC-PR](#auc-pr)** — with the full PR curve, and an explicitly justified
    operating point.
 2. **Time-to-detection** — minutes into the fire sequence at which confidence first crosses
    threshold, averaged per test fire. FIgLib's timestamps make this directly computable.
@@ -220,22 +220,60 @@ with."*
 
 ## Glossary
 
-Key acronyms above are given as hover tooltips on first use (`<abbr>`); definitions live here in
-text so they are reachable on touch devices and by screen readers. If a tooltip does not show on
-GitHub, its HTML sanitizer stripped the `title` attribute — this table is the source of truth.
+Each term below is a linkable heading — the highlighted term in the text jumps here, and your browser's **Back** button returns you to where you were reading. Definitions are given in text (the reliable fallback, since GitHub does not render hover tooltips).
 
-| Term | Meaning |
-|---|---|
-| **mAP** | mean Average Precision — the standard object-detection score (area under the precision–recall curve, averaged over IoU thresholds). Relies on box-IoU, which is ill-defined for boundary-less smoke; serious smoke papers drop it. |
-| **AP@0.1** | Average Precision at a lenient IoU threshold of 0.10 — used by SKLFS because tight box overlap is meaningless for diffuse smoke. |
-| **IoU** | Intersection over Union — overlap between a predicted and a ground-truth box. |
-| **PR curve / AUC-PR** | Precision–Recall curve and the area under it — a threshold-independent summary of the precision/recall trade-off; preferred here over accuracy or mAP. |
-| **F1** | Harmonic mean of precision and recall. Weights a missed fire like a false alarm, so misleading for this asymmetric-cost domain; reported only for comparison. |
-| **TTD** | Time-to-detection — minutes into a fire sequence at which confidence first crosses threshold (SmokeyNet: ~3.1 min). |
-| **FP/camera/day** | False positives per camera per day — the operational false-alarm burden; almost nobody reports it. |
-| **base rate** | Fraction of frames that actually contain smoke in deployment (tiny); FIgLib's artificial ~50/50 balance inflates apparent precision. |
-| **CNN / LSTM / ViT** | Convolutional Neural Network / Long Short-Term Memory / Vision Transformer — SmokeyNet stacks all three (CNN per tile → LSTM across frames → attention across tiles). |
-| **FIgLib** | Fire Ignition Library — HPWREN onset sequences (~40 min before/after ignition, 1 frame/min); the dataset where temporal context pays off. |
-| **HPWREN** | High Performance Wireless Research and Education Network — the fixed-camera network FIgLib is curated from. |
-| **VIIRS / GOES** | Satellite sensors (375 m / 2 km per pixel) used for plume mapping and confirmed-fire monitoring — a different problem from early ground-camera detection. |
-| **GAO** | U.S. Government Accountability Office — cited for the institutional verdict that effectiveness "is still being assessed." |
+#### mAP
+
+mean Average Precision — the standard object-detection score (area under the precision–recall curve, averaged over IoU thresholds). Relies on box-IoU, which is ill-defined for boundary-less smoke; serious smoke papers drop it.
+
+#### AP@0.1
+
+Average Precision at a lenient IoU threshold of 0.10 — used by SKLFS because tight box overlap is meaningless for diffuse smoke.
+
+#### IoU
+
+Intersection over Union — overlap between a predicted and a ground-truth box.
+
+#### PR curve
+
+Precision–Recall curve — precision plotted against recall across confidence thresholds; preferred here over accuracy or mAP.
+
+#### AUC-PR
+
+Area Under the Precision–Recall curve — a threshold-independent summary of the precision/recall trade-off.
+
+#### F1
+
+Harmonic mean of precision and recall. Weights a missed fire like a false alarm, so misleading for this asymmetric-cost domain; reported only for comparison.
+
+#### TTD
+
+Time-to-detection — minutes into a fire sequence at which confidence first crosses threshold (SmokeyNet: ~3.1 min).
+
+#### FP/camera/day
+
+False positives per camera per day — the operational false-alarm burden; almost nobody reports it.
+
+#### base rate
+
+Fraction of frames that actually contain smoke in deployment (tiny); FIgLib's artificial ~50/50 balance inflates apparent precision.
+
+#### CNN / LSTM / ViT
+
+Convolutional Neural Network / Long Short-Term Memory / Vision Transformer — SmokeyNet stacks all three (CNN per tile → LSTM across frames → attention across tiles).
+
+#### FIgLib
+
+Fire Ignition Library — HPWREN onset sequences (~40 min before/after ignition, 1 frame/min); the dataset where temporal context pays off.
+
+#### HPWREN
+
+High Performance Wireless Research and Education Network — the fixed-camera network FIgLib is curated from.
+
+#### VIIRS / GOES
+
+Satellite sensors (375 m / 2 km per pixel) used for plume mapping and confirmed-fire monitoring — a different problem from early ground-camera detection.
+
+#### GAO
+
+U.S. Government Accountability Office — cited for the institutional verdict that effectiveness "is still being assessed."

@@ -27,14 +27,14 @@ bridges detection and instance segmentation).
 
 Two facts shape everything downstream. First, the number of objects is not fixed, so the model
 must emit a variable-length set and then **suppress duplicates** — classically with
-non-maximum suppression (<abbr title="Non-Maximum Suppression — removes duplicate, overlapping detections of the same object, keeping the highest-confidence box">NMS</abbr>). Second, most of an image is background, so detectors fight a
-severe **foreground/background imbalance** (addressed by <abbr title="A classification loss that down-weights easy, well-classified examples so training focuses on hard ones — the fix for dense detectors' background/foreground imbalance">focal loss</abbr> and <abbr title="Training on the negatives a model gets wrong (clouds, fog, glare it false-alarms on) rather than random negatives, to cut the dominant false-positive class">hard-negative mining</abbr>;
+non-maximum suppression ([NMS](#nms)). Second, most of an image is background, so detectors fight a
+severe **foreground/background imbalance** (addressed by [focal loss](#focal-loss) and [hard-negative mining](#hard-negative-mining);
 Lin et al., 2017b).
 
 ### 1.2 The architectural families
 
 **Two-stage detectors (region-based).** First propose candidate regions, then classify and refine
-each. The <abbr title="Region-based Convolutional Neural Network — the two-stage detector lineage (R-CNN → Fast → Faster → Mask R-CNN): propose candidate regions, then classify and refine each">R-CNN</abbr> lineage — R-CNN (Girshick et al., 2014) → Fast R-CNN (Girshick, 2015) → Faster
+each. The [R-CNN](#r-cnn) lineage — R-CNN (Girshick et al., 2014) → Fast R-CNN (Girshick, 2015) → Faster
 R-CNN (Ren et al., 2015), which made region proposals learnable — set the accuracy standard for
 years. Mask R-CNN (He et al., 2017) adds a mask head. Strengths: accuracy, small objects.
 Weakness: slower, harder to run in real time.
@@ -52,23 +52,23 @@ and a scale/aspect prior. **Anchor-free** detectors — FCOS (Tian et al., 2019)
 et al., 2019) — predict object centers and sizes directly, simplifying the design. Recent YOLOs
 are largely anchor-free.
 
-**Transformer / set-prediction detectors.** <abbr title="DEtection TRansformer — reframes detection as direct set prediction with bipartite (Hungarian) matching; no anchors and no NMS">DETR</abbr> (Carion et al., 2020) reframed detection as
+**Transformer / set-prediction detectors.** [DETR](#detr) (Carion et al., 2020) reframed detection as
 direct **set prediction**: a transformer emits a fixed set of predictions matched to ground truth
-by <abbr title="A one-to-one assignment between predicted and ground-truth boxes, computed by the Hungarian algorithm; lets DETR train as direct set prediction with each object matched to exactly one prediction">bipartite (Hungarian) matching</abbr> — **no anchors and no NMS**. It was elegant but slow to train;
+by [bipartite (Hungarian) matching](#bipartite-hungarian-matching) — **no anchors and no NMS**. It was elegant but slow to train;
 Deformable DETR (Zhu et al., 2021) and DINO (Zhang et al., 2022) fixed convergence and pushed
 accuracy to the top of the benchmarks, and RT-DETR (Zhao et al., 2023) brought the approach into
 real-time territory, making it a genuine competitor to YOLO.
 
 **Backbones** (the feature extractor under any of the above) evolved in parallel: ResNet (He et
-al., 2016), EfficientNet (Tan & Le, 2019), and the transformer backbones <abbr title="Vision Transformer — applies the transformer architecture to image patches instead of convolutions">ViT</abbr> (Dosovitskiy et al.,
-2021) and Swin (Liu et al., 2021). Feature Pyramid Networks (<abbr title="Feature Pyramid Network — fuses features across resolution scales so a detector can find both large and small objects">FPN</abbr>; Lin et al., 2017a) let a detector
+al., 2016), EfficientNet (Tan & Le, 2019), and the transformer backbones [ViT](#vit) (Dosovitskiy et al.,
+2021) and Swin (Liu et al., 2021). Feature Pyramid Networks ([FPN](#fpn); Lin et al., 2017a) let a detector
 use multiple scales at once — important for small objects like distant smoke.
 
 ### 1.3 How performance is measured (and a caveat)
 
-The standard metric is **mean Average Precision (<abbr title="mean Average Precision — area under the precision–recall curve per class, averaged over classes and IoU thresholds; the standard object-detection score">mAP</abbr>)**: average precision (area under the
+The standard metric is **mean Average Precision ([mAP](#map))**: average precision (area under the
 precision-recall curve) per class, meaned over classes and over IoU thresholds (COCO averages IoU
-0.50–0.95; Lin et al., 2014). **Intersection-over-Union (<abbr title="Intersection over Union — area of overlap ÷ area of union between a predicted and a ground-truth box; measures localization quality">IoU</abbr>)** measures box overlap.
+0.50–0.95; Lin et al., 2014). **Intersection-over-Union ([IoU](#iou))** measures box overlap.
 
 The caveat this project rests on: mAP assumes objects have crisp boundaries against which IoU is
 meaningful. For an amorphous, boundary-less object like smoke, IoU is ill-defined and mAP is a
@@ -118,12 +118,12 @@ Video is not merely a stack of independent images. It brings both a problem and 
    Flow-Guided Feature Aggregation (Zhu et al., 2017) warps neighboring features along optical
    flow; MEGA (Chen et al., 2020) and TransVOD (He et al., 2021) aggregate with attention over a
    window. This recovers the plume-emerges-over-time signal a single frame lacks.
-4. **Native video models.** 3D <abbr title="Convolutional Neural Network — the standard image-feature backbone built from learned convolutional filters">CNN</abbr>s, Conv<abbr title="Long Short-Term Memory — a recurrent neural network that carries state across a sequence of frames">LSTM</abbr>s, and video transformers — TimeSformer (Bertasius
+4. **Native video models.** 3D [CNN](#cnn)s, Conv[LSTM](#lstm)s, and video transformers — TimeSformer (Bertasius
    et al., 2021), ViViT (Arnab et al., 2021) — treat time as a first-class axis. Most powerful,
    most data- and compute-hungry. **SmokeyNet** (Dewangan et al., 2022), the reference smoke
    model, is of this family: a CNN per tile, an LSTM across two frames, and attention across tiles.
 
-The project's own temporal experiments are a lightweight instance of category 3/4 (a <abbr title="Gated Recurrent Unit — a recurrent neural network for sequences, simpler than an LSTM">GRU</abbr> over a
+The project's own temporal experiments are a lightweight instance of category 3/4 (a [GRU](#gru) over a
 frozen detector's per-frame evidence), and its central finding is that the temporal gain is
 **dataset-dependent** — it needs onset sequences to pay off ([temporal](temporal-findings.md),
 [figlib](figlib-findings.md)).
@@ -250,29 +250,84 @@ The takeaways that recur in the rest of the reports:
 
 ## Glossary
 
-Acronyms above are also given as hover tooltips on first use (`<abbr>`); the definitions live here
-in text so they are reachable on touch devices and by screen readers. If a tooltip does not appear
-on GitHub, its HTML sanitizer has stripped the `title` attribute — this table is the source of truth.
+Each term below is a linkable heading — the highlighted term in the text jumps here, and your browser's **Back** button returns you to where you were reading. Definitions are given in text (the reliable fallback, since GitHub does not render hover tooltips).
 
-| Term | Meaning |
-|---|---|
-| **mAP** | mean Average Precision — area under the precision–recall curve per class, averaged over classes and IoU thresholds. The standard object-detection score (COCO averages IoU 0.50–0.95). |
-| **IoU** | Intersection over Union — area of overlap ÷ area of union between a predicted and a ground-truth box. Measures localization quality; ill-defined for boundary-less smoke. |
-| **NMS** | Non-Maximum Suppression — post-processing that removes duplicate overlapping detections of the same object, keeping the highest-confidence box. DETR-family detectors avoid it. |
-| **FPN** | Feature Pyramid Network — fuses features across resolution scales so one detector handles both large and small objects. |
-| **CNN** | Convolutional Neural Network — the standard image-feature backbone built from learned convolutional filters. |
-| **LSTM** | Long Short-Term Memory — a recurrent neural network that carries state across a sequence (e.g. frames of video). |
-| **GRU** | Gated Recurrent Unit — a recurrent neural network for sequences, simpler and lighter than an LSTM. |
-| **ViT** | Vision Transformer — applies the transformer (attention) architecture to image patches instead of convolutions. |
-| **R-CNN** | Region-based CNN — the two-stage detector lineage (R-CNN → Fast → Faster → Mask R-CNN): propose regions, then classify and refine. |
-| **YOLO** | You Only Look Once — the one-stage, real-time detector family; this project uses yolo11n. |
-| **SSD** | Single Shot MultiBox Detector — an early one-stage dense detector. |
-| **DETR** | DEtection TRansformer — reframes detection as direct set prediction with bipartite matching; no anchors, no NMS. |
-| **RT-DETR** | Real-Time DETR — a DETR variant fast enough to compete with YOLO. |
-| **FCOS / CenterNet** | Anchor-free one-stage detectors that predict object centers and sizes directly. |
-| **SAM** | Segment Anything Model — a promptable segmentation model (point/box prompt → mask). |
-| **BEV** | Bird's-Eye-View — the top-down representation used by multi-camera 3D detectors in autonomous driving. |
-| **re-ID** | Re-identification — matching the same individual/object across cameras or time, paired with detection in tracking and wildlife counting. |
-| **focal loss** | A modified classification loss (Lin et al., 2017b) that down-weights easy, well-classified examples so training focuses on hard ones — the fix for the extreme background/foreground imbalance in dense one-stage detectors. |
-| **hard-negative mining** | Deliberately training on the negatives a model gets *wrong* (here: clouds, fog, glare it false-alarms on) rather than random negatives, to directly cut the dominant false-positive class. This project's main lever on the false-alarm burden. |
-| **bipartite (Hungarian) matching** | A one-to-one assignment between a model's predicted boxes and the ground-truth boxes, computed by the Hungarian algorithm. Lets DETR train as direct set prediction — each object matched to exactly one prediction — so no anchors or NMS are needed. |
+#### mAP
+
+mean Average Precision — area under the precision–recall curve per class, averaged over classes and IoU thresholds. The standard object-detection score (COCO averages IoU 0.50–0.95).
+
+#### IoU
+
+Intersection over Union — area of overlap ÷ area of union between a predicted and a ground-truth box. Measures localization quality; ill-defined for boundary-less smoke.
+
+#### NMS
+
+Non-Maximum Suppression — post-processing that removes duplicate overlapping detections of the same object, keeping the highest-confidence box. DETR-family detectors avoid it.
+
+#### FPN
+
+Feature Pyramid Network — fuses features across resolution scales so one detector handles both large and small objects.
+
+#### CNN
+
+Convolutional Neural Network — the standard image-feature backbone built from learned convolutional filters.
+
+#### LSTM
+
+Long Short-Term Memory — a recurrent neural network that carries state across a sequence (e.g. frames of video).
+
+#### GRU
+
+Gated Recurrent Unit — a recurrent neural network for sequences, simpler and lighter than an LSTM.
+
+#### ViT
+
+Vision Transformer — applies the transformer (attention) architecture to image patches instead of convolutions.
+
+#### R-CNN
+
+Region-based CNN — the two-stage detector lineage (R-CNN → Fast → Faster → Mask R-CNN): propose regions, then classify and refine.
+
+#### YOLO
+
+You Only Look Once — the one-stage, real-time detector family; this project uses yolo11n.
+
+#### SSD
+
+Single Shot MultiBox Detector — an early one-stage dense detector.
+
+#### DETR
+
+DEtection TRansformer — reframes detection as direct set prediction with bipartite matching; no anchors, no NMS.
+
+#### RT-DETR
+
+Real-Time DETR — a DETR variant fast enough to compete with YOLO.
+
+#### FCOS / CenterNet
+
+Anchor-free one-stage detectors that predict object centers and sizes directly.
+
+#### SAM
+
+Segment Anything Model — a promptable segmentation model (point/box prompt → mask).
+
+#### BEV
+
+Bird's-Eye-View — the top-down representation used by multi-camera 3D detectors in autonomous driving.
+
+#### re-ID
+
+Re-identification — matching the same individual/object across cameras or time, paired with detection in tracking and wildlife counting.
+
+#### focal loss
+
+A modified classification loss (Lin et al., 2017b) that down-weights easy, well-classified examples so training focuses on hard ones — the fix for the extreme background/foreground imbalance in dense one-stage detectors.
+
+#### hard-negative mining
+
+Deliberately training on the negatives a model gets *wrong* (here: clouds, fog, glare it false-alarms on) rather than random negatives, to directly cut the dominant false-positive class. This project's main lever on the false-alarm burden.
+
+#### bipartite (Hungarian) matching
+
+A one-to-one assignment between a model's predicted boxes and the ground-truth boxes, computed by the Hungarian algorithm. Lets DETR train as direct set prediction — each object matched to exactly one prediction — so no anchors or NMS are needed.
