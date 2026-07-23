@@ -40,7 +40,7 @@ against high-res training — until you read the training curve:
 
 | epoch | 11 | 12 | 13 | 14 | 15 |
 |---|---:|---:|---:|---:|---:|
-| val mAP50 | 0.550 | 0.547 | 0.505 | 0.541 | **0.563** |
+| val <abbr title="mean Average Precision at IoU 0.50 — the standard detection score at a 50% box-overlap threshold">mAP</abbr>50 | 0.550 | 0.547 | 0.505 | 0.541 | **0.563** |
 | val recall | 0.548 | 0.541 | 0.498 | 0.534 | **0.561** |
 
 Both are **still climbing at the final epoch** — the model is undertrained. Higher-resolution
@@ -81,3 +81,19 @@ is native resolution (for the recall ceiling) *plus* confuser-targeted false-ala
 
 Evals: `results/eval_grouped_proof_test.json` (640), `..._proof_test_1280.json` (infer@1280),
 `..._1280trained_test.json` (train@1280).
+
+## Glossary
+
+Hover tooltips appear on first use above (`<abbr>`); definitions are given here in text so they
+are reachable on touch devices and by screen readers. If a tooltip does not show on GitHub, its
+HTML sanitizer stripped the `title` attribute — this table is the source of truth. Full metric
+rationale: [metrics.md](metrics.md).
+
+| Term | Meaning |
+|---|---|
+| **recall (POD)** | Probability of detection — the fraction of real fires the detector catches. The recall-first objective maximizes this subject to a triageable false-alarm rate. |
+| **recall ceiling** | The maximum reachable recall over all confidence thresholds. The 640 model caps at 0.68 because it never detects small plumes; native 1280 lifts it to 0.86. |
+| **mAP50** | mean Average Precision at IoU 0.50 — the standard detection score at a 50% box-overlap threshold; used here to read the training curve. |
+| **FA rate** | False-alarm rate on clean (no-smoke) frames = FP/(FP+TN); lower is better. |
+| **imgsz / 640 / 1280** | Inference/training image size in pixels. Downscaling pyro-sdis's native 1280 to 640 halves already-small plumes below the detectable size. |
+| **native resolution** | Running at the image's full pixel density (here 1280), or on native-resolution tiles, instead of downscaling — the lever that raises the recall ceiling. |

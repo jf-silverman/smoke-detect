@@ -16,7 +16,7 @@ them.
 ## The plot twist: it was resolution, not (only) distribution shift
 
 The whole-frame pipeline resized FIgLib's native 3072×2048 frames down to 640 px before
-inference — and the pyro-sdis detector scored **AUC 0.454, worse than random**. It looked like
+inference — and the pyro-sdis detector scored **<abbr title="Area Under the Curve — here the area under the ROC curve; 0.5 = no better than random, 1.0 = perfect ranking of smoke vs clean frames">AUC</abbr> 0.454, worse than random**. It looked like
 pure distribution shift (French towers → California). It was mostly downscaling. An onset plume ~40 px
 wide in the native frame becomes ~8 px at 640, pooled away to nothing.
 
@@ -77,7 +77,7 @@ and now we can show exactly which.
   — a France-trained detector only partly transfers to California. Absolute false-alarm rates
   are still soft; the *matched-recall deltas and their sign* are the trustworthy part.
 - **The learned GRU loses to the parameter-free rule — a data-size story.** We did cache tiled
-  *embeddings* (the max-confidence tile per frame) and ran the learned GRU. It underperformed
+  *embeddings* (the max-confidence tile per frame) and ran the learned <abbr title="Gated Recurrent Unit — a recurrent neural network for sequences, simpler than an LSTM">GRU</abbr>. It underperformed
   both single-frame and the persistence rule (e.g. at recall 0.60, false alarms 77% vs
   persistence's 14%). A conf-only GRU did better than the embedding version but still lost to
   persistence. The reason is data, not mechanism: 18 fires is ~867 training windows, far too few
@@ -106,3 +106,19 @@ is simply to stop downscaling.
 Comparisons: `results/figlib_temporal_comparison.json` (whole-frame),
 `results/figlib_tiled_comparison.json` (tiled). pyro-sdis counterpart:
 `results/temporal_comparison.json`. See also [temporal-findings.md](temporal-findings.md).
+
+## Glossary
+
+Hover tooltips appear on first use above (`<abbr>`); definitions are given here in text so they
+are reachable on touch devices and by screen readers. If a tooltip does not show on GitHub, its
+HTML sanitizer stripped the `title` attribute — this table is the source of truth.
+
+| Term | Meaning |
+|---|---|
+| **AUC** | Area Under the Curve — here, area under the ROC curve ranking smoke vs clean frames. 0.5 = random, 1.0 = perfect. (0.454 = worse than a coin flip.) |
+| **GRU** | Gated Recurrent Unit — a learned recurrent network for sequences; lost to the parameter-free persistence rule here because 18 fires is too little data to fit it. |
+| **persistence rule** | Parameter-free temporal baseline: rolling minimum of confidence over the window, so a frame alarms only if the evidence persisted. |
+| **FA rate** | False-alarm rate on clean (no-smoke) frames = FP/(FP+TN); compared at matched recall. |
+| **tiling** | Running inference on native-resolution crops instead of a downscaled whole frame, so small early plumes survive (the AUC 0.454 → 0.658 fix). |
+| **onset sequence** | A clip spanning from before ignition to well after, capturing the plume emerging — the data regime where temporal context pays off. |
+| **distribution shift** | Performance drop when a France-trained detector is run on California (FIgLib) imagery; real here but not disqualifying after the resolution fix. |

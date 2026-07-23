@@ -31,13 +31,16 @@ objective is not recall at any cost. It is:
   per day**.
 - **Academic smoke detection** (SmokeyNet / FIgLib, and the
   [multimodal work](https://arxiv.org/pdf/2212.14143)) leads with **time-to-detection** (3.7–4.9
-  min; the share of fires detected within 5 min) and **probability of detection (POD = recall)**.
+  min; the share of fires detected within 5 min) and **probability of detection
+  (<abbr title="Probability of detection — the fraction of real fires the detector catches; equal to recall">POD</abbr> = recall)**.
 - **Government / satellite** ([NOAA GOES active fire](https://www.star.nesdis.noaa.gov/goesr/product_land_fire.php),
   the new [Next-Gen Fire System](https://www.noaa.gov/news-release/noaa-unveils-powerful-convergence-of-ai-and-science-with-revolutionary-next-generation-fire-system))
-  validate against airborne truth with the meteorology triad: **POD** (hit rate), **FAR**
-  (false-alarm *ratio* = FP/(FP+TP) = 1 − precision), and **CSI** (Critical Success Index).
+  validate against airborne truth with the meteorology triad: **POD** (hit rate),
+  **<abbr title="False-alarm ratio — FP/(FP+TP) = 1 − precision; the share of alarms that are wrong">FAR</abbr>**
+  (false-alarm *ratio* = FP/(FP+TP) = 1 − precision), and
+  **<abbr title="Critical Success Index — TP/(TP+FP+FN); a single skill score, but it weights misses and false alarms equally">CSI</abbr>** (Critical Success Index).
 - **The formal answer to asymmetric cost** comes from meteorological forecast verification: the
-  **cost-loss ratio** and **relative economic value (REV)**
+  **cost-loss ratio** and **relative economic value (<abbr title="Relative Economic Value — a forecast's value to a user with a given cost/loss ratio; 0 = no better than always- or never-alarming, 1 = perfect">REV</abbr>)**
   ([cost/loss & relative value](https://www.cawcr.gov.au/projects/verification/value/relativevalue_more.html);
   Richardson 2000). C is the cost of acting on an alarm, L the loss from a miss; α = C/L is
   *small* when misses dominate — the wildfire regime — and the theory says: at small α, operate
@@ -50,7 +53,7 @@ objective is not recall at any cost. It is:
   ceiling. A detector that caps at POD 0.68 cannot be operated safely no matter the threshold.
 - **False-alarm burden as FP/camera/day** at a target POD, next to Pano's < 1 target.
 - **Relative economic value across cost-loss ratios**, the asymmetric-cost score.
-- **FAR, POFD, CSI** reported per threshold (field vocabulary).
+- **FAR, <abbr title="Probability of false detection — false-alarm rate on negative (no-smoke) frames = FP/(FP+TN)">POFD</abbr>, CSI** reported per threshold (field vocabulary).
 - **F1 and base-rate-corrected precision demoted to context** — the base-rate precision number is
   the *alarm-fatigue constraint* (how often a human is pinged), not a verdict that the model is
   bad.
@@ -80,10 +83,30 @@ FP/camera/day an operator can live with. Neither lever alone gets there.
   assumed frame cadence (500/camera/day) and deployment base rate (1%). The *ratios between
   configs* are trustworthy; the absolute per-day numbers are illustrative.
 - **Time-to-detection is not yet computed.** It needs onset sequences; pyro-sdis lacks them, but
-  FIgLib has them, so TTD is a natural addition on that data ([figlib-findings](figlib-findings.md)).
+  FIgLib has them, so <abbr title="Time-to-detection — minutes from a fire's ignition to the first alarm">TTD</abbr> is a natural addition on that data ([figlib-findings](figlib-findings.md)).
 - Proof scale throughout — direction over absolutes.
 
 ## Reproduce
 
     python src/models/evaluate.py --weights runs/grouped_proof/weights/best.pt --split grouped \
         --target-pod 0.90 --base-rate 0.01 --frames-per-day 500
+
+## Glossary
+
+Acronyms are also given as hover tooltips on first use above (`<abbr>`); the definitions live
+here in text so they are reachable on touch devices and by screen readers. If a tooltip does not
+appear on GitHub, its HTML sanitizer has stripped the `title` attribute — the table below is the
+source of truth.
+
+| Term | Meaning |
+|---|---|
+| **POD** | Probability of detection — the fraction of real fires the detector catches. Equal to recall / hit rate / true-positive rate. The recall-first headline. |
+| **FAR** | False-alarm ratio — FP/(FP+TP) = 1 − precision. The share of *raised alarms* that are wrong. (Meteorology's FAR; not the same as the false-alarm *rate*.) |
+| **POFD** | Probability of false detection — false-alarm *rate* on negative (no-smoke) frames = FP/(FP+TN). Drives the per-camera-per-day burden. |
+| **CSI** | Critical Success Index — TP/(TP+FP+FN), a single skill score. Reported for field vocabulary but weights misses and false alarms equally, so not the objective here. |
+| **REV** | Relative Economic Value — a forecast's value to a user with a given cost/loss ratio; 0 = no better than always- or never-alarming, 1 = perfect (Richardson, 2000). |
+| **C/L (α)** | Cost-loss ratio — cost of acting on an alarm ÷ loss from a miss. Small when misses dominate (the wildfire regime), which argues for a high-POD, low-threshold operating point. |
+| **TTD** | Time-to-detection — minutes from a fire's ignition to the first alarm. Needs onset sequences (FIgLib), so not yet computed on pyro-sdis. |
+| **FP / TP / FN / TN** | False positive / true positive / false negative / true negative. |
+| **mAP** | mean Average Precision — the standard object-detection score (area under the precision–recall curve, averaged over classes and IoU thresholds). Computed but demoted, because box-IoU is ill-defined for boundary-less smoke. |
+| **base rate** | The fraction of frames that actually contain smoke in deployment (~1% assumed here). Precision is highly sensitive to it; the test set's ~90% positive rate inflates precision far above field values. |

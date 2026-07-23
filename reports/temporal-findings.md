@@ -47,7 +47,7 @@ Three score functions, identical held-out towers ([`compare_temporal.py`](../src
 - **single-frame** — the detector's per-frame max confidence (the baseline)
 - **persistence** — rolling min of confidence over the last 8 frames (the interpretable
   temporal rule that only alarms if the evidence persisted)
-- **temporal-gru** — a learned GRU head over the confidence sequence
+- **temporal-gru** — a learned <abbr title="Gated Recurrent Unit — a recurrent neural network for sequences, simpler than an LSTM">GRU</abbr> head over the confidence sequence
 
 False-alarm rate on clean frames (lower is better):
 
@@ -84,7 +84,7 @@ onset sequences, confirming the mechanism from the opposite direction.
 ## Caveats
 
 - **This is a frozen-detector head, not end-to-end.** We put a temporal head on the baseline
-  detector's per-frame evidence rather than training a CNN+LSTM jointly on pixels. A fully
+  detector's per-frame evidence rather than training a <abbr title="Convolutional Neural Network — the standard image-feature backbone">CNN</abbr>+<abbr title="Long Short-Term Memory — a recurrent neural network that carries state across frames">LSTM</abbr> jointly on pixels. A fully
   end-to-end model *might* extract motion cues the per-frame confidence discards. But the
   precondition analysis above is model-independent: it measures the confusers directly, and
   they are persistent. The ceiling is set by the data, not only by this architecture.
@@ -108,3 +108,19 @@ cargo-culting the architecture past the conditions that justify it.
     python src/models/temporal.py --epochs 40       # standalone GRU eval
 
 Comparison table: `results/temporal_comparison.json`. GRU sweep: `results/eval_temporal_test.json`.
+
+## Glossary
+
+Hover tooltips appear on first use above (`<abbr>`); definitions are given here in text so they
+are reachable on touch devices and by screen readers. If a tooltip does not show on GitHub, its
+HTML sanitizer stripped the `title` attribute — this table is the source of truth.
+
+| Term | Meaning |
+|---|---|
+| **GRU** | Gated Recurrent Unit — a recurrent neural network for sequences, simpler than an LSTM. Here, the learned temporal head over the detector's per-frame confidence. |
+| **LSTM** | Long Short-Term Memory — a recurrent neural network that carries state across frames; SmokeyNet's temporal component. |
+| **CNN** | Convolutional Neural Network — the standard image-feature backbone. |
+| **persistence rule** | Parameter-free temporal baseline: rolling minimum of confidence over the last 8 frames, so a frame alarms only if the evidence persisted. |
+| **recall (POD)** | Fraction of real smoke frames the detector catches. Comparisons here hold recall fixed and read off the false-alarm rate. |
+| **FA rate** | False-alarm rate on clean (no-smoke) frames = FP/(FP+TN); lower is better. |
+| **matched recall** | Comparing methods at the same recall (rather than each at its own threshold), because their scores live on different scales. |
