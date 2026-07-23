@@ -41,7 +41,7 @@ seriously:
   target is < 1), and **relative economic value across cost-loss ratios** (meteorology's score
   for asymmetric costs). mAP and F1 are computed but demoted to context.
 
-## Findings so far (proof scale — directional, not final)
+## Findings so far (mostly proof scale — directional; the native-resolution training row is a converged full-scale run)
 
 The right question isn't the F1 score — it's **how high can detection (POD) go, and at what
 false-alarm burden.** On the held-out towers:
@@ -50,6 +50,7 @@ false-alarm burden.** On the held-out towers:
 |---|---|---|
 | single-frame baseline (infer @640) | 0.68 | ~208 FP/camera/day |
 | + native-resolution inference (@1280) | **0.86** | ~388 FP/camera/day |
+| + native-resolution **training** (@1280, full-scale) | 0.83 | **~173 FP/camera/day** |
 | + hard-negative mining (@640) | 0.68 | ~half the burden |
 
 <sub>*at an assumed 1% base rate and 500 frames/camera/day — an extrapolation, not a measured
@@ -57,13 +58,15 @@ rate. Pano AI's operational target is < 1 FP/camera/day (Pano AI, 2024); the gap
 that remains.</sub>
 
 Two levers, two axes. **Resolution raises the detection *ceiling*** — the 640 model structurally
-caps at POD 0.68 (it never sees the small plumes), while native-resolution inference reaches 0.86
+caps at POD 0.68 (it never sees the small plumes), while native-resolution inference reaches 0.86,
+and native-resolution *training* to convergence holds 0.83 at **roughly half the false-alarm
+burden** (~173 vs ~388 FP/camera/day) — the best config so far
 ([resolution](reports/resolution-findings.md)). **[Hard-negative mining](reports/hard-negative-findings.md)
 and the [confuser corpus](reports/confuser-corpus.md) lower the false-alarm *burden*** (the
 baseline false-alarms on ~60% of clean frames — 74% of them clouds — and mining halves that).
-Neither is operational yet, and that is the point: at the cost-loss ratios where misses
-dominate, even the best proof config still adds only marginal value — the levers above are what
-close the gap.
+The two levers have **not yet been combined**, and that is the open work: at the cost-loss ratios
+where misses dominate, even the best config still adds only marginal value. Native-resolution
+training *plus* confuser-targeted mining — the deployable recipe — is what should close the gap.
 
 The next step was a **temporal model** — the literature's headline fix (SmokeyNet's +26
 precision points from frame-to-frame context; Dewangan et al., 2022). We built it and it **did
@@ -122,8 +125,9 @@ python src/models/evaluate.py --weights runs/grouped/weights/best.pt --split gro
 (Dewangan et al., 2022; credit `http://hpwren.ucsd.edu/`). Image data and model weights are
 gitignored.
 
-*Proof-scale results throughout: read the direction of the numbers, not the absolute values.
-Full-scale runs are one flag change (drop `--fraction`, raise `--epochs`).*
+*Mostly proof-scale results: read the direction of the numbers, not the absolute values. The
+native-resolution training row is a converged full-scale run (40 epochs, full data); the rest are
+one flag change away (drop `--fraction`, raise `--epochs`).*
 
 ## Works Cited
 

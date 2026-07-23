@@ -73,7 +73,10 @@ def main() -> None:
     ap.add_argument("--base-frac", type=float, default=0.2, help="fixed base sample of grouped_train")
     ap.add_argument("--imgsz", type=int, default=640)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--tag", default="", help="suffix for the output split name "
+                    "(e.g. '_1280full' -> grouped_hardneg_1280full); keeps proof artifacts intact")
     args = ap.parse_args()
+    split_name = f"grouped_hardneg{args.tag}"
 
     device = pick_device()
     RESULTS.mkdir(exist_ok=True)
@@ -120,23 +123,23 @@ def main() -> None:
 
     aug_train = [str(p.resolve()) for p in base] + dup_lines
     split_dir = PROC / "splits"
-    (split_dir / "grouped_hardneg_train.txt").write_text("\n".join(aug_train) + "\n")
+    (split_dir / f"{split_name}_train.txt").write_text("\n".join(aug_train) + "\n")
     # val/test identical to grouped -> same held-out sites, clean comparison
     for part in ("val", "test"):
-        (split_dir / f"grouped_hardneg_{part}.txt").write_text(
+        (split_dir / f"{split_name}_{part}.txt").write_text(
             (split_dir / f"grouped_{part}.txt").read_text())
 
-    (PROC / "grouped_hardneg.yaml").write_text(
+    (PROC / f"{split_name}.yaml").write_text(
         f"# grouped split + {len(hard)} mined hard negatives x{args.oversample}\n"
         f"path: {PROC.resolve()}\n"
-        f"train: splits/grouped_hardneg_train.txt\n"
-        f"val: splits/grouped_hardneg_val.txt\n"
-        f"test: splits/grouped_hardneg_test.txt\n"
+        f"train: splits/{split_name}_train.txt\n"
+        f"val: splits/{split_name}_val.txt\n"
+        f"test: splits/{split_name}_test.txt\n"
         f"nc: 1\nnames:\n  0: smoke\n")
 
     print(f"\naugmented train: {len(base)} base ({args.base_frac:.0%} sample) + "
           f"{len(hard)}x{args.oversample}={len(dup_lines)} hard-neg copies = {len(aug_train)} images")
-    print(f"wrote grouped_hardneg.yaml + manifests; ranked list -> {RESULTS / 'hard_negatives.csv'}")
+    print(f"wrote {split_name}.yaml + manifests; ranked list -> {RESULTS / 'hard_negatives.csv'}")
 
 
 if __name__ == "__main__":
