@@ -1,18 +1,18 @@
 # How this project was actually built: a research narrative
 
 Most write-ups present findings as if they arrived in order, cleanly. This one didn't, and the
-messy version is more useful — because the sharpest turns came from the *interaction* between a
-human with domain instincts and an AI that could build and test fast. This document keeps the
+messy version is more useful — because the sharpest turns came from the *interaction* between an
+author with domain instincts and an LLM that could build and test fast. This document keeps the
 real sequence: what we tested, what broke, and which move unlocked the next.
 
 The through-line is a division of labor that kept paying off:
 
-- **The AI** supplied breadth and speed — surveying datasets, writing the pipeline, catching
-  silent bugs, running experiments, and (importantly) reporting negative results in full
-  instead of burying them.
-- **The human** supplied direction and domain judgment — setting the field-realistic-evaluation frame,
-  choosing which thread to pull, and, at the decisive moment, asking the physics question that
-  rescued an experiment the AI had written off.
+- **The LLM** supplied breadth and speed — surveying datasets, writing the pipeline, catching
+  silent bugs, running experiments, and (importantly) reporting negative and incremental results in
+  full instead of dressing them up.
+- **The author** supplied direction and domain judgment — setting the field-realistic-evaluation
+  frame, correcting the *metric* (not just the model), choosing which thread to pull, and, at the
+  decisive moment, asking the physics question that rescued an experiment the LLM had written off.
 
 Neither half would have produced this arc alone.
 
@@ -20,25 +20,28 @@ Neither half would have produced this arc alone.
 
 | # | Step | Result | Whose move |
 |--:|---|---|---|
-| 1 | Survey datasets, methods, metrics; write a state-of-the-field report | Framed the whole project around the benchmark-vs-field gap | Human set the frame; AI executed the survey |
-| 2 | Leak-safe splits on pyro-sdis | Caught that 40 camera IDs = 8 physical towers; held out whole sites | AI (bug caught by inspection) |
-| 3 | Single-frame YOLO baseline | Reproduced the precision collapse: 42% false alarms on clean frames | AI |
-| 4 | Base-rate correction | Precision at 1% deployment base rate = **1.6%** — the field number | AI |
-| 5 | Hard-negative mining | False alarms **42% → 20%**; precision@1% doubled | Human said go; AI built |
-| 6 | Temporal model (the literature's expected fix) | **Negative result** — no gain on pyro-sdis; 76% of confusers are persistent, not flicker | Human said go; AI built *and* reported the null result plainly |
-| 7 | Typed confuser corpus | **74% of false alarms are clouds** — an original artifact | Human chose this direction |
-| 8 | FIgLib positive control (onset data) | First run confounded: detector AUC **0.454**, worse than random | Human asked to run it |
-| 9 | Native-resolution tiled inference | AUC **0.454 → 0.658**; positive control then lands, temporal cuts false alarms 12–19 pts | **Human's resolution question**; AI tested it |
+| 1 | Survey datasets, methods, metrics; write a state-of-the-field report | Framed the whole project around the benchmark-vs-field gap | Author set the frame; LLM executed the survey |
+| 2 | Leak-safe splits on pyro-sdis | Caught that 40 camera IDs = 8 physical towers; held out whole sites | LLM (bug caught by inspection) |
+| 3 | Single-frame YOLO baseline | Reproduced the precision collapse: 42% false alarms on clean frames | LLM |
+| 4 | Base-rate correction | Precision at 1% deployment base rate = **1.6%** — the field number | LLM |
+| 5 | Hard-negative mining | False alarms **42% → 20%**; precision@1% doubled | Author said go; LLM built |
+| 6 | Temporal model (the literature's expected fix) | **Negative result** — no gain on pyro-sdis; 76% of confusers are persistent, not flicker | Author said go; LLM built *and* reported the null result plainly |
+| 7 | Typed confuser corpus | **74% of false alarms are clouds** — an original artifact | Author chose this direction |
+| 8 | FIgLib positive control (onset data) | First run confounded: detector AUC **0.454**, worse than random | Author asked to run it |
+| 9 | Native-resolution tiled inference | AUC **0.454 → 0.658**; positive control lands, temporal cuts false alarms 12–19 pts | **Author's resolution question**; LLM tested it |
+| 10 | Recall-first metric reframe | Rebuilt evaluation on POD / false-alarm burden / relative economic value — F1 demoted | **Author's asymmetric-cost insight**; LLM grounded it in the field literature |
+| 11 | Full-scale native-resolution (1280) *training* | Confirmed a standing prediction: POD **0.83** at ~half the burden of inference-only; the proof run had merely been undertrained | Author said pursue high-res training; LLM ran it |
+| 12 | Time-to-detection (Phase A, FIgLib) | First TTD numbers in the project; **resolution lowers TTD, not just AUC** | Author chose the HPWREN/TTD thrust |
+| 13 | Combine the two levers (native-res + hard-neg) | Burden ~173 → **133 FP/day** (−23%), −2.4 pts recall — a real but *incremental* win, reported as such | Author sequenced it; LLM built and stopped it at the plateau |
 
 ## The turns worth remembering
 
-**The field-realistic frame came first, from the human.** The opening instruction was not to build a
-smoke detector but to measure what a detector would actually do in the field. Every later
-decision —
-site-holdout splits, operator metrics, base-rate correction — descends from that frame. An AI
-left to optimize a number would have reported mAP and moved on.
+**The field-realistic frame came first, from the author.** The opening instruction was not to build
+a smoke detector but to measure what a detector would actually do in the field. Every later
+decision — site-holdout splits, operator metrics, base-rate correction — descends from that frame.
+An LLM left to optimize a number would have reported mAP and moved on.
 
-**The AI's job was partly to distrust itself.** Two subagents attributed a 79% field
+**The LLM's job was partly to distrust itself.** Two subagents attributed a 79% field
 false-positive rate to SmokeyNet; verification against the primary source showed it belonged to
 a different system (Govil et al.), and SmokeyNet was never field-deployed at all. The class-id
 remap (pyro-sdis ships smoke as class `1`; Ultralytics expects `0`) would have silently trained
@@ -52,16 +55,16 @@ are persistent structures (76% of them), not the flicker a temporal model suppre
 result reframed the whole project — it said the leverage was in the negatives, which led
 directly to the confuser corpus.
 
-**The human chose the fork that turned into an original contribution.** Offered several next
-steps, the human picked the confuser corpus. Clustering the false alarms produced the cleanest
+**The author chose the fork that turned into an original contribution.** Offered several next
+steps, the author picked the confuser corpus. Clustering the false alarms produced the cleanest
 line in the project — *74% of them are clouds* — and an artifact (a typed confuser manifest) the
 literature review had specifically flagged as missing from the field.
 
 **And then the decisive moment.** The FIgLib positive control — meant to confirm that temporal
 helps on onset data — came back broken: the detector scored AUC 0.454, worse than a coin flip.
-The AI diagnosed it as distribution shift (a French-tower detector loose in California) and had begun
-scoping an expensive in-distribution retrain as the only way forward. Then the human asked a plain
-question:
+The LLM diagnosed it as distribution shift (a French-tower detector loose in California) and had
+begun scoping an expensive in-distribution retrain as the only way forward. Then the author asked a
+plain question:
 
 > *"Did you say there were high-res images? Would that be worth anything? I'm especially thinking
 > we may lose things if we're downscaling resolution, looking for small smoke objects."*
@@ -74,39 +77,73 @@ weights, but run on native-resolution **tiles** instead of a downscaled whole fr
 signal, requiring temporal persistence cut false alarms by 12–19 points — the exact mirror of
 pyro-sdis, where the same rule *raised* them.
 
-The AI had the mechanism right (temporal helps on onset data) but had misattributed the failure
-to something expensive to fix. The human's instinct about resolution — cheap to test, easy to
+The LLM had the mechanism right (temporal helps on onset data) but had misattributed the failure
+to something expensive to fix. The author's instinct about resolution — cheap to test, easy to
 overlook — was the difference between a confounded result needing a big retrain and a confirmed one.
 
-The insight then paid a second dividend. The human asked whether resolution had been costing us
+The insight then paid a second dividend. The author asked whether resolution had been costing us
 on pyro-sdis all along. It had: re-running the baseline at native 1280 instead of 640 lifted
 recall from 0.68 to 0.86 (+18 points) — the detector had simply been blind to smoke too small to
-survive downscaling. One question, asked once, surfaced a lever on both datasets. That is the
-pattern: the human keeps asking whether we are throwing information away, and the AI
-can answer each instance in minutes.
+survive downscaling. One question, asked once, surfaced a lever on both datasets.
+
+**The author corrected the metric, not just the model.** Midway through, the author made a domain
+point the LLM had not pressed: in wildfire, sensitivity and specificity are not equally important —
+a missed fire is catastrophic, a false alarm costs a watchstander a glance, and a human reviews
+every candidate before resources move. That reframed the whole scorecard. The LLM went to the
+field and meteorology literature and rebuilt evaluation around **probability of detection**, the
+**false-alarm burden per camera per day**, and **relative economic value across cost-loss ratios** —
+with F1 demoted to context, and the reports re-led accordingly. A model can be tuned; a *metric*
+has to be chosen, and choosing the right one was the author's call.
+
+**A prediction, then its confirmation.** The proof-scale 1280 training run had *underperformed* —
+and the LLM had flagged, from the training curve, that it was merely undertrained rather than
+evidence against high-res training. The full-scale run confirmed it: POD 0.83 at roughly half the
+false-alarm burden of inference-only, the best config in the project. A called shot, then the data.
+
+**The incremental result, reported as the incremental result.** The two proven levers —
+native-resolution training and hard-negative mining — had never been combined, and the reports kept
+naming that as "the deployable recipe." So we built it. It helped: the false-alarm burden fell
+~23% (173 → 133 FP/camera/day) and deployment precision rose — but it cost ~2.4 points of recall,
+and 133 false alarms per camera per day is still nowhere near the < 1 an operator can live with.
+The temptation with a long-promised recipe is to oversell the payoff. We wrote it up as what it
+was: a real but marginal win that does not, on its own, close the deployability gap. Mining also
+surfaced a clean supporting fact — the *converged* full-scale model still false-alarms on 57.6% of
+clean frames, so resolution buys recall, not calm.
+
+**Extending the finding onto the field's headline metric.** Time-to-detection is what operators and
+the academic reference actually lead with, and the project had never computed it. A cache-only,
+leak-safe harness produced the first numbers — and the resolution lever showed up here too: native
+tiling detects more fires *and* detects them minutes sooner, not merely at higher AUC. The through
+-line held one more time.
 
 ## Why this is the interesting story
 
 The finished results table is respectable. But the *reason* it exists is a loop that a solo
-human or a solo model would both have run more slowly and less well:
+author or a solo model would both have run more slowly and less well:
 
-- The AI could build a leak-safe pipeline, a base-rate correction, a hard-negative miner, a
-  temporal model, a clustering corpus, and a tiled-inference probe in the time it takes to
-  discuss them — and could be trusted to say plainly when something did not work.
-- The human kept the project pointed at real-world value over vanity metrics, chose the threads that
-  mattered, and supplied the one piece of physical intuition — *small objects die under
-  downscaling* — that no amount of pipeline speed would have surfaced on its own.
+- The LLM could build a leak-safe pipeline, a base-rate correction, a hard-negative miner, a
+  temporal model, a clustering corpus, a tiled-inference probe, a recall-first metric suite, and a
+  time-to-detection harness in the time it takes to discuss them — and could be trusted to say
+  plainly when something did not work, or only half-worked.
+- The author kept the project pointed at real-world value over vanity metrics, corrected the
+  scorecard itself, chose the threads that mattered, and supplied the physical intuition — *small
+  objects die under downscaling* — that no amount of pipeline speed would have surfaced on its own.
 
-Domain expertise and AI are not substitutes. The expertise decides *what is worth testing and
-why*; the AI collapses the cost of testing it to near zero. When the loop is tight, you get to
-run the experiment the instant the insight arrives — and that is when the good results happen.
+Domain expertise and LLMs are not substitutes. The expertise decides *what is worth testing, which
+metric is right, and why*; the LLM collapses the cost of testing it to near zero. When the loop is
+tight, you get to run the experiment the instant the insight arrives — and that is when the good
+results happen.
 
 ## Pointers
 
 Each step has its own report with the numbers and caveats:
 [state-of-smoke-detection](state-of-smoke-detection.md) ·
+[metrics](metrics.md) ·
 [baseline-findings](baseline-findings.md) ·
 [hard-negative-findings](hard-negative-findings.md) ·
 [temporal-findings](temporal-findings.md) ·
 [confuser-corpus](confuser-corpus.md) ·
-[figlib-findings](figlib-findings.md)
+[figlib-findings](figlib-findings.md) ·
+[resolution-findings](resolution-findings.md) ·
+[ttd-findings](ttd-findings.md) ·
+[backlog](backlog.md)
