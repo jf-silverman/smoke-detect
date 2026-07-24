@@ -97,7 +97,8 @@ fires on nearly every cloud. The report found no such public corpus exists, so
 
 - [`reports/`](reports/) — the state-of-the-field report, a [metrics rationale](reports/metrics.md)
   (why recall-first, not F1), and per-stage findings (baseline, hard-negative, temporal, confuser
-  corpus, FIgLib, [resolution & recall-first](reports/resolution-findings.md)),
+  corpus, FIgLib, [resolution & recall-first](reports/resolution-findings.md),
+  [time-to-detection](reports/ttd-findings.md)),
   and a [**research narrative**](reports/research-narrative.md) tracing how the project actually
   unfolded (including the human resolution insight that rescued the FIgLib control). Open threads
   are tracked in the [backlog](reports/backlog.md), and background primers in
