@@ -33,13 +33,15 @@ echo "If the limit is 0, request an increase: https://console.cloud.google.com/i
 # gcloud storage rsync -r data/figlib    "$BUCKET/raw/figlib"
 
 # 4) LAUNCH THE TRAINING VM (Deep Learning image ships CUDA + PyTorch)
+#    --scopes=cloud-platform lets the VM's service account read/write the bucket (required).
 #    For a cheap preemptible run add:  --provisioning-model=SPOT
 #    (safe -- train_vm_startup.sh mirrors runs/ to GCS every 5 min, so preemption loses <= 1 epoch)
 # gcloud compute instances create "$VM" \
 #   --zone="$ZONE" --machine-type="$MACHINE" \
 #   --accelerator="type=$GPU,count=1" --maintenance-policy=TERMINATE \
-#   --image-family=common-cu123-ubuntu-2204 --image-project=deeplearning-platform-release \
+#   --image-family=pytorch-latest-gpu --image-project=deeplearning-platform-release \
 #   --boot-disk-size=200GB \
+#   --scopes=https://www.googleapis.com/auth/cloud-platform \
 #   --metadata="install-nvidia-driver=True,bucket=$BUCKET" \
 #   --metadata-from-file=startup-script=infra/train_vm_startup.sh
 
