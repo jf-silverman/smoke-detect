@@ -34,8 +34,12 @@ find data/processed \( -name '*.yaml' -o -name '*.txt' \) -print0 \
 ( while true; do gcloud storage rsync -r runs "$BUCKET/runs" >/dev/null 2>&1 || true; sleep 300; done ) &
 
 # --- the experiment (edit me) ---
-# L4 (24GB) fits a larger batch at 1280 than the local MPS box (which used batch 8)
-python3 src/models/train.py --split grouped --imgsz 1280 --batch 16 --epochs 40 --name gcp_grouped_1280
+# L4 (24GB) fits a larger batch at 1280 than the local MPS box (which used batch 8).
+# --patience 8 early-stops after 8 epochs with no val improvement; the local run plateaued
+# ~epoch 24, so this typically ends in the low-mid 20s. --epochs 30 caps the worst case.
+# On-demand (STANDARD) so it runs uninterrupted -- costs money the whole time, so let early
+# stopping end it rather than burning epochs past the plateau.
+python3 src/models/train.py --split grouped --imgsz 1280 --batch 16 --epochs 30 --patience 8 --name gcp_grouped_1280
 
 # final sync + a done-marker so you can poll from your laptop
 gcloud storage rsync -r runs "$BUCKET/runs"
