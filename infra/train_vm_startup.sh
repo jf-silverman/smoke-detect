@@ -13,10 +13,14 @@ if [ -d smoke-detect ]; then (cd smoke-detect && git pull); else
 cd smoke-detect
 pip install -q --upgrade ultralytics
 
-# data/ is gitignored -> hydrate from GCS
-mkdir -p data
-gcloud storage rsync -r "$BUCKET/processed" data/processed
-gcloud storage rsync -r "$BUCKET/raw/figlib" data/figlib || true
+# data/ is gitignored -> hydrate from GCS. The dataset is staged as a single tarball
+# (data_processed.tar): pulling one object + untar is seconds, vs ~40 min copying 33k files
+# one-by-one (each a separate API call), which kept losing the race with spot preemption.
+mkdir -p data/processed
+gcloud storage cp "$BUCKET/data_processed.tar" /root/data_processed.tar
+tar -C data/processed -xf /root/data_processed.tar
+rm -f /root/data_processed.tar
+# figlib (TTD only) is not needed for this training run -> skip it.
 
 # the split manifests + yamls were generated on the author's Mac and carry absolute local
 # paths -- rewrite them to this VM's checkout so YOLO can find the images.
