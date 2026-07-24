@@ -18,7 +18,10 @@ pip install -q --upgrade ultralytics
 # one-by-one (each a separate API call), which kept losing the race with spot preemption.
 mkdir -p data/processed
 gcloud storage cp "$BUCKET/data_processed.tar" /root/data_processed.tar
-tar -C data/processed -xf /root/data_processed.tar
+# The tarball is built on macOS, so every file carries an Apple xattr header that GNU tar
+# warns about once per file. Those warnings go to the serial console (a slow device) and
+# throttle extraction badly -- silence them so untar runs at disk speed (seconds, not minutes).
+tar -C data/processed --warning=no-unknown-keyword -xf /root/data_processed.tar 2>/dev/null
 rm -f /root/data_processed.tar
 # figlib (TTD only) is not needed for this training run -> skip it.
 
