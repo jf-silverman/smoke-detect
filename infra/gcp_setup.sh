@@ -39,7 +39,7 @@ echo "If the limit is 0, request an increase: https://console.cloud.google.com/i
 # gcloud compute instances create "$VM" \
 #   --zone="$ZONE" --machine-type="$MACHINE" \
 #   --accelerator="type=$GPU,count=1" --maintenance-policy=TERMINATE \
-#   --image-family=pytorch-latest-gpu --image-project=deeplearning-platform-release \
+#   --image-family=pytorch-2-9-cu129-ubuntu-2204-nvidia-580 --image-project=deeplearning-platform-release \
 #   --boot-disk-size=200GB \
 #   --scopes=https://www.googleapis.com/auth/cloud-platform \
 #   --metadata="install-nvidia-driver=True,bucket=$BUCKET" \
