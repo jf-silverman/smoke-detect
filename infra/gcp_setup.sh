@@ -28,9 +28,16 @@ echo "If the limit is 0, request an increase: https://console.cloud.google.com/i
 # 2) CREATE THE BUCKET (same region as compute => no egress)
 # gcloud storage buckets create "$BUCKET" --location="$REGION" --uniform-bucket-level-access
 
-# 3) UPLOAD DATA (run from repo root; data/ is gitignored, so push it explicitly)
-# gcloud storage rsync -r data/processed "$BUCKET/processed"
-# gcloud storage rsync -r data/figlib    "$BUCKET/raw/figlib"
+# 3) UPLOAD DATA (run from repo root; data/ is gitignored, so push it explicitly).
+#    Stage data/processed as ONE tarball -- copying 33k files individually is ~40 min of
+#    per-object API calls and loses the race with spot preemption; one object is seconds.
+#    --no-mac-metadata --no-xattrs strips the Apple xattr header that GNU tar on the VM would
+#    otherwise warn about once per file (that warning spam throttles untar via the serial console).
+#    Exclude the Mac-path labels.cache (the VM regenerates it) and the unneeded proof features.
+# tar -C data/processed --no-mac-metadata --no-xattrs \
+#   --exclude labels.cache --exclude features_proof.npz -cf /tmp/data_processed.tar .
+# gcloud storage cp /tmp/data_processed.tar "$BUCKET/data_processed.tar"
+# gcloud storage rsync -r data/figlib "$BUCKET/raw/figlib"   # TTD only; skip for the grouped run
 
 # 4) LAUNCH THE TRAINING VM (Deep Learning image ships CUDA + PyTorch)
 #    --scopes=cloud-platform lets the VM's service account read/write the bucket (required).
