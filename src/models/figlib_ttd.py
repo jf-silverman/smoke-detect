@@ -148,6 +148,32 @@ def evaluate(df: pd.DataFrame, far_target: float, persist_k: int) -> dict:
     }
 
 
+def bootstrap_ci(per_fire: dict, B: int = 2000, seed: int = 0) -> dict:
+    """90% CIs by resampling fires with replacement -- n is small, so quantify it.
+
+    Bootstraps the per-fire (detected, ttd) outcomes from one LOFO pass at a fixed operating
+    point. Median TTD is over detected fires within each resample.
+    """
+    rng = np.random.default_rng(seed)
+    det = np.array([f["detected"] for f in per_fire.values()], dtype=float)
+    ttd = np.array([f["ttd_min"] if f["ttd_min"] is not None else np.nan
+                    for f in per_fire.values()], dtype=float)
+    n = len(det)
+    drs, mts = [], []
+    for _ in range(B):
+        idx = rng.integers(0, n, n)
+        drs.append(det[idx].mean())
+        t = ttd[idx][~np.isnan(ttd[idx])]
+        mts.append(np.median(t) if len(t) else np.nan)
+
+    def ci(a: list) -> list:
+        a = np.array(a, dtype=float)
+        a = a[~np.isnan(a)]
+        return [round(float(np.percentile(a, 5)), 3), round(float(np.percentile(a, 95)), 3)]
+
+    return {"detection_rate_ci90": ci(drs), "median_ttd_ci90": ci(mts)}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -165,12 +191,16 @@ def main() -> None:
           f"({int(df['smoke'].sum())} post-ignition / {int((~df['smoke']).sum())} pre-ignition)")
     print(f"features: {args.features}\n")
 
-    # headline at the requested operating point
+    # headline at the requested operating point, with bootstrap CIs (n is small)
     head = evaluate(df, args.far_target, args.persist)
+    ci = bootstrap_ci(head["per_fire"])
+    head["ci90"] = ci
     print(f"=== TTD @ pre-ignition FA target {args.far_target:.0%}, persist k={args.persist} "
           f"(leave-one-fire-out) ===")
-    print(f"  detection rate            : {head['detection_rate']:.0%} of fires")
-    print(f"  median TTD (detected)     : {head['median_ttd_min']} min")
+    print(f"  detection rate            : {head['detection_rate']:.0%} of fires   "
+          f"90% CI [{ci['detection_rate_ci90'][0]:.0%}, {ci['detection_rate_ci90'][1]:.0%}]")
+    print(f"  median TTD (detected)     : {head['median_ttd_min']} min   "
+          f"90% CI [{ci['median_ttd_ci90'][0]}, {ci['median_ttd_ci90'][1]}] min")
     print(f"  mean TTD (detected)       : {head['mean_ttd_min']} min   "
           f"(SmokeyNet ref ~3.6 min)")
     print(f"  % of ALL fires within 5min: {head['pct_within_5min_of_all']:.0%}   "
