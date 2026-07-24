@@ -67,20 +67,27 @@ caveat):
 |---|---:|---:|---:|---:|
 | 640-train, infer @640 | 0.676 | ~208 | +0.26 | −1.05 |
 | 640-train, infer @1280 | **0.859** | ~388 | +0.08 | −0.50 |
-| 1280-train, infer @1280 (full-scale) | 0.827 | ~173 | **+0.48** | **−0.22** |
+| 1280-train, infer @1280 (full-scale) | 0.827 | ~173 | +0.48 | **−0.22** |
+| 1280-train + hard-neg, infer @1280 (full-scale) | 0.803 | **~133** | **+0.54** | −0.26 |
 
 Read the last column — the misses-dominate regime this domain lives in. **No config reaches
-positive value there yet**; the least-bad is the full-scale 1280-trained model at −0.22, a clear
-step up from the −0.50/−1.05 of the others. And that model is the best config on every axis that
-matters: training at native 1280 to convergence **holds the recall ceiling** (POD 0.83, within a
-hair of the 0.86 from downscaled inference) while **roughly halving the false-alarm burden** (~173
-vs ~388 FP/camera/day) and posting the **best REV in both cost-loss columns** (+0.48 at C/L=0.01,
-−0.22 at C/L=0.002). That is the resolution lever paying off in *training*, not just inference —
-the earlier proof 1280 run only looked worse because it was undertrained (val metrics still
-climbing at epoch 15; see [resolution-findings](resolution-findings.md)). The remaining gap to
-positive value in the misses-dominate regime is the false-alarm burden: push POD up (native-
-resolution training) *and* drive false alarms down (hard-negative mining, the confuser corpus)
-toward the < 1 FP/camera/day an operator can live with. Neither lever alone gets there.
+positive value there yet**; the least-bad is the full-scale 1280-trained model at −0.22. Both
+levers have now been tested apart *and* together:
+
+- **Native-resolution *training*** (row 3) raised the recall ceiling — POD 0.83, within a hair of
+  the 0.86 from downscaled inference — while roughly halving the false-alarm burden vs
+  inference-only (~173 vs ~388 FP/camera/day). The earlier proof 1280 run only looked worse
+  because it was undertrained ([resolution-findings](resolution-findings.md)).
+- **Adding hard-negative mining** (row 4) trims the burden further — **~173 → ~133 FP/camera/day
+  (−23%)**, deployment precision 2.3% → 2.9%, and the best moderate-cost value in the table
+  (REV +0.54 at C/L=0.01) — at the cost of ~2.4 pts of recall ceiling (0.83 → 0.80). Because that
+  lost recall costs more than the false-alarm saving buys in the *harshest* miss-averse regime,
+  its REV at C/L=0.002 is slightly worse (−0.26 vs −0.22).
+
+So the deployable recipe helps, but **incrementally**: combining the levers is the best config in
+the moderate-cost regime, yet ~133 FP/camera/day is still far from the < 1 an operator can live
+with, and it gives back a little recall. Closing that gap needs more than these two levers — see
+[hard-negative-findings](hard-negative-findings.md).
 
 ## Caveats
 

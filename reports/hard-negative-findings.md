@@ -74,10 +74,65 @@ that make temporal context pay off on FIgLib. So hard-negative mining — teachi
 what a false alarm looks like — turned out to be the move that actually attacked the persistent
 confusers, while the time axis did not. That is the actual ordering of what worked here.
 
+## Full-scale, native resolution: the two levers combined
+
+**Status: full-scale, and the answer to "does it hold at scale, combined with resolution?"** The
+proof above was 640-px and 20% data. Here we mined with the **converged full-scale 1280 model**
+itself (native resolution), then retrained at 1280 on full data — the first time the project's two
+proven levers (native-resolution training + hard-negative mining) ran *together*.
+
+A finding fell out of the mining step alone: the converged full-scale model **still false-alarms on
+57.6%** of clean training frames — barely below the underfit baseline's 59.8%. Resolution and
+convergence raise the recall ceiling but do essentially nothing to the confusers, so mining still
+has a job to do. We added the 2,217 mined hard negatives at a deliberately **gentle ~22% share**
+(the proof run's ~60% share halved false alarms but cost recall; recall is king here, so we traded
+a smaller false-alarm cut for a smaller recall hit).
+
+Held-out towers, vs native-resolution training alone (both @1280):
+
+| | native-res only | + hard-neg (combined) | change |
+|---|---:|---:|---:|
+| max POD (recall ceiling) | 0.827 | 0.803 | −0.024 |
+| FP/camera/day @ max POD | ~173 | **~133** | **−23%** |
+| precision @ 1% base rate | 2.3% | **2.9%** | +0.6 pt |
+| REV @ C/L=0.01 | +0.48 | **+0.54** | better |
+| REV @ C/L=0.002 (harshest) | −0.22 | −0.26 | slightly worse |
+
+False-alarm rate on clean frames **at matched recall** (the fair test):
+
+| recall | native-res only | combined | change |
+|---|---:|---:|---:|
+| 0.56 | 11.0% | 10.6% | −0.4 pt |
+| 0.61 | 12.5% | 11.2% | −1.2 pt |
+| 0.66 | 17.3% | 13.7% | **−3.5 pt** |
+| 0.72 | 20.0% | 18.1% | −1.9 pt |
+
+**Read:** mining still lowers the false-alarm burden at full scale and native resolution — the
+operating-point burden falls ~23% (173 → 133 FP/camera/day), matched-recall false alarms drop
+0.4–3.5 pts, and deployment precision rises 2.3% → 2.9%. The effect is **gentler than the proof
+run's halving**, by design: the light 22% share protects the recall ceiling (only −2.4 pts, vs the
+proof's −4.4). It is a real, incremental win in the moderate-cost regime (best REV at C/L=0.01),
+but not a silver bullet — 133 FP/camera/day is still far from Pano's < 1 target, and in the
+harshest miss-averse regime the small recall loss slightly outweighs the false-alarm saving. The
+levers combine, but they do not close the deployability gap on their own. See [metrics.md](metrics.md).
+
+*Caveat:* the combined run was stopped at epoch 24 (val plateaued, mAP50 0.699) against the
+no-hard-neg run's full 40 (peak 0.707 at epoch 23) — both plateaued, so near-matched, not identical.
+
 ## Reproduce
 
+    # proof scale (640, 20% data)
     python src/models/mine_hard_negatives.py
     python src/models/train.py --split grouped_hardneg --epochs 15 --name grouped_hardneg
     python src/models/evaluate.py --weights runs/grouped_hardneg/weights/best.pt --split grouped_hardneg
+
+    # full scale + native resolution, combined (mine with the converged 1280 model)
+    python src/models/mine_hard_negatives.py --weights runs/grouped_full_1280/weights/best.pt \
+        --imgsz 1280 --base-frac 1.0 --oversample 3 --tag _1280full
+    python src/models/train.py --split grouped_hardneg_1280full --imgsz 1280 --batch 8 --epochs 40 \
+        --name grouped_hardneg_1280full
+    python src/models/evaluate.py --weights runs/grouped_hardneg_1280full/weights/best.pt \
+        --split grouped_hardneg_1280full --imgsz 1280 --target-pod 0.90 \
+        --out results/eval_grouped_hardneg_1280full_test.json
 
 Ranked mined frames: `results/hard_negatives.csv`. Eval sweeps: `results/eval_grouped_*_test.json`.

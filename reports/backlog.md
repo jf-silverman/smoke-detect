@@ -3,19 +3,7 @@
 A running list of ideas worth pursuing, with enough context to pick any one up cold. Ordered
 roughly by leverage. Completed threads have their own findings reports (see the [README](../README.md)).
 
-## In progress
-
-- **Combine the two proven levers — native-resolution training + hard-negative mining (full scale).**
-  Training yolo11n at native 1280 on full data with the 2,217 mined hard negatives folded in
-  (~22% hard-neg share, kept gentle to protect the recall ceiling). Tests *the deployable recipe*
-  the reports keep naming: does confuser-targeted mining drive the false-alarm burden down at the
-  0.83 recall ceiling the full-scale 1280 model reached? **Interim finding worth keeping:** the
-  converged full-scale model still false-alarms on **57.6%** of clean training frames (underfit
-  baseline: 59.8%) — so resolution/convergence alone does essentially nothing to the confusers,
-  which is exactly why this run matters. Run name: `grouped_hardneg_1280full`. See
-  [metrics.md](metrics.md), [hard-negative-findings.md](hard-negative-findings.md).
-
-## Next up — the chosen thrust after the combine-levers run
+## Next up — the chosen thrust (combine-levers run is done)
 
 - **HPWREN → time-to-detection (and a real learned temporal model).** The field's headline metric
   (Pano, SmokeyNet's 3.1 min) is time-to-detection, and this project conspicuously lacks it because
@@ -37,6 +25,13 @@ roughly by leverage. Completed threads have their own findings reports (see the 
 
 ## Recently completed (folded into reports)
 
+- **Combine the two levers — native-res training + hard-negative mining (full scale, @1280).**
+  The deployable recipe, tested. Mining with the converged 1280 model (which still false-alarms on
+  57.6% of clean training frames — resolution alone doesn't fix confusers) + a gentle ~22% hard-neg
+  share. Result: false-alarm burden ~173 → ~133 FP/camera/day (−23%), precision@1% 2.3% → 2.9%,
+  best moderate-cost REV — at the cost of ~2.4 pts recall ceiling (0.83 → 0.80). A real but
+  *incremental* win; 133 FP/day is still far from < 1. Stopped at epoch 24 (val plateaued). See
+  [hard-negative-findings.md](hard-negative-findings.md), [metrics.md](metrics.md).
 - **Full-scale native-resolution (1280) training** — confirmed the resolution-findings prediction:
   the proof 1280 run only underperformed because it was undertrained. Full run reaches POD 0.827
   at ~173 FP/camera/day (roughly half the burden of downscaled-inference-only), the best config so

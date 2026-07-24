@@ -50,8 +50,8 @@ false-alarm burden.** On the held-out towers:
 |---|---|---|
 | single-frame baseline (infer @640) | 0.68 | ~208 FP/camera/day |
 | + native-resolution inference (@1280) | **0.86** | ~388 FP/camera/day |
-| + native-resolution **training** (@1280, full-scale) | 0.83 | **~173 FP/camera/day** |
-| + hard-negative mining (@640) | 0.68 | ~half the burden |
+| + native-resolution **training** (@1280, full-scale) | 0.83 | ~173 FP/camera/day |
+| + hard-negative mining (@1280, both levers combined) | 0.80 | **~133 FP/camera/day** |
 
 <sub>*at an assumed 1% base rate and 500 frames/camera/day — an extrapolation, not a measured
 rate. Pano AI's operational target is < 1 FP/camera/day (Pano AI, 2024); the gap is the work
@@ -64,9 +64,11 @@ burden** (~173 vs ~388 FP/camera/day) — the best config so far
 ([resolution](reports/resolution-findings.md)). **[Hard-negative mining](reports/hard-negative-findings.md)
 and the [confuser corpus](reports/confuser-corpus.md) lower the false-alarm *burden*** (the
 baseline false-alarms on ~60% of clean frames — 74% of them clouds — and mining halves that).
-The two levers have **not yet been combined**, and that is the open work: at the cost-loss ratios
-where misses dominate, even the best config still adds only marginal value. Native-resolution
-training *plus* confuser-targeted mining — the deployable recipe — is what should close the gap.
+**Combining the two** — native-resolution training *plus* hard-negative mining, the deployable
+recipe — helps, but **incrementally**: it cuts the burden a further ~23% (173 → 133 FP/camera/day)
+and lifts deployment precision, at the cost of ~2.4 points of recall ceiling (0.83 → 0.80). A real
+win in the moderate-cost regime, but 133 FP/camera/day is still far from the < 1 an operator can
+live with — closing that gap needs more than these two levers.
 
 The next step was a **temporal model** — the literature's headline fix (SmokeyNet's +26
 precision points from frame-to-frame context; Dewangan et al., 2022). We built it and it **did
