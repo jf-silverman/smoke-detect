@@ -18,6 +18,11 @@ mkdir -p data
 gcloud storage rsync -r "$BUCKET/processed" data/processed
 gcloud storage rsync -r "$BUCKET/raw/figlib" data/figlib || true
 
+# the split manifests + yamls were generated on the author's Mac and carry absolute local
+# paths -- rewrite them to this VM's checkout so YOLO can find the images.
+find data/processed \( -name '*.yaml' -o -name '*.txt' \) -print0 \
+  | xargs -0 -r sed -i "s#/Users/jfs-m3/smoke_detect#$(pwd)#g"
+
 # preemption-safe checkpointing: mirror runs/ to GCS every 5 min in the background
 ( while true; do gcloud storage rsync -r runs "$BUCKET/runs" >/dev/null 2>&1 || true; sleep 300; done ) &
 
