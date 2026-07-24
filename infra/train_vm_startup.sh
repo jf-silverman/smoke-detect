@@ -12,6 +12,9 @@ if [ -d smoke-detect ]; then (cd smoke-detect && git pull); else
   git clone https://github.com/jf-silverman/smoke-detect.git; fi
 cd smoke-detect
 pip install -q --upgrade ultralytics
+# Ultralytics imports cv2, which needs libGL.so.1 + libglib -- not present on this image, so
+# the import crashes on a headless server. Install the system libs before training.
+apt-get update -qq && apt-get install -y -qq libgl1 libglib2.0-0
 
 # data/ is gitignored -> hydrate from GCS. The dataset is staged as a single tarball
 # (data_processed.tar): pulling one object + untar is seconds, vs ~40 min copying 33k files
