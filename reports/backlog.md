@@ -13,9 +13,11 @@ roughly by leverage. Completed threads have their own findings reports (see the 
   few). Concrete data path + TTD-eval sketch in [Pre-scoping #3](#pre-scoping-3--hpwren--time-to-detection)
   below. Builds on [temporal-findings.md](temporal-findings.md) and [figlib-findings.md](figlib-findings.md).
   - **Phase A — DONE** ([ttd-findings.md](ttd-findings.md)): leak-safe LOFO TTD harness
-    ([`figlib_ttd.py`](../src/models/figlib_ttd.py)) on the 18 local fires. Zero-shot headline
-    56% detection / median TTD 8 min at a 5% pre-ignition FA budget; resolution lowers TTD, not
-    just AUC. Wide CIs (small n).
+    ([`figlib_ttd.py`](../src/models/figlib_ttd.py)) on 24 local fires (expanded from 18 after
+    fixing an extraction bug that hid the nested 2024–2025 archives). Zero-shot headline
+    50% detection / median TTD 8 min at a 5% pre-ignition FA budget; resolution lowers TTD, not
+    just AUC. Wide CIs (small n); the recent CA fires (Palisades, Coches, Tenaja) all missed —
+    the case for Phase C.
   - **Phase B — next:** pull more onset fires (FIgLib-full via WIFIRE Commons; PYRONEAR-2025) to
     tighten the CIs. FIgLib-full (~20–25 GB) fits local; PYRONEAR video set may want cloud
     ([gcp-plan.md](gcp-plan.md)).
