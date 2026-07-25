@@ -33,6 +33,7 @@ Neither half would have produced this arc alone.
 | 11 | Full-scale native-resolution (1280) *training* | Confirmed a standing prediction: POD **0.83** at ~half the burden of inference-only; the proof run had merely been undertrained | Author said pursue high-res training; LLM ran it |
 | 12 | Time-to-detection (Phase A, FIgLib) | First TTD numbers in the project; **resolution lowers TTD, not just AUC** | Author chose the HPWREN/TTD thrust |
 | 13 | Combine the two levers (native-res + hard-neg) | Burden ~173 → **133 FP/day** (−23%), −2.4 pts recall — a real but *incremental* win, reported as such | Author sequenced it; LLM built and stopped it at the plateau |
+| 14 | Scout a Phase C box-data source (PYRONEAR-2025) before spending GPU | **Negative result** — it can't close the recent-CA gap and re-adds leaky HPWREN; pivoted to pseudo-labeling our own fires | Author asked for a recent labeled source; LLM profiled and eliminated it cheaply |
 
 ## The turns worth remembering
 
@@ -115,6 +116,19 @@ the academic reference actually lead with, and the project had never computed it
 leak-safe harness produced the first numbers — and the resolution lever showed up here too: native
 tiling detects more fires *and* detects them minutes sooner, not merely at higher AUC. The through
 -line held one more time.
+
+**Cheap elimination beats an expensive pull.** Phase C — an in-distribution detector — needs
+bounding boxes FIgLib doesn't ship, and the recent-California miss made a *recent, labeled* source
+the obvious want. PYRONEAR-2025 looked like it: images and videos, 640 fires, US among them. Rather
+than download several GB on faith, we read its manifest first — the repo ships a per-fire test list
+with the source encoded in every folder name. That five-minute read killed it: the US portion is all
+old HPWREN (2016–2021), the only recent fires are Chilean and French, and it predates the very
+2025 California fires we miss — so it *cannot* close the gap. It was also leakier than what we had,
+its training pool literally containing the AI-For-Mankind set we'd already measured at 21% overlap
+with our test fires. A negative result, arrived at before spending a dollar of GPU or an hour of
+download — and it pointed to the cleaner path the author had already sensed: pseudo-label our *own*
+fires, where we hold the frames and onset labels and only the boxes are missing, with zero external
+leak. Knowing what *not* to pull is part of the work.
 
 ## Why this is the interesting story
 

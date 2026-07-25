@@ -16,3 +16,4 @@ wandb/
 !runs/eval_*.json
 !results/*.json
 !results/*.csv
+data/hpwren_boxes/

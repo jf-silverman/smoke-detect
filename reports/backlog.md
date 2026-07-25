@@ -24,6 +24,26 @@ roughly by leverage. Completed threads have their own findings reports (see the 
   - **Phase C:** train an in-distribution detector on FIgLib boxes → the AUC 0.658 floor rises and
     TTD should drop toward the SmokeyNet range; then test a *learned* temporal head. Best run on a
     cloud GPU ([gcp-plan.md](gcp-plan.md)) rather than the ~92-min/epoch local box.
+    - **Data-source decision (2026-07): pseudo-label our own local FIgLib fires.** Phase C needs
+      bounding boxes, which canonical FIgLib lacks (only onset labels via the filename offset). The
+      external box sources were evaluated and set aside:
+      - **PYRONEAR-2025** (Lostanlen et al., 2024; arXiv:2402.05349) — *eliminated.* Its US data is
+        all old HPWREN SoCal (2016–2021) + ALERTWildfire Nevada (2015–2019); its only 2024–2025 fires
+        are Chile/France, so it cannot close the recent-CA miss (it predates the Jan-2025 Palisades
+        fires). Worse for leak: its image pool literally includes AI-For-Mankind, and its video test
+        set shares 4 same-date HPWREN fires with our 24 TTD fires.
+      - **AI-For-Mankind** — real HPWREN boxes but leak-entangled (pHash audit: 21% overlap, 8
+        exact-duplicate FIgLib test fires); no clean cutoff. Usable only with those fires excluded.
+      - **D-Fire** (Brazil) — leak-free but cross-distribution; raises the box-training floor without
+        addressing California specifically.
+      - **Chosen path — pseudo-labeling.** We already hold the frames and onset labels for our local
+        fires; only boxes are missing. Pre-annotate positive frames (offset ≥ 0) with the salvaged
+        1280 detector (`best.pt`), hand-correct in a box tool (makesense.ai / CVAT / Roboflow Label
+        Assist), gate boxes on the onset labels so the model never labels a pre-ignition frame, and
+        hold out **whole fires** (train on a disjoint fire set; keep the 24 TTD fires for eval only).
+        Zero external leak, most in-distribution, and correction effort concentrates on the tiny
+        early plumes that matter most for TTD. Main risk (error amplification) is defused by the
+        human-review step — semi-supervised, not naive self-training.
 
 ## Recently completed (folded into reports)
 

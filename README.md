@@ -95,6 +95,16 @@ overcast) — a measured version of the documented single-frame failure mode, wh
 fires on nearly every cloud. The report found no such public corpus exists, so
 `results/confuser_corpus.csv` is a small original contribution.
 
+**Where this is going next.** Extending the pipeline onto the field's headline metric —
+[time-to-detection](reports/ttd-findings.md) — a zero-shot detector on held-out California onset
+fires detects 50% of them at a median 8 minutes, but *misses the most recent CA fires entirely*
+(Palisades, Coches, Tenaja). That miss is a distribution-shift signal, and the fix is an
+in-distribution detector trained on Californian smoke boxes. The candidate public box sources were
+scouted and set aside — the most recent (PYRONEAR-2025) can't close the recency gap and re-imports
+the leak we already audited — so the chosen path is to **pseudo-label our own onset fires** (we hold
+the frames and onset labels; only the boxes are missing) under strict whole-fire holdout. Tracked in
+the [backlog](reports/backlog.md).
+
 ## Layout
 
 - [`reports/`](reports/) — the state-of-the-field report, a [metrics rationale](reports/metrics.md)
