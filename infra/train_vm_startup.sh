@@ -52,7 +52,15 @@ fi
 # ~epoch 24, so this typically ends in the low-mid 20s. --epochs 30 caps the worst case.
 # --resume continues from runs/gcp_grouped_1280/weights/last.pt if a prior boot left one (spot
 # STOP+restart); it's a no-op on the first boot. Let early stopping end it near the plateau.
-python3 src/models/train.py --split grouped --imgsz 1280 --batch 16 --epochs 30 --patience 8 --resume --name gcp_grouped_1280
+#
+# CRITICAL: redirect training output to a logfile. Ultralytics' progress bars (ANSI + \r, few
+# newlines) overflow the GCE metadata script-runner's line scanner ("token too long"); the
+# runner then stops draining stdout, the OS pipe fills, and training BLOCKS on write() and
+# hangs mid-run. Writing to a file keeps the startup script's own stdout quiet. The log lands
+# under runs/ so the 5-min rsync mirrors it to GCS -- tail it with:
+#   gcloud storage cat gs://$BUCKET/runs/train.log | tail
+mkdir -p runs
+python3 src/models/train.py --split grouped --imgsz 1280 --batch 16 --epochs 30 --patience 8 --resume --name gcp_grouped_1280 > runs/train.log 2>&1
 
 # final sync + a done-marker so you can poll from your laptop
 gcloud storage rsync -r runs "$BUCKET/runs"
