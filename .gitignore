@@ -17,3 +17,5 @@ wandb/
 !results/*.json
 !results/*.csv
 data/hpwren_boxes/
+data/figlib_preannot/
+data/figlib_preannot.zip
