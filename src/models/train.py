@@ -42,6 +42,9 @@ def main() -> None:
     ap.add_argument("--name", default=None, help="run name (defaults to split)")
     ap.add_argument("--fraction", type=float, default=1.0, help="fraction of train data (smoke test)")
     ap.add_argument("--patience", type=int, default=15)
+    ap.add_argument("--resume", action="store_true",
+                    help="resume from runs/<name>/weights/last.pt if it exists (for preemptible "
+                         "VMs that STOP+start): continues the same run rather than restarting")
     args = ap.parse_args()
 
     data_yaml = PROC / f"{args.split}.yaml"
@@ -50,8 +53,20 @@ def main() -> None:
 
     device = pick_device()
     name = args.name or args.split
-    print(f"training '{name}' on {device}: {args.model}, {args.epochs} epochs, imgsz {args.imgsz}")
 
+    # Resume path: if asked and a checkpoint exists, reload it and let Ultralytics restore the
+    # saved training state (epoch, optimizer, config). All other flags are ignored on resume --
+    # the run continues to its original target. On first boot there is no last.pt, so we fall
+    # through to a fresh run.
+    last_pt = RUNS / name / "weights" / "last.pt"
+    if args.resume and last_pt.exists():
+        print(f"resuming '{name}' on {device} from {last_pt}")
+        model = YOLO(str(last_pt))
+        model.train(resume=True)
+        print(f"done -> {RUNS / name}")
+        return
+
+    print(f"training '{name}' on {device}: {args.model}, {args.epochs} epochs, imgsz {args.imgsz}")
     model = YOLO(args.model)
     model.train(
         data=str(data_yaml),

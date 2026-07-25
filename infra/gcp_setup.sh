@@ -41,18 +41,30 @@ echo "If the limit is 0, request an increase: https://console.cloud.google.com/i
 
 # 4) LAUNCH THE TRAINING VM (Deep Learning image ships CUDA + PyTorch)
 #    --scopes=cloud-platform lets the VM's service account read/write the bucket (required).
-#    For a cheap preemptible run add:  --provisioning-model=SPOT
-#    (safe -- train_vm_startup.sh mirrors runs/ to GCS every 5 min, so preemption loses <= 1 epoch)
+#    --max-run-duration is a billing backstop -- the VM self-deletes after this even if you forget
+#    (budget alerts do NOT stop resources). Bump it above your expected wall-clock with margin.
 # gcloud compute instances create "$VM" \
 #   --zone="$ZONE" --machine-type="$MACHINE" \
 #   --accelerator="type=$GPU,count=1" --maintenance-policy=TERMINATE \
 #   --image-family=pytorch-2-9-cu129-ubuntu-2204-nvidia-580 --image-project=deeplearning-platform-release \
 #   --boot-disk-size=200GB \
 #   --scopes=https://www.googleapis.com/auth/cloud-platform \
+#   --max-run-duration=28800s --instance-termination-action=DELETE \
 #   --metadata="install-nvidia-driver=True,bucket=$BUCKET" \
 #   --metadata-from-file=startup-script=infra/train_vm_startup.sh
+#
+#    CHEAP PREEMPTIBLE VARIANT (~half price): add these to the command above --
+#      --provisioning-model=SPOT --instance-termination-action=STOP
+#    Use STOP, not DELETE: on preemption the VM STOPS and its disk (repo + hydrated data +
+#    checkpoints) survives. train_vm_startup.sh is idempotent and train.py --resume continues from
+#    the last checkpoint, so `gcloud compute instances start "$VM"` resumes in seconds. (Spot
+#    forbids --automaticRestart, so the restart is manual or via an external scheduler.)
+#    NOTE: a STOPPED spot VM bills $0 for GPU/compute but its 200GB disk keeps billing -- still
+#    DELETE it when the run is truly done. Do NOT combine SPOT with --max-run-duration=...DELETE
+#    above; pick one termination action.
 
 # 5) WATCH / FETCH / TEARDOWN
 # gcloud compute ssh "$VM" --zone="$ZONE" --command='tail -f /var/log/syslog | grep startup-script'
-# gcloud storage rsync -r "$BUCKET/runs" runs      # pull results back locally
-# gcloud compute instances delete "$VM" --zone="$ZONE"   # storage persists at the cheap rate
+# gcloud compute instances start "$VM" --zone="$ZONE"    # resume a STOP'd spot VM (picks up mid-run)
+# gcloud storage rsync -r "$BUCKET/runs" runs            # pull results back locally
+# gcloud compute instances delete "$VM" --zone="$ZONE"   # ALWAYS delete when done (disk bills while stopped)
