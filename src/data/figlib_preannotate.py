@@ -16,13 +16,17 @@ WHAT IT DOES
   * Runs the detector on native-resolution TILES (the resolution it was trained at; whole-frame
     downscaling pooled the small plumes away -- see figlib_tiled.py), maps each tile's boxes back
     to full-frame coordinates, merges seam duplicates with NMS, and keeps boxes above --conf.
+  * VIGNETTE FILTER: drops the phantom boxes the detector fires on the black rounded fisheye
+    corners -- only where a box center is in a corner AND its region is near-black, so a real plume
+    near a (bright) edge is kept. It filters the scaffold you correct, not the final labels; you are
+    the label authority in CVAT, so this only cuts deletion clicks, it does not bias ground truth.
   * Writes an "Ultralytics YOLO Detection" bundle -- the format CVAT imports directly and that
     `yolo train` consumes with no conversion (chosen over legacy "YOLO 1.1" for exactly that
     round-trip). Frames are copied under flattened <fire>__<stem>.jpg names so CVAT can match
     annotations to images by filename across fires.
 
-    python src/data/figlib_preannotate.py                 # defaults: conf 0.15, 30 frames/fire
-    python src/data/figlib_preannotate.py --conf 0.10 --max-per-fire 40
+    python src/data/figlib_preannotate.py                 # defaults: conf 0.20, 30 frames/fire
+    python src/data/figlib_preannotate.py --conf 0.15 --max-per-fire 40
 
 Then in CVAT: create a task from data/figlib_preannot/images/train, Upload annotations ->
 "Ultralytics YOLO Detection" -> the produced zip, and correct. No GPU, no Nuclio, no Docker.
@@ -85,8 +89,14 @@ def tiles_with_offset(W: int, H: int, tile: int, stride: int):
 
 
 def frame_boxes(model, img: Image.Image, tile: int, stride: int, conf: float,
-                device: str, batch: int) -> np.ndarray:
-    """Return full-frame normalized (cx, cy, w, h) boxes for one frame, NMS-merged across tiles."""
+                device: str, batch: int, vr: float, vluma: float) -> np.ndarray:
+    """Return full-frame normalized (cx, cy, w, h) boxes for one frame, NMS-merged across tiles.
+
+    Boxes in the dark fisheye vignette corners are dropped (VIGNETTE FILTER): a box is discarded
+    only if BOTH its center is in a corner (elliptical radius > vr; edge midpoints are ~1.0, true
+    corners ~1.4) AND its pixel region is near-black (mean luma < vluma). Requiring both keeps a
+    real plume that happens to sit near an edge (which is bright and not in a corner) while removing
+    the phantom boxes on the black rounded corners where there is no scene."""
     W, H = img.size
     corners = list(tiles_with_offset(W, H, tile, stride))
     crops = [img.crop((x, y, min(x + tile, W), min(y + tile, H))) for x, y in corners]
@@ -108,21 +118,34 @@ def frame_boxes(model, img: Image.Image, tile: int, stride: int, conf: float,
     scores = np.concatenate(scores).astype(np.float32)
     keep = nms(torch.from_numpy(xyxy), torch.from_numpy(scores), iou_threshold=0.5).numpy()
     xyxy = xyxy[keep]
-    # -> normalized cx, cy, w, h, clipped to frame
-    x1, y1, x2, y2 = xyxy[:, 0], xyxy[:, 1], xyxy[:, 2], xyxy[:, 3]
-    x1, x2 = np.clip([x1, x2], 0, W)
-    y1, y2 = np.clip([y1, y2], 0, H)
-    return np.stack([(x1 + x2) / 2 / W, (y1 + y2) / 2 / H, (x2 - x1) / W, (y2 - y1) / H], axis=1)
+    # clip to frame (pixels)
+    x1 = np.clip(xyxy[:, 0], 0, W); x2 = np.clip(xyxy[:, 2], 0, W)
+    y1 = np.clip(xyxy[:, 1], 0, H); y2 = np.clip(xyxy[:, 3], 0, H)
+    cx = (x1 + x2) / 2 / W; cy = (y1 + y2) / 2 / H
+    bw = (x2 - x1) / W; bh = (y2 - y1) / H
+    # VIGNETTE FILTER: drop a box only if its center is in a corner AND its region is near-black.
+    gray = np.asarray(img.convert("L"))
+    r = np.sqrt(((cx - 0.5) / 0.5) ** 2 + ((cy - 0.5) / 0.5) ** 2)  # ~1.0 at edge mids, ~1.4 corners
+    luma = np.array([gray[int(y1[i]):max(int(y1[i]) + 1, int(y2[i])),
+                          int(x1[i]):max(int(x1[i]) + 1, int(x2[i]))].mean()
+                     for i in range(len(cx))]) if len(cx) else np.zeros(0)
+    interior = ~((r > vr) & (luma < vluma))
+    return np.stack([cx, cy, bw, bh], axis=1)[interior]
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tile", type=int, default=640)
     ap.add_argument("--stride", type=int, default=640)
-    ap.add_argument("--conf", type=float, default=0.15,
-                    help="keep pre-annotation boxes above this confidence (default 0.15)")
+    ap.add_argument("--conf", type=float, default=0.20,
+                    help="keep pre-annotation boxes above this confidence (default 0.20)")
     ap.add_argument("--max-per-fire", type=int, default=30,
                     help="evenly sample at most this many positive frames per fire (default 30)")
+    ap.add_argument("--vignette-r", type=float, default=1.1,
+                    help="corner cutoff for the vignette filter: elliptical radius of a box center "
+                         "above which it counts as a corner (edge mids ~1.0, corners ~1.4)")
+    ap.add_argument("--vignette-luma", type=float, default=35.0,
+                    help="a corner box is dropped only if its region mean luma (0-255) is below this")
     ap.add_argument("--batch", type=int, default=32)
     args = ap.parse_args()
 
@@ -160,7 +183,8 @@ def main() -> None:
     for i, row in df.iterrows():
         name = f"{row['seq']}__{row['stem']}"        # flattened, unique across fires
         img = Image.open(row["path"]).convert("RGB")
-        boxes = frame_boxes(model, img, args.tile, args.stride, args.conf, device, args.batch)
+        boxes = frame_boxes(model, img, args.tile, args.stride, args.conf, device, args.batch,
+                            args.vignette_r, args.vignette_luma)
         shutil.copy2(row["path"], img_dir / f"{name}.jpg")
         (lbl_dir / f"{name}.txt").write_text(
             "\n".join(f"0 {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}" for cx, cy, w, h in boxes))
