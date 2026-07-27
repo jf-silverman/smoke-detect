@@ -29,12 +29,12 @@ Reported (the operator-relevant PAIR -- 'early' must not be bought with 'cries w
 Optional `--motion` probe (still no model): tests whether inter-frame motion ANCHORED to the
 skyline (connected to the terrain, unlike free-floating cloud drift) separates onset from
 pre-ignition frames better than single-frame confidence -- the author's scanning observation
-(reports/backlog.md "Motion / change-detection anchored at the horizon").
+(research/backlog.md "Motion / change-detection anchored at the horizon").
 
 STATUS: Phase A scaffold. The metric machinery and LOFO harness are complete and run on the
 18 local fires. Small n (~4 effective test signal per fold is avoided by LOFO, but ~17 fires
 total is still small) -> treat magnitudes as directional. Phase B (FIgLib-full via WIFIRE
-Commons / PYRONEAR-2025) tightens the numbers; see reports/backlog.md.
+Commons / PYRONEAR-2025) tightens the numbers; see research/backlog.md.
 """
 
 from __future__ import annotations
@@ -196,7 +196,7 @@ def bootstrap_ci(per_fire: dict, B: int = 2000, seed: int = 0) -> dict:
 
 
 # --- optional motion / change-detection probe (reads frames; still NO model, no GPU) --------------
-# Tests the author's scanning observation (reports/backlog.md "Motion / change-detection anchored at
+# Tests the author's scanning observation (research/backlog.md "Motion / change-detection anchored at
 # the horizon"): a plume is often legible only by its inter-frame MOTION, and the diagnostic property
 # is not that the smoke stays low -- it rises -- but that it is ANCHORED to the ground: the base sits
 # at/near/below the horizon and the growing column stays CONNECTED to the horizon line. Clouds (74%
@@ -220,7 +220,7 @@ def estimate_horizon(gray: np.ndarray) -> int:
     latches onto the very top or bottom edge. A per-COLUMN smoothed-skyline variant was tried (warp
     each column so the terrain contour is flat) and was WORSE -- per-column estimates are noisy
     (trees, textured terrain, cloud edges) and the warp scrambled the vertical structure anchoring
-    relies on. The flat median row is more robust; see reports/backlog.md."""
+    relies on. The flat median row is more robust; see research/backlog.md."""
     rows = gray.mean(axis=1).astype(float)
     k = max(3, len(rows) // 50)
     sm = np.convolve(rows, np.ones(k) / k, mode="same")
@@ -532,7 +532,7 @@ def main() -> None:
     out.write_text(json.dumps(payload, indent=2))
     print(f"\nsaved -> {out}")
     print("\nNOTE: ~17 fires is small; magnitudes are directional. Phase B (FIgLib-full / "
-          "PYRONEAR-2025) tightens them. See reports/backlog.md.")
+          "PYRONEAR-2025) tightens them. See research/backlog.md.")
 
 
 if __name__ == "__main__":

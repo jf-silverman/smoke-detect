@@ -16,6 +16,14 @@ The through-line is a division of labor that kept paying off:
 
 Neither half would have produced this arc alone.
 
+For the findings themselves — the numbers, per stage, with a table of contents — see the companion
+[findings report](smoke-detection-report.md). This document is the *story*.
+
+**Contents:** [The sequence of what we tested](#the-sequence-of-what-we-tested) ·
+[The turns worth remembering](#the-turns-worth-remembering) ·
+[Why this is the interesting story](#why-this-is-the-interesting-story) ·
+[Pointers](#pointers)
+
 ## The sequence of what we tested
 
 | # | Step | Result | Whose move |
@@ -152,7 +160,7 @@ author pointed out it breaks under the very conditions that matter — a high-Ha
 hard-edged column with no haze, a windy day an all-diffuse one with no edge. And a proposed
 smoothed-skyline horizon *upgrade* was built, measured, found to make things worse (0.715 → 0.616),
 and reverted — a fix that wasn't. Neither was papered over. See
-[motion-findings.md](motion-findings.md).
+[motion-findings.md](../research/motion-findings.md).
 
 ## Why this is the interesting story
 
@@ -175,14 +183,14 @@ results happen.
 ## Pointers
 
 Each step has its own report with the numbers and caveats:
-[state-of-smoke-detection](state-of-smoke-detection.md) ·
-[metrics](metrics.md) ·
-[baseline-findings](baseline-findings.md) ·
-[hard-negative-findings](hard-negative-findings.md) ·
-[temporal-findings](temporal-findings.md) ·
-[confuser-corpus](confuser-corpus.md) ·
-[figlib-findings](figlib-findings.md) ·
-[resolution-findings](resolution-findings.md) ·
-[ttd-findings](ttd-findings.md) ·
-[motion-findings](motion-findings.md) ·
-[backlog](backlog.md)
+[state-of-smoke-detection](../research/state-of-smoke-detection.md) ·
+[metrics](../research/metrics.md) ·
+[baseline-findings](../research/baseline-findings.md) ·
+[hard-negative-findings](../research/hard-negative-findings.md) ·
+[temporal-findings](../research/temporal-findings.md) ·
+[confuser-corpus](../research/confuser-corpus.md) ·
+[figlib-findings](../research/figlib-findings.md) ·
+[resolution-findings](../research/resolution-findings.md) ·
+[ttd-findings](../research/ttd-findings.md) ·
+[motion-findings](../research/motion-findings.md) ·
+[backlog](../research/backlog.md)

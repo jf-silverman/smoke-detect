@@ -14,14 +14,17 @@ al., 2022). That is the wrong trade for wildfire, where a missed fire is catastr
 false alarm costs a watchstander a glance. The benchmark-vs-field gap — and the misleading
 yardstick behind it — is the problem this project is built around: it measures what a detector
 would actually do in the field (**detection rate and false-alarm burden**), not F1. See
-[`reports/metrics.md`](reports/metrics.md) and
-[`reports/state-of-smoke-detection.md`](reports/state-of-smoke-detection.md).
+[`research/metrics.md`](research/metrics.md) and
+[`research/state-of-smoke-detection.md`](research/state-of-smoke-detection.md).
 
 ## What's here
 
-**A research survey** ([`reports/state-of-smoke-detection.md`](reports/state-of-smoke-detection.md),
-backed by [`research/`](research/)) covering public datasets, modeling approaches, how
-performance is really measured, and when these tools do and don't work.
+**The [findings report](reports/smoke-detection-report.md)** — the one-stop technical read (with a
+table of contents), and its companion [research narrative](reports/research-narrative.md) tracing how
+the work actually unfolded. Both draw on the detailed material in [`research/`](research/), including
+a full **field survey** ([`research/state-of-smoke-detection.md`](research/state-of-smoke-detection.md))
+of public datasets, modeling approaches, how performance is really measured, and when these tools do
+and don't work.
 
 **A working pipeline on [pyro-sdis](https://huggingface.co/datasets/pyronear/pyro-sdis)**
 (33,636 images, French detection towers; Pyronear, 2025) that takes evaluation integrity
@@ -61,8 +64,8 @@ Two levers, two axes. **Resolution raises the detection *ceiling*** — the 640 
 caps at POD 0.68 (it never sees the small plumes), while native-resolution inference reaches 0.86,
 and native-resolution *training* to convergence holds 0.83 at **roughly half the false-alarm
 burden** (~173 vs ~388 FP/camera/day) — the best config so far
-([resolution](reports/resolution-findings.md)). **[Hard-negative mining](reports/hard-negative-findings.md)
-and the [confuser corpus](reports/confuser-corpus.md) lower the false-alarm *burden*** (the
+([resolution](research/resolution-findings.md)). **[Hard-negative mining](research/hard-negative-findings.md)
+and the [confuser corpus](research/confuser-corpus.md) lower the false-alarm *burden*** (the
 baseline false-alarms on ~60% of clean frames — 74% of them clouds — and mining halves that).
 **Combining the two** — native-resolution training *plus* hard-negative mining, the deployable
 recipe — helps, but **incrementally**: it cuts the burden a further ~23% (173 → 133 FP/camera/day)
@@ -72,14 +75,14 @@ live with — closing that gap needs more than these two levers.
 
 The next step was a **temporal model** — the literature's headline fix (SmokeyNet's +26
 precision points from frame-to-frame context; Dewangan et al., 2022). We built it and it **did
-not transfer to this dataset**, and [the report explains why](reports/temporal-findings.md): 76% of the false
+not transfer to this dataset**, and [the report explains why](research/temporal-findings.md): 76% of the false
 alarms are *persistent* structures (fixed cloud banks, glare, ridge haze), not the flicker a
 persistence model suppresses, and pyro-sdis's short bursts lack the ignition-onset dynamics
 that power temporal gains on FIgLib. At matched recall, no temporal method beats the
 single-frame detector here. That is reported as a **negative result**, because it is one —
 on pyro-sdis the leverage is in the negatives, not the time axis.
 
-As a check on that claim, we ran the same pipeline on [**FIgLib**](reports/figlib-findings.md),
+As a check on that claim, we ran the same pipeline on [**FIgLib**](research/figlib-findings.md),
 the onset-sequence dataset the temporal literature used (Dewangan et al., 2022). The first run looked like a dead end —
 the detector scored AUC 0.45 (worse than random) — until a question about *resolution* found the
 real cause: we were downscaling FIgLib's native 3072×2048 frames to 640 px, pooling the tiny
@@ -88,7 +91,7 @@ and the positive control then landed: requiring temporal persistence **cuts** fa
 12–19 pts on FIgLib, where the very same rule **raised** them on pyro-sdis. Same rule, opposite
 sign, split by whether the data contains ignition onset — the mechanism, confirmed both ways.
 
-So we went *into* the negatives and built a [**typed confuser corpus**](reports/confuser-corpus.md):
+So we went *into* the negatives and built a [**typed confuser corpus**](research/confuser-corpus.md):
 clustering the 2,305 frames the detector false-alarms on into named failure modes. The result
 is one clean number — **74% of the false alarms are clouds** (cumulus, backlit stratus, broken
 overcast) — a measured version of the documented single-frame failure mode, where the detector
@@ -96,35 +99,45 @@ fires on nearly every cloud. The report found no such public corpus exists, so
 `results/confuser_corpus.csv` is a small original contribution.
 
 **Where this is going next.** Extending the pipeline onto the field's headline metric —
-[time-to-detection](reports/ttd-findings.md) — a zero-shot detector on held-out California onset
+[time-to-detection](research/ttd-findings.md) — a zero-shot detector on held-out California onset
 fires detects 50% of them at a median 8 minutes, but *misses the most recent CA fires entirely*
 (Palisades, Coches, Tenaja). That miss is a distribution-shift signal, and the fix is an
 in-distribution detector trained on Californian smoke boxes. The candidate public box sources were
 scouted and set aside — the most recent (PYRONEAR-2025) can't close the recency gap and re-imports
 the leak we already audited — so the chosen path is to **pseudo-label our own onset fires** (we hold
 the frames and onset labels; only the boxes are missing) under strict whole-fire holdout. Tracked in
-the [backlog](reports/backlog.md).
+the [backlog](research/backlog.md).
 
 A second thread came straight from a domain observation while hand-correcting those labels: a plume is
 often legible only by its **motion** across frames. A training-free probe
-([motion-findings.md](reports/motion-findings.md)) confirms that inter-frame change *anchored to the
+([motion-findings.md](research/motion-findings.md)) confirms that inter-frame change *anchored to the
 horizon* (connected to the ground, unlike free-floating cloud drift) separates ignition onset from
 pre-ignition frames at **per-fire AUC 0.71 vs 0.57** for the appearance detector, and is
 *complementary* to it — the case for a motion channel in the in-distribution model. The same probe
-produced two negative results (a texture cue and a smoothed-skyline horizon upgrade), both reported as
+produced three negative results (a texture cue and two horizon-estimator upgrades), all reported as
 such.
 
 ## Layout
 
-- [`reports/`](reports/) — the state-of-the-field report, a [metrics rationale](reports/metrics.md)
-  (why recall-first, not F1), and per-stage findings (baseline, hard-negative, temporal, confuser
-  corpus, FIgLib, [resolution & recall-first](reports/resolution-findings.md),
-  [time-to-detection](reports/ttd-findings.md), [motion / anchored change-detection](reports/motion-findings.md)),
-  and a [**research narrative**](reports/research-narrative.md) tracing how the project actually
-  unfolded (including the human resolution insight that rescued the FIgLib control). Open threads
-  are tracked in the [backlog](reports/backlog.md), and background primers in
-  [background-topics](reports/background-topics.md).
-- [`research/`](research/) — detailed source material behind the report
+Two folders, two audiences. **`reports/`** holds the polished reports written for a reader;
+**`research/`** holds the detailed working material behind them, for the project owner.
+
+- [`reports/`](reports/) — **two reports.** The [**findings report**](reports/smoke-detection-report.md)
+  is the one-stop technical read (recall-first framing, the findings arc from baseline to motion, the
+  deployability gap), with a table of contents linking each section to its full detail in `research/`.
+  The [**research narrative**](reports/research-narrative.md) tells the same story as it actually
+  unfolded — the human-and-LLM loop, the negative results, the resolution insight that rescued the
+  FIgLib control.
+- [`research/`](research/) — everything the reports draw on: the
+  [field survey](research/state-of-smoke-detection.md) and its source reviews (datasets, methods,
+  evaluation, literature, existing projects); the [metrics rationale](research/metrics.md); the full
+  per-stage findings ([baseline](research/baseline-findings.md),
+  [resolution](research/resolution-findings.md), [hard-negative](research/hard-negative-findings.md),
+  [temporal](research/temporal-findings.md), [confuser corpus](research/confuser-corpus.md),
+  [FIgLib](research/figlib-findings.md), [time-to-detection](research/ttd-findings.md),
+  [motion](research/motion-findings.md)); [background primers](research/background-topics.md); and
+  working notes (the [backlog](research/backlog.md), [data-quality flags](research/data-quality-flags.md),
+  [GPU plan](research/gcp-plan.md)).
 - [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining, confuser corpus
 - [`src/models/`](src/models/) — training, operator-framed evaluation, temporal model + comparison
 - [`results/`](results/) — eval sweeps + mined hard-negative list
@@ -168,4 +181,4 @@ one flag change away (drop `--fraction`, raise `--epochs`).*
 
 <sub>Detailed per-topic sources — operational networks (Pano, ALERTCalifornia), NOAA GOES/NGFS,
 and meteorological verification (cost-loss / relative economic value) — are cited inline in
-[`reports/metrics.md`](reports/metrics.md) and [`research/`](research/).</sub>
+[`research/metrics.md`](research/metrics.md) and [`research/`](research/).</sub>

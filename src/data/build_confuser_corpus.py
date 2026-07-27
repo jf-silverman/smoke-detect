@@ -15,7 +15,7 @@ named failure modes with per-type counts. It emits:
   reports/figures/confuser_montage.png rows = clusters, cols = representative frames
 
 A human then reads the montage and assigns each cluster a label (fog / glare / ...);
-those labels live in reports/confuser-corpus.md. The images themselves stay gitignored,
+those labels live in research/confuser-corpus.md. The images themselves stay gitignored,
 so the shareable artifact is the manifest + labels + montage -- reconstructible by
 anyone with pyro-sdis.
 
@@ -42,7 +42,7 @@ FIG = ROOT / "reports" / "figures"
 
 # Human labels for the k=6 clustering (KMeans is deterministic at random_state=0, so
 # cluster ids are stable). Assigned by eye from reports/figures/confuser_montage.png;
-# see reports/confuser-corpus.md. If you change --k or the features, re-inspect and
+# see research/confuser-corpus.md. If you change --k or the features, re-inspect and
 # re-map -- the ids will move.
 CLUSTER_LABELS = {
     0: ("low-sun glare & lens flare", "sun/glare"),
