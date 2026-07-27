@@ -23,6 +23,11 @@ Reported (the operator-relevant PAIR -- 'early' must not be bought with 'cries w
 
     python src/models/figlib_tiled.py --tile 640 --stride 640   # once: caches features_tiled.npz
     python src/models/figlib_ttd.py --far-target 0.05           # this eval (no model, no GPU)
+    python src/models/figlib_ttd.py --motion                    # + below-horizon motion probe
+
+Optional `--motion` probe (still no model): tests whether inter-frame motion below the detected
+horizon separates onset from pre-ignition frames better than single-frame confidence -- the
+author's scanning observation (reports/backlog.md "Motion / change-detection below the horizon").
 
 STATUS: Phase A scaffold. The metric machinery and LOFO harness are complete and run on the
 18 local fires. Small n (~4 effective test signal per fold is avoided by LOFO, but ~17 fires
@@ -39,12 +44,14 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from PIL import Image  # only used by the optional --motion probe
 
 ROOT = Path(__file__).resolve().parents[2]
 FIGLIB = ROOT / "data" / "figlib"
 RESULTS = ROOT / "results"
 
 OFFSET_RE = re.compile(r"_([+-]\d+)\.jpg$")
+MOTION_CACHE = FIGLIB / "motion_feats.npz"
 
 
 # --- data (mirrors figlib_temporal.scan_frames; kept local so this eval needs only numpy/pandas) ---
@@ -174,6 +181,120 @@ def bootstrap_ci(per_fire: dict, B: int = 2000, seed: int = 0) -> dict:
     return {"detection_rate_ci90": ci(drs), "median_ttd_ci90": ci(mts)}
 
 
+# --- optional motion / change-detection probe (reads frames; still NO model, no GPU) --------------
+# Tests the author's scanning observation (reports/backlog.md "Motion / change-detection below the
+# horizon"): a plume is often legible only by its inter-frame MOTION, and that motion is diagnostic
+# mainly AT/BELOW the skyline -- clouds (74% of false alarms) drift ABOVE it. This is separate from
+# the persistence rule already tested: persistence suppresses flicker, differencing proposes change.
+# The probe asks a cheap, training-free question: does below-horizon motion energy separate onset
+# (offset>=0) from pre-ignition (offset<0) frames better than the single-frame detector confidence?
+
+def estimate_horizon(gray: np.ndarray) -> int:
+    """Row index of the sky->terrain transition: the steepest top-to-bottom drop in row-mean luma.
+
+    Crude but adequate for a separability probe -- sky is brighter than terrain, so the horizon sits
+    near the largest negative gradient of the smoothed row-brightness profile, searched in the middle
+    band (0.15-0.85 of height) so it never latches onto the very top or bottom edge."""
+    rows = gray.mean(axis=1).astype(float)
+    k = max(3, len(rows) // 50)
+    sm = np.convolve(rows, np.ones(k) / k, mode="same")
+    grad = np.diff(sm)
+    lo, hi = int(0.15 * len(grad)), int(0.85 * len(grad))
+    band = grad[lo:hi]
+    return lo + int(np.argmin(band)) if len(band) else len(rows) // 2
+
+
+def _load_gray(path: Path, width: int) -> np.ndarray:
+    img = Image.open(path).convert("L")
+    if img.width > width:
+        img = img.resize((width, max(1, round(img.height * width / img.width))))
+    return np.asarray(img, dtype=np.int16)
+
+
+def compute_motion_features(df: pd.DataFrame, cache_path: Path, width: int = 512) -> dict:
+    """Return {stem: (below_energy, above_energy)} of frame-to-previous motion, split by horizon.
+
+    For each fire in time order, difference each frame from the previous one (~60 s earlier). The
+    per-frame spatial MEDIAN of the signed difference is subtracted first, which strips a uniform
+    exposure/auto-gain shift (and much dirty-lens flicker) so only *localized* change survives. The
+    rectified difference is then averaged below vs above the estimated horizon. Cached to npz; a
+    fire's first frame has no predecessor and is omitted."""
+    if cache_path.exists():
+        a = np.load(cache_path, allow_pickle=True)
+        return {s: (float(b), float(ab))
+                for s, b, ab in zip(a["stems"].astype(str), a["below"], a["above"])}
+    S, B, A = [], [], []
+    for seq, g in df.sort_values(["seq", "offset"]).groupby("seq"):
+        prev = None
+        for stem in g["stem"]:
+            gray = _load_gray(FIGLIB / "images" / seq / f"{stem}.jpg", width)
+            if prev is not None and prev.shape == gray.shape:
+                d = gray - prev
+                diff = np.abs(d - np.median(d))          # strip uniform exposure/gain shift
+                h = estimate_horizon(gray)
+                S.append(stem); B.append(float(diff[h:, :].mean())); A.append(float(diff[:h, :].mean()))
+            prev = gray
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(cache_path, stems=np.array(S), below=np.array(B, float), above=np.array(A, float))
+    print(f"  cached {len(S)} motion features -> {cache_path}")
+    return {s: (b, ab) for s, b, ab in zip(S, B, A)}
+
+
+def _rankdata(a: np.ndarray) -> np.ndarray:
+    """1-based ranks with ties averaged (Mann-Whitney helper; avoids a scipy dependency)."""
+    order = a.argsort(kind="mergesort")
+    ranks = np.empty(len(a), float)
+    ranks[order] = np.arange(1, len(a) + 1)
+    s = a[order]
+    i = 0
+    while i < len(a):
+        j = i
+        while j + 1 < len(a) and s[j + 1] == s[i]:
+            j += 1
+        if j > i:
+            ranks[order[i:j + 1]] = (i + 1 + j + 1) / 2.0
+        i = j + 1
+    return ranks
+
+
+def auc(scores: np.ndarray, labels: np.ndarray) -> float:
+    """AUC of `scores` for binary `labels` (1=positive) via the rank (Mann-Whitney U) identity."""
+    scores = np.asarray(scores, float); labels = np.asarray(labels, int)
+    m = ~np.isnan(scores)
+    scores, labels = scores[m], labels[m]
+    n_pos = int((labels == 1).sum()); n_neg = int((labels == 0).sum())
+    if n_pos == 0 or n_neg == 0:
+        return float("nan")
+    r = _rankdata(scores)
+    u = r[labels == 1].sum() - n_pos * (n_pos + 1) / 2.0
+    return float(u / (n_pos * n_neg))
+
+
+def motion_separability(df: pd.DataFrame, width: int) -> dict:
+    """Onset-vs-pre-ignition separability (AUC) of motion features vs single-frame confidence."""
+    feats = compute_motion_features(df, MOTION_CACHE, width)
+    below = df["stem"].map(lambda s: feats.get(s, (np.nan, np.nan))[0]).to_numpy(float)
+    above = df["stem"].map(lambda s: feats.get(s, (np.nan, np.nan))[1]).to_numpy(float)
+    conf = df["conf"].to_numpy(float)
+    label = (df["offset"].to_numpy() >= 0).astype(int)          # 1 = onset, 0 = pre-ignition
+    eps = 1e-6
+    ratio = below / (above + eps)                               # motion concentrated below horizon
+    # naive rank-sum fusion of confidence and below-horizon motion (no training)
+    valid = ~np.isnan(below)
+    combo = np.full(len(df), np.nan)
+    combo[valid] = _rankdata(conf[valid]) + _rankdata(below[valid])
+    feats_auc = {
+        "single_frame_conf": auc(conf, label),
+        "below_horizon_motion": auc(below, label),
+        "above_horizon_motion": auc(above, label),
+        "below_over_above_ratio": auc(ratio, label),
+        "conf_plus_below_ranksum": auc(combo, label),
+    }
+    return {"n_frames_scored": int(valid.sum()),
+            "n_onset": int(label[valid].sum()), "n_preignition": int((label[valid] == 0).sum()),
+            "auc": {k: (None if np.isnan(v) else round(v, 3)) for k, v in feats_auc.items()}}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -184,6 +305,11 @@ def main() -> None:
     ap.add_argument("--persist", type=int, default=1,
                     help="require k consecutive crossings before alarming (1 = single-frame)")
     ap.add_argument("--tag", default="", help="suffix for the output json")
+    ap.add_argument("--motion", action="store_true",
+                    help="also run the motion / below-horizon change-detection separability probe "
+                         "(reads frames; still no model). Caches to data/figlib/motion_feats.npz")
+    ap.add_argument("--motion-width", type=int, default=512,
+                    help="downscaled width for the motion probe's frame differencing (default 512)")
     args = ap.parse_args()
 
     df = load_conf(scan_frames(), Path(args.features))
@@ -226,9 +352,26 @@ def main() -> None:
         print(f"  {k:>5d}     {r['detection_rate']:>5.0%}     "
               f"{str(r['median_ttd_min']):>8s} min   {r['pct_within_5min_of_all']:>5.0%}")
 
+    motion = None
+    if args.motion:
+        print("\n--- Motion / below-horizon change-detection probe (onset vs pre-ignition AUC) ---")
+        print("    reading frames (cached after first run)...")
+        motion = motion_separability(df, args.motion_width)
+        print(f"  scored {motion['n_frames_scored']} frames "
+              f"({motion['n_onset']} onset / {motion['n_preignition']} pre-ignition)")
+        for name, val in motion["auc"].items():
+            flag = "  <- baseline" if name == "single_frame_conf" else ""
+            print(f"    AUC  {name:<26s}: {('n/a' if val is None else f'{val:.3f}')}{flag}")
+        print("  (>0.5 separates onset from pre-ignition; compare below_horizon_motion to the "
+              "single_frame_conf baseline.\n   A win here promotes motion to a Phase C temporal "
+              "input channel -- see reports/backlog.md.)")
+
     out = RESULTS / f"figlib_ttd{args.tag}.json"
     RESULTS.mkdir(exist_ok=True)
-    out.write_text(json.dumps({"headline": head, **sweep}, indent=2))
+    payload = {"headline": head, **sweep}
+    if motion is not None:
+        payload["motion_probe"] = motion
+    out.write_text(json.dumps(payload, indent=2))
     print(f"\nsaved -> {out}")
     print("\nNOTE: ~17 fires is small; magnitudes are directional. Phase B (FIgLib-full / "
           "PYRONEAR-2025) tightens them. See reports/backlog.md.")
