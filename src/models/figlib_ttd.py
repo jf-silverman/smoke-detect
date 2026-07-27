@@ -238,7 +238,7 @@ def _load_gray(path: Path, width: int) -> np.ndarray:
 
 
 FEAT_NAMES = ("anchored_change", "floating_change", "anchored_ratio")
-MOTION_SCHEMA = 5  # bump to invalidate stale motion_feats.npz when the feature set/definition changes
+MOTION_SCHEMA = 7  # bump to invalidate stale motion_feats.npz when the feature set/definition changes
 
 
 def _change_maps(cur: np.ndarray, prev: np.ndarray, k_change: float):

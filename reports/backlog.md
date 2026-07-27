@@ -203,15 +203,20 @@ those noisy shifts scrambles the vertical structure anchoring depends on; the fl
 that noise out and is more robust. Reverted to the flat per-fire horizon. `wc-s` failing under *both*
 means its problem was never flat-vs-skyline.
 
-**Next:** (a) **luminosity-threshold sky/ground segmentation** (author idea, 2026-07) — instead of a
-horizon *row*, segment each frame into a sky vs ground **mask** by absolute luminosity (per-fire
-Otsu/threshold from pre-ignition frames; sky is bright, ground dark), and anchor to the ground mask.
-This directly handles non-flat terrain (which the skyline warp failed at) using absolute brightness
-rather than a noisy local gradient — the current estimator already uses luminosity, but only as a 1-D
-row-mean gradient, not a 2-D mask. Caveats to test: haze/overcast darkens sky, snow/sunlit rock
-brightens ground, backlighting inverts — so a global threshold can misfire; a per-fire threshold from
-pre-ignition frames should help. (b) carry anchored motion as an input channel to the Phase C learned
-temporal head and test the real payoff — does it **lower TTD**, not just raise separability.
+**Luminosity sky/ground mask — TRIED and REVERTED (negative result, 2026-07).** The author's idea
+(from photo editing) that absolute luminosity splits sky from ground: per-fire Otsu on the averaged
+pre-ignition frame → ground mask, then flood change upward from the ground through connected change
+pixels (warp-free A/B vs the flat horizon). It underperformed — per-fire `anchored_lum` **0.537** vs
+flat-horizon `anchored_change` **0.706**, with the `floating_lum` control (0.582) *beating* it (the
+fingerprint of a mislabeling mask). All 18 masks were non-degenerate (ground fraction 0.34–0.90), so
+it is a real feature-quality result: on FIgLib's variable imagery (haze, backlight, dark forest,
+bright cloud) *absolute* brightness does not track the horizon, while the flat estimator keys on
+*relative* brightness change and is robust. Three horizon variants tried; the simplest wins. See
+[motion-findings.md](motion-findings.md).
+
+**Next:** carry anchored motion as an input channel to the Phase C learned temporal head and test the
+real payoff — does it **lower TTD**, not just raise separability. The horizon estimator is settled
+(flat brightness-gradient row); no further tuning warranted.
 
 ## Also noted (lower priority)
 

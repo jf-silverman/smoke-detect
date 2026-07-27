@@ -96,7 +96,7 @@ The fires where anchored motion fails are physical, not evidence against the mec
 - **`HighwayFire` (anchored 0.55)** — a recent, plausibly wind-driven diffuse plume that never anchors
   cleanly; the "windy day → hardest to detect" case.
 
-## Two negative results, reported as such
+## Three negative results, reported as such
 
 - **Texture mix — removed.** An early feature added `texture_mix` = (soft-gradient fraction) ×
   (hard-gradient fraction) inside the anchored region, on the idea that a plume mixes diffuse haze with
@@ -108,6 +108,18 @@ The fires where anchored motion fails are physical, not evidence against the mec
   It made things *worse* — apples-to-apples on 24 fires, `anchored_change` fell 0.715 → 0.616, and
   `wc-s` stayed broken (0.03). Per-column gradient estimates are noisy and warping by them scrambled
   the vertical structure anchoring depends on; the flat median row is more robust. Reverted.
+- **Luminosity sky/ground mask — tried and reverted.** Following the intuition (from photo editing)
+  that absolute luminosity splits sky from ground, we built a per-fire Otsu threshold on the averaged
+  pre-ignition frame → ground mask, then flooded change *upward from the ground* through connected
+  change pixels (a warp-free A/B against the flat horizon). It underperformed badly: per-fire
+  `anchored_lum` **0.537** vs flat-horizon `anchored_change` **0.706** on the training set, with the
+  `floating_lum` control (0.582) actually *beating* `anchored_lum` — the fingerprint of a mask that
+  mislabels sky vs ground. None of the 18 masks were degenerate (ground fractions 0.34–0.90), so it is
+  a genuine feature-quality result, not an artifact: on FIgLib's variable imagery (haze, backlight,
+  dark forest, bright cloud) *absolute* brightness does not track the horizon, whereas the flat
+  estimator keys on *relative* brightness change (a gradient) and is robust to those level shifts.
+  Reverted. Three horizon variants tried, the simplest (flat brightness-gradient row) wins — the
+  lesson is to stop tuning the horizon and let the Phase C learned head do the heavy lifting.
 
 ## What this means for Phase C, and what's open
 
@@ -117,13 +129,10 @@ C as an input channel to the learned temporal head**, where the real payoff test
 time-to-detection*, not just raises separability.
 
 Open threads:
-- **Luminosity sky/ground segmentation** (author idea) — replace the horizon *row* with a sky-vs-ground
-  *mask* from absolute luminosity (per-fire Otsu/threshold off pre-ignition frames; sky bright, ground
-  dark), anchoring to the ground mask. This addresses non-flat terrain with absolute brightness rather
-  than the noisy local gradient that sank the skyline attempt. Caveats to test: haze/overcast darkens
-  sky, snow/sunlit rock brightens ground, backlighting inverts — a per-fire threshold should temper
-  these.
 - **Learned combiner** — the naive fusion is the wrong test; the temporal head is the right one.
 - **Tighter CIs** — 18–24 fires is small; Phase B onset data (FIgLib-full / PYRONEAR) would sharpen it.
+- **The horizon estimator is settled** — three variants tried (flat brightness-gradient row, per-column
+  smoothed skyline, luminosity sky/ground mask); the simplest won and the other two are documented
+  negatives above. Not worth further tuning; the learned head can refine anchoring if it needs to.
 
 Tracked in the [backlog](backlog.md#motion--change-detection-anchored-at-the-horizon).
