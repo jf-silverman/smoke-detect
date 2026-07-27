@@ -165,13 +165,32 @@ appearance detector does not, justifying carrying it into Phase C as a temporal 
 **not** a strong standalone single-frame feature (~0.60 on a genuinely fuzzy near-onset boundary
 task, from an unlearned hand-rule).
 
-**Rerun PENDING with the rigor fixes applied** (per-fire fixed horizon from pre-ignition frames;
-per-fire AUC with bootstrap-over-fires CI as the primary read; `texture_mix` removed). Numbers will
-move; update this line once the rerun lands. **Then:** (a) does anchored motion as a channel **lower
-TTD** in the learned temporal head (the real payoff test — separability has done its job), and
-(b) confirm `anchored_ratio` stays the cleaner discriminator than raw energy (floating rides up
-post-ignition as total motion increases). Open refinement: a smoothed-skyline horizon estimator could
-sharpen the per-frame estimate that feeds the per-fire median.
+**Rigor-fix rerun (2026-07, per-fire horizon + per-fire AUC + texture removed) — anchoring
+CONFIRMED and load-bearing.** Per-fire AUC (pooled in parens): `single_frame_conf` 0.568 baseline;
+**`anchored_change` 0.715** [0.640, 0.787]; **`anchored_ratio` 0.711**; `floating_change` 0.555
+(cloud control, CI straddles 0.5 — null, as predicted); naive `conf+anchored` fusion 0.675. Paired:
+anchored beats conf in **17/24 fires** (one-sided sign-test p≈0.03), mean lift **+0.147**, anchored
+AUC ≥0.7 in 14 fires, ≥0.8 in 12.
+
+- **The per-fire *measurement* was the decisive fix, not the horizon change.** Pooled anchored barely
+  moved (0.600→0.592); the jump to 0.715 is from scoring AUC *within* each fire. Anchored-change
+  magnitude varies by scene, so pooling lets between-fire scale swamp the within-fire onset signal —
+  and per-fire is also the operationally correct framing (you watch one camera over time, never
+  compare absolute motion across sites). Pooling was hiding the signal.
+- **Fusion flipped to hurting** (0.675 < 0.715): naive equal-weight rank-sum dilutes the now-stronger
+  motion feature with the weak conf. Not evidence of redundancy — the rescue cases (`syp-w` conf 0.23
+  →anchored 0.97; `Bahrman` 0.63→0.96) show orthogonal signal — but the naive sum is the wrong
+  combiner. **The learned Phase C temporal head is the proper combiner;** stop citing the naive fusion
+  as the combined-value test.
+- **Failure cases are diagnostic, and physical:** `mg-n-iqeye` (anchored 0.33) is the flagged
+  dirty-lens sequence (false motion everywhere); `wc-s-mobo-c` (anchored 0.00, conf 0.64) is a single
+  catastrophic horizon mis-placement; `HighwayFire` (0.55) is a plausibly wind-driven diffuse plume
+  that won't anchor. Two of three are a known confound and one fixable horizon miss — not the
+  mechanism failing.
+
+**Next:** (a) upgrade the horizon estimator to a smoothed skyline (should recover `wc-s`, likely
+raise the mean); (b) carry anchored motion as an input channel to the Phase C learned temporal head
+and test the real payoff — does it **lower TTD**, not just raise separability.
 
 ## Also noted (lower priority)
 
