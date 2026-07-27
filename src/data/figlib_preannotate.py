@@ -29,7 +29,9 @@ WHAT IT DOES
     python src/data/figlib_preannotate.py --conf 0.15 --max-per-fire 40
 
 Then in CVAT: create a task from data/figlib_preannot/images/train, Upload annotations ->
-"Ultralytics YOLO Detection" -> the produced zip, and correct. No GPU, no Nuclio, no Docker.
+"Ultralytics YOLO Detection" -> the produced *_labels.zip (labels only, no images -- packing the
+frames makes the browser upload stall before the import ever registers), append, and correct.
+No GPU, no Nuclio, no Docker.
 """
 
 from __future__ import annotations
@@ -199,18 +201,29 @@ def main() -> None:
         "# FIgLib pseudo-label pre-annotations (Phase C). Correct in CVAT, then train.\n"
         f"path: {OUT}\ntrain: images/train\nval: images/train\nnames:\n  0: smoke\n")
 
-    # zip the bundle for a one-click CVAT 'Upload annotations' (Ultralytics YOLO Detection)
-    zpath = OUT.with_suffix(".zip")
+    # zip an ANNOTATIONS-ONLY bundle for CVAT 'Upload annotations' -> "Ultralytics YOLO Detection 1.0".
+    # Images are deliberately excluded: CVAT already holds them in the task and binds boxes to frames by
+    # filename, and packing the frames (~380 MB) makes the browser upload stall before it ever queues an
+    # import request -- the import silently never registers.
+    #   The manifest MUST match CVAT's spec exactly (docs.cvat.ai/.../format-yolo-ultralytics): data.yaml
+    # sets `train: train.txt` -- a LIST FILE, not a folder -- and train.txt lists images/train/<name>.jpg.
+    # An earlier `train: images/train` (a folder that a labels-only zip does not contain) made CVAT throw
+    # "Failed to import dataset". Only the boxed frames are listed and packed; empty frames add nothing on
+    # an append import.
+    zpath = OUT.parent / f"{OUT.name}_labels.zip"
+    boxed = sorted(p for p in lbl_dir.glob("*.txt") if p.stat().st_size > 0)
+    portable_yaml = "path: ./\ntrain: train.txt\nnames:\n  0: smoke\n"
+    train_list = "".join(f"images/train/{p.stem}.jpg\n" for p in boxed)
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
-        for f in ("data.yaml", "train.txt"):
-            z.write(OUT / f, f)
-        for sub in ("labels/train", "images/train"):
-            for p in sorted((OUT / sub).glob("*")):
-                z.write(p, f"{sub}/{p.name}")
+        z.writestr("data.yaml", portable_yaml)
+        z.writestr("train.txt", train_list)
+        for p in boxed:
+            z.write(p, f"labels/train/{p.name}")
 
     print(f"\n{len(df)} frames pre-annotated: {n_boxes} boxes, "
           f"{n_empty} frames with no detection (draw those from scratch).")
-    print(f"bundle -> {OUT}\nzip (import into CVAT) -> {zpath}")
+    print(f"bundle (images+labels, for `yolo train`) -> {OUT}")
+    print(f"labels-only zip (import into CVAT 'Upload annotations') -> {zpath}")
 
 
 if __name__ == "__main__":

@@ -19,3 +19,5 @@ wandb/
 data/hpwren_boxes/
 data/figlib_preannot/
 data/figlib_preannot.zip
+data/figlib_preannot_labels.zip
+data/figlib_preannot_yolo11.zip
