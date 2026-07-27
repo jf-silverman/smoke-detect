@@ -44,6 +44,29 @@ roughly by leverage. Completed threads have their own findings reports (see the 
         Zero external leak, most in-distribution, and correction effort concentrates on the tiny
         early plumes that matter most for TTD. Main risk (error amplification) is defused by the
         human-review step — semi-supervised, not naive self-training.
+      - **Training-set composition — add pre-ignition negatives (planned).** The pseudo-label
+        bundle (`figlib_preannotate.py`) is all positive-offset frames (531 frames; 220 with boxes,
+        311 empty). The empty post-ignition frames already act as some background negatives, but the
+        set has **no clear-sky / cloud negatives**, exactly the confuser class this project's headline
+        failure mode fires on (74% of false alarms are clouds; the converged 1280 model still
+        false-alarms on 57.6% of clean frames — see [hard-negative-findings.md](hard-negative-findings.md)).
+        So mix in a **negatives bundle** at training time (no CVAT work — negatives are empty-label by
+        definition):
+        - *Source:* pre-ignition frames (use a safe margin, offset < −120 s, to avoid the ambiguous
+          just-before-ignition boundary) from the **18 training fires only** — the 6 recent eval
+          fires stay entirely out of training, pre-ignition frames included, preserving whole-fire
+          holdout.
+        - *Easy negatives:* a random sample of those pre-ignition frames (identical scene/weather to
+          the positives, minus the plume — teaches the model the difference is the plume, not the
+          site).
+        - *Hard negatives:* run the detector over the pre-ignition frames and preferentially include
+          the ones where it **false-alarms** (high-conf pre-ignition boxes = cloud/glare confusers) —
+          the same hard-negative-mining lever that cut the burden ~23% before, now sourced in-distribution.
+        - *Ratio:* start ~1:1 negatives : boxed-positives (~220 each), skewed toward hard negatives;
+          tune against recall (too many negatives erodes the recall ceiling).
+        - *Implementation:* extend `figlib_preannotate.py` with a `--negatives` mode that emits
+          pre-ignition frames + empty labels into a separate set, merged with the CVAT-corrected
+          positives when the Phase C training config is built.
 
 ## Recently completed (folded into reports)
 
