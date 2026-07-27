@@ -105,12 +105,21 @@ the leak we already audited — so the chosen path is to **pseudo-label our own 
 the frames and onset labels; only the boxes are missing) under strict whole-fire holdout. Tracked in
 the [backlog](reports/backlog.md).
 
+A second thread came straight from a domain observation while hand-correcting those labels: a plume is
+often legible only by its **motion** across frames. A training-free probe
+([motion-findings.md](reports/motion-findings.md)) confirms that inter-frame change *anchored to the
+horizon* (connected to the ground, unlike free-floating cloud drift) separates ignition onset from
+pre-ignition frames at **per-fire AUC 0.71 vs 0.57** for the appearance detector, and is
+*complementary* to it — the case for a motion channel in the in-distribution model. The same probe
+produced two negative results (a texture cue and a smoothed-skyline horizon upgrade), both reported as
+such.
+
 ## Layout
 
 - [`reports/`](reports/) — the state-of-the-field report, a [metrics rationale](reports/metrics.md)
   (why recall-first, not F1), and per-stage findings (baseline, hard-negative, temporal, confuser
   corpus, FIgLib, [resolution & recall-first](reports/resolution-findings.md),
-  [time-to-detection](reports/ttd-findings.md)),
+  [time-to-detection](reports/ttd-findings.md), [motion / anchored change-detection](reports/motion-findings.md)),
   and a [**research narrative**](reports/research-narrative.md) tracing how the project actually
   unfolded (including the human resolution insight that rescued the FIgLib control). Open threads
   are tracked in the [backlog](reports/backlog.md), and background primers in

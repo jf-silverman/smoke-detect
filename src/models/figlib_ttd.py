@@ -23,11 +23,13 @@ Reported (the operator-relevant PAIR -- 'early' must not be bought with 'cries w
 
     python src/models/figlib_tiled.py --tile 640 --stride 640   # once: caches features_tiled.npz
     python src/models/figlib_ttd.py --far-target 0.05           # this eval (no model, no GPU)
-    python src/models/figlib_ttd.py --motion                    # + below-horizon motion probe
+    python src/models/figlib_ttd.py --motion                    # + skyline-anchored motion probe
+    python src/models/figlib_ttd.py --motion --exclude-eval --tag train   # train-only (Phase-C prep)
 
-Optional `--motion` probe (still no model): tests whether inter-frame motion below the detected
-horizon separates onset from pre-ignition frames better than single-frame confidence -- the
-author's scanning observation (reports/backlog.md "Motion / change-detection below the horizon").
+Optional `--motion` probe (still no model): tests whether inter-frame motion ANCHORED to the
+skyline (connected to the terrain, unlike free-floating cloud drift) separates onset from
+pre-ignition frames better than single-frame confidence -- the author's scanning observation
+(reports/backlog.md "Motion / change-detection anchored at the horizon").
 
 STATUS: Phase A scaffold. The metric machinery and LOFO harness are complete and run on the
 18 local fires. Small n (~4 effective test signal per fold is avoided by LOFO, but ~17 fires
@@ -52,6 +54,18 @@ RESULTS = ROOT / "results"
 
 OFFSET_RE = re.compile(r"_([+-]\d+)\.jpg$")
 MOTION_CACHE = FIGLIB / "motion_feats.npz"
+
+# Mirrors figlib_preannotate.EVAL_FIRES: the 6 recent (2024-2025) CA fires held out of Phase C
+# training. `--exclude-eval` drops them so pre-Phase-C analysis (e.g. the motion probe) never peeks
+# at the eval fires. Kept as a local literal so this eval needs only numpy/pandas (no torch import).
+EVAL_FIRES = {
+    "20240708_VistaFire_wilson-e-mobo-c",
+    "20240825_TenajaFire_buff-n-mobo-c",
+    "20241009_BahrmanFire_hp-n-mobo-c",
+    "20250107_PalisadesFire_69bravo-e-mobo-c",
+    "20250612_HighwayFire_hp-e-mobo-c",
+    "20250908_CochesFire_sm-n-mobo-c",
+}
 
 
 # --- data (mirrors figlib_temporal.scan_frames; kept local so this eval needs only numpy/pandas) ---
@@ -201,9 +215,12 @@ def bootstrap_ci(per_fire: dict, B: int = 2000, seed: int = 0) -> dict:
 def estimate_horizon(gray: np.ndarray) -> int:
     """Row index of the sky->terrain transition: the steepest top-to-bottom drop in row-mean luma.
 
-    Crude but adequate for a separability probe -- sky is brighter than terrain, so the horizon sits
-    near the largest negative gradient of the smoothed row-brightness profile, searched in the middle
-    band (0.15-0.85 of height) so it never latches onto the very top or bottom edge."""
+    Sky is brighter than terrain, so the horizon sits near the largest negative gradient of the
+    smoothed row-brightness profile, searched in the middle band (0.15-0.85 of height) so it never
+    latches onto the very top or bottom edge. A per-COLUMN smoothed-skyline variant was tried (warp
+    each column so the terrain contour is flat) and was WORSE -- per-column estimates are noisy
+    (trees, textured terrain, cloud edges) and the warp scrambled the vertical structure anchoring
+    relies on. The flat median row is more robust; see reports/backlog.md."""
     rows = gray.mean(axis=1).astype(float)
     k = max(3, len(rows) // 50)
     sm = np.convolve(rows, np.ones(k) / k, mode="same")
@@ -221,30 +238,26 @@ def _load_gray(path: Path, width: int) -> np.ndarray:
 
 
 FEAT_NAMES = ("anchored_change", "floating_change", "anchored_ratio")
-MOTION_SCHEMA = 3  # bump to invalidate stale motion_feats.npz when the feature set/definition changes
+MOTION_SCHEMA = 5  # bump to invalidate stale motion_feats.npz when the feature set/definition changes
 
 
-def _frame_motion(cur: np.ndarray, prev: np.ndarray, h: int,
-                  k_change: float, band_frac: float) -> tuple[float, float, float]:
-    """Horizon-anchored change features for one frame vs its predecessor. See FEAT_NAMES.
-
-    `h` is the fire's FIXED horizon row (passed in, not re-estimated per frame: the camera is static,
-    so the horizon is constant, and estimating it per-frame lets a bright/dark plume drag its own
-    horizon). Change map = |(cur-prev) - spatial_median|, which strips a uniform exposure/gain shift
-    (and much dirty-lens flicker) so only localized change survives. A robust (MAD) threshold gives a
-    change mask. Around the horizon we take a small band; a column is ANCHORED if it has change in the
-    band, and its anchored energy is the band change plus the CONTIGUOUS change run extending upward
-    (the rising column) and downward (the base). `cumprod` over the mask gives the contiguous run
-    cheaply. Floating change is everything not so connected (cloud drift)."""
-    H, W = cur.shape
+def _change_maps(cur: np.ndarray, prev: np.ndarray, k_change: float):
+    """Rectified, exposure-normalized change map + robust change mask for a frame vs its predecessor."""
     d = cur - prev
     diff = np.abs(d - np.median(d)).astype(float)          # strip uniform exposure/gain shift
     mad = float(np.median(np.abs(diff - np.median(diff)))) + 1e-6
-    mask = diff > k_change * mad
-    total = float(diff.sum())
-    if total <= 0:
-        return 0.0, 0.0, 0.0
+    return diff, diff > k_change * mad, float(diff.sum())
 
+
+def _anchored_core(diff: np.ndarray, mask: np.ndarray, total: float, h: int,
+                   band_frac: float) -> tuple[float, float, float]:
+    """Anchored/floating/ratio from a change map+mask, anchored to horizon row `h`.
+
+    Around `h` take a small band; a column is ANCHORED if it has change in the band, and its anchored
+    energy is the band change plus the CONTIGUOUS change run extending upward (the rising column) and
+    downward (the base). `cumprod` over the mask gives the contiguous run cheaply. Floating change is
+    everything not so connected (cloud drift)."""
+    H, W = diff.shape
     h = int(np.clip(h, 1, H - 2))
     band = max(1, round(band_frac * H))
     h0, h1 = max(h - band, 0), min(h + band + 1, H)
@@ -261,16 +274,26 @@ def _frame_motion(cur: np.ndarray, prev: np.ndarray, h: int,
     anchored = float(np.where(cross, band_energy + up_energy + dn_energy, 0.0).sum())
     floating = max(total - anchored, 0.0)
     ratio = anchored / (anchored + floating + 1e-6)
-    area = float(H * W)
-    return anchored / area, floating / area, ratio
+    return anchored / float(H * W), floating / float(H * W), ratio
+
+
+def _frame_motion(cur: np.ndarray, prev: np.ndarray, h: int,
+                  k_change: float, band_frac: float) -> tuple[float, float, float]:
+    """Horizon-anchored change features for one frame vs its predecessor (see FEAT_NAMES).
+
+    `h` is the fire's FIXED horizon row (passed in, not re-estimated per frame: the camera is static,
+    and a per-frame estimate lets a bright/dark plume drag its own horizon)."""
+    diff, mask, total = _change_maps(cur, prev, k_change)
+    if total <= 0:
+        return 0.0, 0.0, 0.0
+    return _anchored_core(diff, mask, total, h, band_frac)
 
 
 def fire_horizon(grays: list[np.ndarray], offsets: np.ndarray) -> int:
     """One FIXED horizon row for a fire: the median per-frame estimate over its PRE-IGNITION frames.
 
-    The camera is static, so the horizon is a fire-level constant. Estimating from pre-ignition frames
-    (offset < 0) keeps the plume from biasing its own horizon; falls back to all frames if a fire has
-    no pre-ignition frames cached."""
+    The camera is static, so the horizon is a fire-level constant; estimating from pre-ignition frames
+    (offset < 0) keeps the plume from biasing its own horizon (falls back to all frames if none)."""
     pre = [g for g, o in zip(grays, offsets) if o < 0]
     use = pre if pre else grays
     return int(np.median([estimate_horizon(g) for g in use]))
@@ -280,7 +303,7 @@ def compute_motion_features(df: pd.DataFrame, cache_path: Path, width: int = 512
                             k_change: float = 4.0, band_frac: float = 0.02) -> dict:
     """Return {stem: (anchored, floating, ratio)} of horizon-anchored frame-to-previous motion.
 
-    Per fire (time-ordered): load frames once, fix ONE horizon from the pre-ignition frames, then
+    Per fire (time-ordered): load frames once, fix ONE horizon row from the pre-ignition frames, then
     difference each frame from its predecessor (~60 s earlier) and reduce to the anchored-change
     features (see _frame_motion). Cached to npz with a schema tag; a fire's first frame has no
     predecessor and is omitted."""
@@ -363,12 +386,12 @@ def motion_separability(df: pd.DataFrame, width: int, boot: int = 2000, seed: in
     label = (df["offset"].to_numpy() >= 0).astype(int)          # 1 = onset, 0 = pre-ignition
     seqs = df["seq"].to_numpy()
     valid = ~np.isnan(cols["anchored_change"])
-    order = ["single_frame_conf", *FEAT_NAMES, "conf_plus_anchored_ranksum"]
+    order = ["single_frame_conf", *FEAT_NAMES, "conf_plus_anchored_naive"]
 
     def series(name, mask):
         if name == "single_frame_conf":
             return conf[mask]
-        if name == "conf_plus_anchored_ranksum":
+        if name == "conf_plus_anchored_naive":
             return _fusion(conf[mask], cols["anchored_change"][mask])
         return cols[name][mask]
 
@@ -423,13 +446,21 @@ def main() -> None:
                     help="require k consecutive crossings before alarming (1 = single-frame)")
     ap.add_argument("--tag", default="", help="suffix for the output json")
     ap.add_argument("--motion", action="store_true",
-                    help="also run the motion / below-horizon change-detection separability probe "
+                    help="also run the skyline-anchored change-detection separability probe "
                          "(reads frames; still no model). Caches to data/figlib/motion_feats.npz")
     ap.add_argument("--motion-width", type=int, default=512,
                     help="downscaled width for the motion probe's frame differencing (default 512)")
+    ap.add_argument("--exclude-eval", action="store_true",
+                    help="drop the 6 recent CA fires held out for Phase C (EVAL_FIRES) so pre-Phase-C "
+                         "analysis never peeks at them. Use with --tag train.")
     args = ap.parse_args()
 
     df = load_conf(scan_frames(), Path(args.features))
+    if args.exclude_eval:
+        before = df["seq"].nunique()
+        df = df[~df["seq"].isin(EVAL_FIRES)].reset_index(drop=True)
+        print(f"--exclude-eval: holding out {before - df['seq'].nunique()} recent CA eval fires "
+              f"(training set = {df['seq'].nunique()} fires)")
     print(f"FIgLib TTD: {df['seq'].nunique()} fires, {len(df)} frames "
           f"({int(df['smoke'].sum())} post-ignition / {int((~df['smoke']).sum())} pre-ignition)")
     print(f"features: {args.features}\n")
@@ -487,9 +518,11 @@ def main() -> None:
             ps = "n/a" if p is None else f"{p:.3f}"
             print(f"    {name:<28s} {ms:>5s} {cis:<20s} {ps:>6s}{flag}")
         print("  (per-fire AUC is the leak-aware read -- computed within each fire, then averaged.\n"
-              "   >0.5 separates onset. anchored_ratio is the key motion feature; floating_change is\n"
-              "   the cloud-drift control (want ~0.5); the fusion tests whether motion ADDS to the\n"
-              "   detector. A win promotes anchored motion to a Phase C temporal channel -- backlog.md.)")
+              "   >0.5 separates onset. anchored_change/anchored_ratio are the motion features;\n"
+              "   floating_change is the cloud-drift control (want ~0.5). conf_plus_anchored_naive is\n"
+              "   a NAIVE equal-weight sum -- NOT the combined-value test: with lopsided features it\n"
+              "   dilutes the stronger one, so a learned Phase C temporal head is the right combiner.\n"
+              "   A motion win promotes anchored motion to a Phase C channel -- see backlog.md.)")
 
     out = RESULTS / f"figlib_ttd{args.tag}.json"
     RESULTS.mkdir(exist_ok=True)

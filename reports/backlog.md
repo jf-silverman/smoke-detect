@@ -188,9 +188,30 @@ AUC ≥0.7 in 14 fires, ≥0.8 in 12.
   that won't anchor. Two of three are a known confound and one fixable horizon miss — not the
   mechanism failing.
 
-**Next:** (a) upgrade the horizon estimator to a smoothed skyline (should recover `wc-s`, likely
-raise the mean); (b) carry anchored motion as an input channel to the Phase C learned temporal head
-and test the real payoff — does it **lower TTD**, not just raise separability.
+**Train-only read (2026-07, 6 recent CA eval fires held out via `--exclude-eval` for Phase C):**
+the signal survives the holdout almost unchanged — per-fire `anchored_change` **0.706** [0.609,
+0.797], `anchored_ratio` 0.705, vs conf 0.569 and the `floating_change` null control 0.556. So the
+18 training fires carry the anchoring signal; removing the eval fires cost ~0.01 AUC. This is the
+number Phase C inherits.
+
+**Smoothed-skyline horizon — TRIED and REVERTED (negative result, 2026-07).** The proposed fix for
+`wc-s` — a per-column skyline (steepest per-column brightness gradient, median-smoothed across
+columns) with a column-warp to flatten the terrain contour — made things **worse**: apples-to-apples
+on 24 fires it dropped `anchored_change` 0.715 → 0.616, and `wc-s` stayed broken (0.03). Per-column
+gradient estimates are noisy (trees, textured terrain, cloud edges pick wrong rows) and warping by
+those noisy shifts scrambles the vertical structure anchoring depends on; the flat median row averages
+that noise out and is more robust. Reverted to the flat per-fire horizon. `wc-s` failing under *both*
+means its problem was never flat-vs-skyline.
+
+**Next:** (a) **luminosity-threshold sky/ground segmentation** (author idea, 2026-07) — instead of a
+horizon *row*, segment each frame into a sky vs ground **mask** by absolute luminosity (per-fire
+Otsu/threshold from pre-ignition frames; sky is bright, ground dark), and anchor to the ground mask.
+This directly handles non-flat terrain (which the skyline warp failed at) using absolute brightness
+rather than a noisy local gradient — the current estimator already uses luminosity, but only as a 1-D
+row-mean gradient, not a 2-D mask. Caveats to test: haze/overcast darkens sky, snow/sunlit rock
+brightens ground, backlighting inverts — so a global threshold can misfire; a per-fire threshold from
+pre-ignition frames should help. (b) carry anchored motion as an input channel to the Phase C learned
+temporal head and test the real payoff — does it **lower TTD**, not just raise separability.
 
 ## Also noted (lower priority)
 

@@ -34,6 +34,7 @@ Neither half would have produced this arc alone.
 | 12 | Time-to-detection (Phase A, FIgLib) | First TTD numbers in the project; **resolution lowers TTD, not just AUC** | Author chose the HPWREN/TTD thrust |
 | 13 | Combine the two levers (native-res + hard-neg) | Burden ~173 → **133 FP/day** (−23%), −2.4 pts recall — a real but *incremental* win, reported as such | Author sequenced it; LLM built and stopped it at the plateau |
 | 14 | Scout a Phase C box-data source (PYRONEAR-2025) before spending GPU | **Negative result** — it can't close the recent-CA gap and re-adds leaky HPWREN; pivoted to pseudo-labeling our own fires | Author asked for a recent labeled source; LLM profiled and eliminated it cheaply |
+| 15 | Horizon-anchored motion probe on FIgLib (author's scanning observation) | Anchored inter-frame motion separates onset from pre-ignition at per-fire AUC **0.71 vs 0.57** for the detector, and is *complementary* to it — plus two clean negative results along the way | **Author's motion insight** (and the physics that refined it); LLM built the probe and reported the nulls |
 
 ## The turns worth remembering
 
@@ -130,6 +131,29 @@ download — and it pointed to the cleaner path the author had already sensed: p
 fires, where we hold the frames and onset labels and only the boxes are missing, with zero external
 leak. Knowing what *not* to pull is part of the work.
 
+**The author saw motion where the pixels hid it — and the physics sharpened it twice.** Correcting
+pre-annotations in CVAT, the author noticed a plume is often legible only by its *motion* across
+frames, invisible in any single still. That became a probe: does inter-frame change separate onset
+from pre-ignition frames? The first framing — weight motion *below* the horizon — the author then
+corrected himself: plumes *rise*, so the diagnostic property isn't staying low, it's staying
+**anchored to the ground** (base at the horizon, column connected to it), while clouds float
+disconnected above the skyline. That reframing is what made the feature work: on the training fires,
+horizon-anchored motion separates onset at per-fire AUC 0.71 versus 0.57 for the detector's own
+confidence, with a floating-change *control* sitting at chance — so it is anchoring, not merely
+motion, doing the work. And it is *complementary*: fires the appearance detector is weak on (conf
+0.23) are rescued by motion (0.97), which is the whole case for a motion channel in Phase C.
+
+Two things about this turn are worth keeping. First, **the measurement was as important as the
+feature**: pooling frames across fires understated the signal (AUC ~0.62) because absolute motion
+scale varies by scene; scored the operationally correct way — *within* each fire — it was 0.71. The
+same feature, measured wrong, would have been dismissed. Second, **it produced two clean negative
+results, reported as negatives.** A texture cue (diffuse haze + hard column edge) was cut once the
+author pointed out it breaks under the very conditions that matter — a high-Haines day gives a
+hard-edged column with no haze, a windy day an all-diffuse one with no edge. And a proposed
+smoothed-skyline horizon *upgrade* was built, measured, found to make things worse (0.715 → 0.616),
+and reverted — a fix that wasn't. Neither was papered over. See
+[motion-findings.md](motion-findings.md).
+
 ## Why this is the interesting story
 
 The finished results table is respectable. But the *reason* it exists is a loop that a solo
@@ -160,4 +184,5 @@ Each step has its own report with the numbers and caveats:
 [figlib-findings](figlib-findings.md) ·
 [resolution-findings](resolution-findings.md) ·
 [ttd-findings](ttd-findings.md) ·
+[motion-findings](motion-findings.md) ·
 [backlog](backlog.md)
