@@ -124,10 +124,13 @@ horizon and extends up the rising column and down to the base) vs **floating cha
 Explicitly **probabilistic, not a gate**: rare wind-driven fires or fires low in-scene behind high
 terrain never clear the ridge, so anchoring is a likelihood bump, not a hard rule.
 
-**Texture cue (softer).** Within the anchored region the plume mixes **diffuse haze** (soft
-gradients) with a **harder-edged column outline**; the presence of *both* raises likelihood. Encoded
-as `texture_mix` = (soft-gradient fraction) × (hard-gradient fraction) inside the anchored region —
-also not a hard rule, just a bump.
+**Texture cue — tried and REMOVED (author, 2026-07).** A first version added `texture_mix` =
+(soft-gradient fraction) × (hard-gradient fraction) inside the anchored region, on the idea that a
+plume mixes diffuse haze with a harder-edged column. Dropped: it is not a stable smoke signature. On
+a **high-Haines-index** day the column has hard edges and little to no surrounding haze; on a **windy**
+day the column is almost entirely diffuse with no hard edge (and is the hardest type to detect). So
+the soft × hard product is noise, not signal, and the atmospheric conditions that break it are exactly
+the ones that matter. Removed for now.
 
 **How this differs from what we already tested.** The temporal work so far
 ([temporal-findings.md](temporal-findings.md), [figlib-findings.md](figlib-findings.md)) tested
@@ -145,15 +148,30 @@ clouds (the primary false-motion source) are exactly what the anchoring is meant
 
 **Status — thin probe IMPLEMENTED** ([`figlib_ttd.py`](../src/models/figlib_ttd.py) `--motion`).
 Reads the FIgLib onset frames (81/fire, ~60 s apart; no model, no GPU, cached to
-`data/figlib/motion_feats.npz`), estimates the horizon from the sky→terrain brightness drop, and
-emits four features per frame — `anchored_change`, `floating_change`, `anchored_ratio`,
-`texture_mix` — then reports onset-vs-pre-ignition AUC for each against the single-frame-confidence
-baseline. **Preliminary (2-fire, directional):** anchored_change / anchored_ratio AUC ≈ 0.99 vs a
-floating-change control ≈ 0.81 — anchoring separates. **Next:** full 17-fire run; if it holds, (a)
-does anchored motion as a second channel **lower TTD**, and (b) promote it to an input channel of
-the Phase C learned temporal head. Open refinements: the horizon estimator is a single-gradient
-heuristic (may latch onto a cloud bank — upgrade to a smoothed skyline), and `floating_change` still
-rides up post-ignition (total motion increases), so `anchored_ratio` is the cleaner discriminator.
+`data/figlib/motion_feats.npz`), fixes **one horizon per fire** from the median estimate over its
+pre-ignition frames (static camera → constant horizon; pre-ignition-only so the plume can't drag its
+own horizon), and emits three features per frame — `anchored_change`, `floating_change`,
+`anchored_ratio` — then reports onset-vs-pre-ignition AUC **per fire** (computed within each fire,
+averaged with a bootstrap-over-fires 90% CI — the leak-aware read) alongside a pooled AUC for
+reference.
+
+**First 24-fire read (2026-07, PRE-rigor-fix — per-frame horizon, pooled AUC, texture included):**
+the anchoring hypothesis holds, modestly and — crucially — *complementarily*. Pooled AUC:
+`single_frame_conf` 0.578 baseline; `anchored_change` 0.600; `anchored_ratio` 0.604 (best single
+motion feature); `floating_change` 0.530 (cloud-drift control, near chance, as predicted);
+**`conf + anchored` fusion 0.631 — +5.3 pts over conf alone.** The 2-fire teaser (~0.99) was
+easy-fire noise. The load-bearing finding is the fusion lift: anchored motion carries signal the
+appearance detector does not, justifying carrying it into Phase C as a temporal input channel. It is
+**not** a strong standalone single-frame feature (~0.60 on a genuinely fuzzy near-onset boundary
+task, from an unlearned hand-rule).
+
+**Rerun PENDING with the rigor fixes applied** (per-fire fixed horizon from pre-ignition frames;
+per-fire AUC with bootstrap-over-fires CI as the primary read; `texture_mix` removed). Numbers will
+move; update this line once the rerun lands. **Then:** (a) does anchored motion as a channel **lower
+TTD** in the learned temporal head (the real payoff test — separability has done its job), and
+(b) confirm `anchored_ratio` stays the cleaner discriminator than raw energy (floating rides up
+post-ignition as total motion increases). Open refinement: a smoothed-skyline horizon estimator could
+sharpen the per-frame estimate that feeds the per-fire median.
 
 ## Also noted (lower priority)
 
