@@ -12,7 +12,9 @@ traced to a known cause rather than mistaken for signal.
 ## Why keep it for now
 
 The plume being legible only through inter-frame motion (not in a still) is itself informative —
-it is a concrete example of the motion cue discussed in the [backlog](backlog.md#motion--change-detection-below-the-horizon)
-and a natural stress-test frame set for any temporal/differencing detector. Removing it would
+it is a concrete example of the motion cue discussed in the [backlog](backlog.md#motion--change-detection-anchored-at-the-horizon)
+and a natural stress-test frame set for any temporal/differencing detector (see
+[backlog: Motion / change-detection anchored at the horizon](backlog.md#motion--change-detection-anchored-at-the-horizon)).
+Removing it would
 discard exactly the hard case worth studying. If it later shows up as a systematic false-negative
 cluster in a single-frame eval, revisit whether to down-weight or hold it out.
