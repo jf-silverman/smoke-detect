@@ -104,6 +104,49 @@ roughly by leverage. Completed threads have their own findings reports (see the 
   Precedent for RL *around* detection (not the classifier): EcoWild (energy-adaptive sensing),
   ForestProtector (PTZ camera orientation control).
 
+## Motion / change-detection below the horizon
+
+**Observation (author, 2026-07, during CVAT correction).** Scanning consecutive frames, the eye
+locks onto the plume by its *motion* — it grows and drifts frame-to-frame — even when it is nearly
+invisible in any single still (the dirty-lens `20170722_FIRE_mg-n-iqeye` sequence is the sharp case:
+the plume reads only as movement; see [data-quality-flags.md](data-quality-flags.md)). The proposal:
+the detector should exploit the **difference from the previous frame** — an object that *moves*
+between frames — and weight that motion much more heavily **at or below the horizon** than above it.
+
+**How this differs from what we already tested.** The temporal work so far
+([temporal-findings.md](temporal-findings.md), [figlib-findings.md](figlib-findings.md)) tested
+**persistence** — requiring a *detection* to recur across k frames to suppress flicker. That is the
+opposite operation from **motion/change** — surfacing a region *because* it changed. Persistence
+suppresses; differencing proposes. We have never tested the proposing direction, and it is the one
+the author's scanning experience points at. On FIgLib (onset data) persistence already *helped* by
+12–19 pts, so the data supports temporal signal there; motion-differencing is the untested,
+potentially stronger sibling.
+
+**Why "below the horizon" is the sharp part.** The dominant confuser is clouds (74% of false
+alarms), and clouds live *above* the skyline and drift with wind — motion above the horizon is
+mostly cloud. A wildfire plume *originates at the ground* and its earliest, most diagnostic motion
+is **at or just above the terrain/skyline**, where clouds are not. So a skyline-aware gate — detect
+the horizon, then treat motion below/at it as far more suspicious than motion above it — is a cheap
+geometric prior that could separate plume-motion from cloud-motion. This also matches the ignition
+geometry: the plume base is the earliest signal (the same reason we box the base, even below the
+ridge).
+
+**Preconditions & confounders.** Cameras are fixed (FIgLib, pyro-sdis) so frame differencing needs
+no registration in principle — but PTZ moves, wind-shake, exposure/auto-gain shifts, and dirty-lens
+artifacts all inject false motion; a robust version needs illumination-normalized differencing or
+optical flow, not raw subtraction. Wind-moved clouds are the primary false-motion source, which is
+exactly what the below-horizon gate is meant to reject.
+
+**Cheap first experiment (reuses existing harness).** On the FIgLib onset sequences we already hold
+(81 frames/fire, ~60 s apart): for each frame compute a **motion feature** = magnitude of the
+frame-to-previous difference (or dense optical-flow magnitude), pooled over tiles, split by a
+detected skyline into above- vs below-horizon energy. Then ask, LOFO and leak-safe like the TTD
+harness: does *below-horizon motion energy* separate onset (t ≥ 0) from pre-ignition (t < 0) frames
+better than the single-frame detector confidence, and does adding it as a second channel **lower
+TTD**? This is a thin add-on to [`figlib_ttd.py`](../src/models/figlib_ttd.py) (which already walks
+frames per fire in time order) — no training required for the feature-separability test. If motion
+separates, it becomes an input channel to the Phase C learned temporal head, not just a rule.
+
 ## Also noted (lower priority)
 
 - **In-distribution tiled detector on FIgLib** (SmokeyNet setup: 224-px tiles, train on FIgLib's own

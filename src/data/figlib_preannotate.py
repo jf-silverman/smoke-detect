@@ -90,15 +90,43 @@ def tiles_with_offset(W: int, H: int, tile: int, stride: int):
             yield x, y
 
 
+def drop_contained(xyxy: np.ndarray, thresh: float) -> np.ndarray:
+    """Return a boolean keep-mask that drops any box almost entirely inside a LARGER box.
+
+    NMS (iou 0.5) does not remove a small box nested in a big one: their IoU is
+    intersection/union = small_area/big_area, which is well below 0.5 when the inner box is much
+    smaller, so both survive as a nested pair (the same plume detected at two scales across tiles).
+    Here a box is dropped when >= `thresh` of ITS OWN area lies inside some strictly larger box, so
+    only the outer box that bounds the whole plume is kept."""
+    n = len(xyxy)
+    if n < 2:
+        return np.ones(n, dtype=bool)
+    x1, y1, x2, y2 = xyxy[:, 0], xyxy[:, 1], xyxy[:, 2], xyxy[:, 3]
+    area = np.clip(x2 - x1, 0, None) * np.clip(y2 - y1, 0, None)
+    keep = np.ones(n, dtype=bool)
+    for i in range(n):
+        ix1 = np.maximum(x1[i], x1); iy1 = np.maximum(y1[i], y1)
+        ix2 = np.minimum(x2[i], x2); iy2 = np.minimum(y2[i], y2)
+        inter = np.clip(ix2 - ix1, 0, None) * np.clip(iy2 - iy1, 0, None)
+        frac_i = inter / max(area[i], 1e-6)          # fraction of box i covered by each other box
+        contained = (frac_i >= thresh) & (area > area[i])   # strictly larger container -> no ties
+        if contained.any():
+            keep[i] = False
+    return keep
+
+
 def frame_boxes(model, img: Image.Image, tile: int, stride: int, conf: float,
-                device: str, batch: int, vr: float, vluma: float) -> np.ndarray:
+                device: str, batch: int, vr: float, vluma: float, contain: float) -> np.ndarray:
     """Return full-frame normalized (cx, cy, w, h) boxes for one frame, NMS-merged across tiles.
 
     Boxes in the dark fisheye vignette corners are dropped (VIGNETTE FILTER): a box is discarded
     only if BOTH its center is in a corner (elliptical radius > vr; edge midpoints are ~1.0, true
     corners ~1.4) AND its pixel region is near-black (mean luma < vluma). Requiring both keeps a
     real plume that happens to sit near an edge (which is bright and not in a corner) while removing
-    the phantom boxes on the black rounded corners where there is no scene."""
+    the phantom boxes on the black rounded corners where there is no scene.
+
+    CONTAINMENT FILTER (`contain`): after NMS, a box nested >= `contain` inside a larger box is
+    dropped -- the nested duplicates NMS's IoU rule cannot see (see drop_contained)."""
     W, H = img.size
     corners = list(tiles_with_offset(W, H, tile, stride))
     crops = [img.crop((x, y, min(x + tile, W), min(y + tile, H))) for x, y in corners]
@@ -120,6 +148,7 @@ def frame_boxes(model, img: Image.Image, tile: int, stride: int, conf: float,
     scores = np.concatenate(scores).astype(np.float32)
     keep = nms(torch.from_numpy(xyxy), torch.from_numpy(scores), iou_threshold=0.5).numpy()
     xyxy = xyxy[keep]
+    xyxy = xyxy[drop_contained(xyxy, contain)]      # remove nested duplicates NMS's IoU misses
     # clip to frame (pixels)
     x1 = np.clip(xyxy[:, 0], 0, W); x2 = np.clip(xyxy[:, 2], 0, W)
     y1 = np.clip(xyxy[:, 1], 0, H); y2 = np.clip(xyxy[:, 3], 0, H)
@@ -148,6 +177,9 @@ def main() -> None:
                          "above which it counts as a corner (edge mids ~1.0, corners ~1.4)")
     ap.add_argument("--vignette-luma", type=float, default=35.0,
                     help="a corner box is dropped only if its region mean luma (0-255) is below this")
+    ap.add_argument("--contain", type=float, default=0.9,
+                    help="drop a box when this fraction of its area is nested inside a larger box "
+                         "(default 0.9); 1.0 disables all but exact containment")
     ap.add_argument("--batch", type=int, default=32)
     args = ap.parse_args()
 
@@ -186,7 +218,7 @@ def main() -> None:
         name = f"{row['seq']}__{row['stem']}"        # flattened, unique across fires
         img = Image.open(row["path"]).convert("RGB")
         boxes = frame_boxes(model, img, args.tile, args.stride, args.conf, device, args.batch,
-                            args.vignette_r, args.vignette_luma)
+                            args.vignette_r, args.vignette_luma, args.contain)
         shutil.copy2(row["path"], img_dir / f"{name}.jpg")
         (lbl_dir / f"{name}.txt").write_text(
             "\n".join(f"0 {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}" for cx, cy, w, h in boxes))
