@@ -94,9 +94,11 @@ def main() -> None:
                 continue
         n_neg += 1  # no label file -> Ultralytics background negative
 
-    # 3) data.yaml (paths relative to this file's dir, the Ultralytics convention)
+    # 3) data.yaml. Ultralytics resolves a *relative* `path` against its datasets_dir (~/datasets),
+    #    not this file -- so write the absolute dataset root (the generated yaml is gitignored, and the
+    #    script recomputes it on any machine).
     (OUT / "data.yaml").write_text(
-        "path: .\n"
+        f"path: {OUT.resolve()}\n"
         "train: images/train\n"
         "val: images/train\n"          # no held-out val here; Phase C sets its own eval via the TTD harness
         "names:\n  0: smoke\n"
