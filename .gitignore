@@ -21,3 +21,6 @@ data/figlib_preannot/
 data/figlib_preannot.zip
 data/figlib_preannot_labels.zip
 data/figlib_preannot_yolo11.zip
+data/figlib_corrected/
+# NOTE: data/figlib_corrected_boxes.zip (the hand-corrected CVAT export) is intentionally
+# tracked -- it is the small, self-contained record of the annotation work. Not ignored.

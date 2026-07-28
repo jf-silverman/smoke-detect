@@ -1,8 +1,8 @@
 # Time-to-detection (TTD) — Phase A findings
 
 **Status: Phase A, directional.** The field's headline metric — how many minutes after ignition
-until the first alarm — computed for the first time in this project, on 24 local FIgLib onset
-sequences using a **zero-shot** pyro-sdis detector (never trained on FIgLib). The absolute numbers
+until the first alarm — computed for the first time in this project, on 23 local (day-only) FIgLib
+onset sequences using a **zero-shot** pyro-sdis detector (never trained on FIgLib). The absolute numbers
 are weak and the fire count is small (wide confidence intervals); the value here is a **leak-safe
 TTD harness** and a clean result that the [resolution lever](resolution-findings.md) moves TTD, not
 just AUC. Phases B–C (more fires; an in-distribution detector) sharpen the magnitudes — see
@@ -31,16 +31,21 @@ confidences (no model is re-run), and:
 - **Censoring-aware.** A fire never detected within the sequence is a **miss** (right-censored),
   never averaged into TTD as if it were small. Detection rate and TTD-given-detected are reported
   separately — the pair, so "early" is never bought with "cries wolf".
-- **Bootstrap 90% CIs** over fires, because n=24 is small.
+- **Bootstrap 90% CIs** over fires, because n=23 is small.
 
 ## Headline (native-res tiled, 5% pre-ignition FA budget)
 
+Day-only: the one nocturnal FIgLib fire (`20201202_BondFire-nightime`) is excluded (see
+[data-quality-flags.md](data-quality-flags.md)), so this is 23 fires, comparable to the day-only
+FIgLib benchmark. Removing it dropped a *glow*-based detection (23 min, flame-as-bright-object),
+which is why detection eases from 50% (24 fires) to 48%.
+
 | metric | value | 90% CI | SmokeyNet ref (in-distribution) |
 |---|---|---|---|
-| detection rate | 50% of fires | [33%, 67%] | — |
-| median TTD (detected) | 8.0 min | [4.0, 10.0] | ~3.6 min |
+| detection rate | 48% of fires | [30%, 65%] | — |
+| median TTD (detected) | 8.0 min | [3.5, 9.5] | ~3.6 min |
 | % of all fires within 5 min | 17% | — | ~80% |
-| held-out pre-ignition FA | 5.9% | — | — |
+| held-out pre-ignition FA | 5.7% | — | — |
 
 We are well short of SmokeyNet — as expected. Theirs is an *in-distribution* CNN+LSTM+ViT trained
 on FIgLib; ours is a French-tower [detector](#auc) run **cold** on California (AUC 0.658). This is a
@@ -56,8 +61,8 @@ detector fires indiscriminately.](figures/ttd_result.png)
 
 | signal | detection rate | median TTD | within 5 min |
 |---|---|---|---|
-| whole-frame @640 (AUC 0.454) | 38% | 17.0 min | 12% |
-| **native-res tiled (AUC 0.658)** | **50%** | **8.0 min** | **17%** |
+| whole-frame @640 (AUC 0.454) | 35% | 17.0 min | 9% |
+| **native-res tiled (AUC 0.658)** | **48%** | **8.0 min** | **17%** |
 
 At the operationally-relevant **tight** budgets (2–10%), tiling catches ~10–15 pts more fires and
 detects them several minutes earlier — at the 5% budget, 8.0 vs 17.0 min median. The two curves
@@ -73,19 +78,19 @@ central resolution finding onto the time axis.
 
 | pre-ignition FA budget | detection rate | median TTD | within 5 min |
 |---|---|---|---|
-| 2% | 38% | 9.0 min | 8% |
-| 5% | 50% | 8.0 min | 17% |
-| 10% | 58% | 4.0 min | 33% |
-| 20% | 75% | 3.5 min | 46% |
+| 2% | 35% | 8.5 min | 9% |
+| 5% | 48% | 8.0 min | 17% |
+| 10% | 57% | 4.0 min | 35% |
+| 20% | 74% | 3.0 min | 48% |
 
 **Requiring temporal persistence *hurts* TTD here** — the opposite of its effect on the
 false-alarm-at-matched-recall axis ([figlib-findings.md](figlib-findings.md)):
 
 | persistence k | detection rate | median TTD | within 5 min |
 |---|---|---|---|
-| 1 (single frame) | 50% | 8.0 min | 17% |
-| 2 | 29% | 11.0 min | 0% |
-| 3 | 25% | 11.5 min | 0% |
+| 1 (single frame) | 48% | 8.0 min | 17% |
+| 2 | 30% | 11.0 min | 0% |
+| 3 | 26% | 11.5 min | 0% |
 
 Persistence suppresses *false* alarms by demanding the signal hold across frames — but on this weak
 zero-shot signal it also suppresses the *first true* detection, delaying or missing it. Cutting
@@ -97,17 +102,20 @@ question.
 
 - **Zero-shot detector.** AUC 0.658 on FIgLib; a France-trained model only partly transfers to
   California. Magnitudes are a floor, not the achievable TTD.
-- **Small n (24 fires).** CIs are wide (detection rate ±~17 pts). Directions are trustworthy;
+- **Small n (23 fires).** CIs are wide (detection rate ±~17 pts). Directions are trustworthy;
   point values are not final. Phase B (FIgLib-full / PYRONEAR-2025) tightens them.
-- **The sample is 24 fires, up from an initial 18 — and that wasn't a choice.** The 2024–2025 FIgLib
-  archives nest their frames one directory deeper, so they were silently skipped on extraction until
-  the bug was found; adding the 6 recovered fires moved detection 56%→50% and only modestly narrowed
-  the CI (upper bound [72%]→[67%]). Tellingly, only **2 of the 6 added fires were detected** (Bahrman
-  2.9 min, Highway 14.0 min); the recent California headline fires — **Tenaja, Palisades, Coches** —
-  were all missed by the zero-shot French-tower detector. That the newest, largest fires transfer
-  *worst* is the sharpest case yet for the Phase C in-distribution detector.
+- **The sample moved 18 → 24 → 23 — and none of it was cosmetic.** It started at 18; the 2024–2025
+  FIgLib archives nest their frames one directory deeper, so they were silently skipped on extraction
+  until the bug was found, and adding the 6 recovered fires moved detection 56%→50%. It then dropped
+  to 23 when the one nocturnal fire was excluded for scope (day-only), easing detection 50%→48%
+  because that fire had only ever been "detected" via flame glow at 23 min. Tellingly, only **2 of the
+  6 recovered fires were detected** (Bahrman 2.9 min, Highway 14.0 min); the recent California headline
+  fires — **Tenaja, Palisades, Coches** — were all missed by the zero-shot French-tower detector. That
+  the newest, largest fires transfer *worst* is the sharpest case yet for the Phase C in-distribution
+  detector.
 - **Day-only, curated onset.** FIgLib is daytime and built around clean ignitions; real deployment
-  is harder.
+  is harder. The one nocturnal fire in our pull is excluded so the numbers stay comparable to the
+  day-only benchmark ([data-quality-flags.md](data-quality-flags.md)).
 
 ## What sharpens this next
 

@@ -99,9 +99,9 @@ fires on nearly every cloud. The report found no such public corpus exists, so
 `results/confuser_corpus.csv` is a small original contribution.
 
 **Where this is going next.** Extending the pipeline onto the field's headline metric —
-[time-to-detection](research/ttd-findings.md) — a zero-shot detector on held-out California onset
-fires detects 50% of them at a median 8 minutes, but *misses the most recent CA fires entirely*
-(Palisades, Coches, Tenaja). That miss is a distribution-shift signal, and the fix is an
+[time-to-detection](research/ttd-findings.md) — a zero-shot detector on 23 held-out (day-only)
+California onset fires detects 48% of them at a median 8 minutes, but *misses the most recent CA fires
+entirely* (Palisades, Coches, Tenaja). That miss is a distribution-shift signal, and the fix is an
 in-distribution detector trained on Californian smoke boxes. The candidate public box sources were
 scouted and set aside — the most recent (PYRONEAR-2025) can't close the recency gap and re-imports
 the leak we already audited — so the chosen path is to **pseudo-label our own onset fires** (we hold
@@ -110,12 +110,15 @@ the [backlog](research/backlog.md).
 
 A second thread came straight from a domain observation while hand-correcting those labels: a plume is
 often legible only by its **motion** across frames. A training-free probe
-([motion-findings.md](research/motion-findings.md)) confirms that inter-frame change *anchored to the
+([motion-findings.md](research/motion-findings.md)) shows that inter-frame change *anchored to the
 horizon* (connected to the ground, unlike free-floating cloud drift) separates ignition onset from
-pre-ignition frames at **per-fire AUC 0.71 vs 0.57** for the appearance detector, and is
-*complementary* to it — the case for a motion channel in the in-distribution model. The same probe
-produced three negative results (a texture cue and two horizon-estimator upgrades), all reported as
-such.
+pre-ignition frames at **per-fire AUC 0.71 vs 0.57** for the appearance detector (17 day-only fires),
+rescuing exactly the plumes the detector scores near chance — the faint distant `so-w-mobo-c`
+(0.07 → 0.79) and the oversaturated Dehesa (0.12 → 0.80). It is *complementary* to the detector,
+though the head-to-head win-count is not significant at this sample size (11/17, sign-test p = 0.17):
+the reproducible claim is that anchored motion separates onset above chance and carries signal the
+detector misses — the case for a motion channel in the in-distribution model. The same probe produced
+three negative results (a texture cue and two horizon-estimator upgrades), all reported as such.
 
 ## Layout
 

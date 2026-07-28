@@ -68,6 +68,12 @@ EVAL_FIRES = {
     "20250908_CochesFire_sm-n-mobo-c",
 }
 
+# NIGHT EXCLUSION: optical smoke detection collapses to flame/glow detection at night (plumes are
+# not self-luminous), so the whole field -- and the canonical FIgLib benchmark -- is day-only. We
+# match that scope: any sequence whose name marks it nocturnal is dropped from the Phase C bundle.
+# Name-based because FIgLib tags these in the folder name (e.g. 20201202_BondFire-nightime_...).
+NIGHT_PATTERN = r"night|nocturnal"
+
 
 def pick_device() -> str:
     if torch.cuda.is_available():
@@ -192,6 +198,11 @@ def main() -> None:
     df = scan_frames()
     df = df[df["smoke"]]                              # ONSET GATE: positive (offset>=0) frames only
     df = df[~df["seq"].isin(EVAL_FIRES)]             # whole-fire holdout of the recent eval fires
+    n_before = df["seq"].nunique()
+    df = df[~df["seq"].str.contains(NIGHT_PATTERN, case=False, regex=True)]  # day-only scope
+    n_night = n_before - df["seq"].nunique()
+    if n_night:
+        print(f"NIGHT EXCLUSION: dropped {n_night} nocturnal fire(s) (day-only scope)")
     train_fires = sorted(df["seq"].unique())
     print(f"pseudo-labeling {len(train_fires)} train fires on {device} "
           f"(holding out {len(EVAL_FIRES)} recent eval fires)")

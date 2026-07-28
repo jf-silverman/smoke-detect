@@ -165,12 +165,23 @@ appearance detector does not, justifying carrying it into Phase C as a temporal 
 **not** a strong standalone single-frame feature (~0.60 on a genuinely fuzzy near-onset boundary
 task, from an unlearned hand-rule).
 
+**⟵ SUPERSEDED by the day-only rerun (2026-07-28).** After excluding the one nocturnal fire (scope;
+see [data-quality-flags.md](data-quality-flags.md)) and making the paired stats reproducible from the
+probe artifact, the leak-aware read is: **17 day-only fires**, `anchored_change` per-fire AUC
+**0.708** [0.606, 0.807] (pooled 0.640) vs conf **0.570**, `floating_change` control 0.566 (null),
+`anchored_ratio` 0.708. Paired: anchored beats conf in **11/17 fires**, mean lift **+0.14**, anchored
+AUC ≥0.7 in 11, ≥0.8 in 9 — but the win-count sign-test is **p = 0.17, not significant** at n=17. The
+old "17/24, p≈0.03" mixed in the held-out eval fires and is not reproducible; the defensible claim is
+that anchored motion **separates onset above chance** (CI excludes 0.5) and is **complementary** to the
+detector, rescuing the hard imaging cases (`syp-w` 0.23→0.97, faint `so-w` 0.07→0.79, oversaturated
+`Dehesa` 0.12→0.80). The two historical blocks below are kept for the record.
+
 **Rigor-fix rerun (2026-07, per-fire horizon + per-fire AUC + texture removed) — anchoring
 CONFIRMED and load-bearing.** Per-fire AUC (pooled in parens): `single_frame_conf` 0.568 baseline;
 **`anchored_change` 0.715** [0.640, 0.787]; **`anchored_ratio` 0.711**; `floating_change` 0.555
 (cloud control, CI straddles 0.5 — null, as predicted); naive `conf+anchored` fusion 0.675. Paired:
 anchored beats conf in **17/24 fires** (one-sided sign-test p≈0.03), mean lift **+0.147**, anchored
-AUC ≥0.7 in 14 fires, ≥0.8 in 12.
+AUC ≥0.7 in 14 fires, ≥0.8 in 12. *(Superseded — mixed eval fires into the paired count; see above.)*
 
 - **The per-fire *measurement* was the decisive fix, not the horizon change.** Pooled anchored barely
   moved (0.600→0.592); the jump to 0.715 is from scoring AUC *within* each fire. Anchored-change

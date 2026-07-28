@@ -12,7 +12,7 @@ false-alarm problem stops being one undifferentiated blob and becomes a handful 
 named failure modes with per-type counts. It emits:
 
   results/confuser_clusters.csv       every confuser frame + its cluster id
-  reports/figures/confuser_montage.png rows = clusters, cols = representative frames
+  research/figures/confuser_montage.png rows = clusters, cols = representative frames
 
 A human then reads the montage and assigns each cluster a label (fog / glare / ...);
 those labels live in research/confuser-corpus.md. The images themselves stay gitignored,
@@ -38,10 +38,10 @@ from sklearn.preprocessing import StandardScaler
 ROOT = Path(__file__).resolve().parents[2]
 PROC = ROOT / "data" / "processed"
 RESULTS = ROOT / "results"
-FIG = ROOT / "reports" / "figures"
+FIG = ROOT / "research" / "figures"
 
 # Human labels for the k=6 clustering (KMeans is deterministic at random_state=0, so
-# cluster ids are stable). Assigned by eye from reports/figures/confuser_montage.png;
+# cluster ids are stable). Assigned by eye from research/figures/confuser_montage.png;
 # see research/confuser-corpus.md. If you change --k or the features, re-inspect and
 # re-map -- the ids will move.
 CLUSTER_LABELS = {

@@ -42,7 +42,7 @@ For the findings themselves — the numbers, per stage, with a table of contents
 | 12 | Time-to-detection (Phase A, FIgLib) | First TTD numbers in the project; **resolution lowers TTD, not just AUC** | Author chose the HPWREN/TTD thrust |
 | 13 | Combine the two levers (native-res + hard-neg) | Burden ~173 → **133 FP/day** (−23%), −2.4 pts recall — a real but *incremental* win, reported as such | Author sequenced it; LLM built and stopped it at the plateau |
 | 14 | Scout a Phase C box-data source (PYRONEAR-2025) before spending GPU | **Negative result** — it can't close the recent-CA gap and re-adds leaky HPWREN; pivoted to pseudo-labeling our own fires | Author asked for a recent labeled source; LLM profiled and eliminated it cheaply |
-| 15 | Horizon-anchored motion probe on FIgLib (author's scanning observation) | Anchored inter-frame motion separates onset from pre-ignition at per-fire AUC **0.71 vs 0.57** for the detector, and is *complementary* to it — plus two clean negative results along the way | **Author's motion insight** (and the physics that refined it); LLM built the probe and reported the nulls |
+| 15 | Horizon-anchored motion probe on FIgLib (author's scanning observation) | Anchored inter-frame motion separates onset from pre-ignition at per-fire AUC **0.71 vs 0.57** for the detector, and is *complementary* to it (though the head-to-head is not significant at n=17) — plus three clean negative results along the way | **Author's motion insight** (and the physics that refined it); LLM built the probe and reported the nulls |
 
 ## The turns worth remembering
 
@@ -152,14 +152,15 @@ motion, doing the work. And it is *complementary*: fires the appearance detector
 0.23) are rescued by motion (0.97), which is the whole case for a motion channel in Phase C.
 
 Two things about this turn are worth keeping. First, **the measurement was as important as the
-feature**: pooling frames across fires understated the signal (AUC ~0.62) because absolute motion
+feature**: pooling frames across fires understated the signal (AUC ~0.64) because absolute motion
 scale varies by scene; scored the operationally correct way — *within* each fire — it was 0.71. The
-same feature, measured wrong, would have been dismissed. Second, **it produced two clean negative
+same feature, measured wrong, would have been dismissed. Second, **it produced three clean negative
 results, reported as negatives.** A texture cue (diffuse haze + hard column edge) was cut once the
 author pointed out it breaks under the very conditions that matter — a high-Haines day gives a
-hard-edged column with no haze, a windy day an all-diffuse one with no edge. And a proposed
+hard-edged column with no haze, a windy day an all-diffuse one with no edge. A proposed
 smoothed-skyline horizon *upgrade* was built, measured, found to make things worse (0.715 → 0.616),
-and reverted — a fix that wasn't. Neither was papered over. See
+and reverted — a fix that wasn't. And a luminosity sky/ground mask (the author's photo-editing
+intuition) underperformed the plain flat horizon and was reverted too. None was papered over. See
 [motion-findings.md](../research/motion-findings.md).
 
 ## Why this is the interesting story

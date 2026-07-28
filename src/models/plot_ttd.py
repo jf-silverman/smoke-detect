@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results"
-FIG = ROOT / "reports" / "figures"
+FIG = ROOT / "research" / "figures"
 
 TILED = "#c6660f"     # matches the reports' medium-orange accent
 WHOLE = "#6b7280"     # muted slate for the weaker whole-frame signal

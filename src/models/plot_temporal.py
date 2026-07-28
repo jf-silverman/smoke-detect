@@ -7,7 +7,7 @@ Two panels, from the numbers in research/temporal-findings.md:
   (right) the mechanism: the false alarms are persistent, not flicker, so a
           temporal model has nothing to grab onto.
 
-    python src/models/plot_temporal.py   ->  reports/figures/temporal_result.png
+    python src/models/plot_temporal.py   ->  research/figures/temporal_result.png
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[2]
-FIG = ROOT / "reports" / "figures"
+FIG = ROOT / "research" / "figures"
 
 INK, GRID = "#1a1a1a", "#d9d9d9"
 COLORS = {"single-frame": "#0072B2", "persistence": "#D55E00", "temporal-gru": "#009E73"}

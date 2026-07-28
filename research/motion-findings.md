@@ -52,32 +52,39 @@ Two methodology choices carry the rigor:
 
 Onset (offset ≥ 0) vs pre-ignition (offset < 0) separability, per-fire AUC (pooled in parens).
 
-**Training set — 18 fires, the 6 recent CA eval fires held out for Phase C** (`--exclude-eval`):
+**Training set — 17 day-only fires** (the 6 recent CA eval fires held out for Phase C via
+`--exclude-eval`; the one nocturnal fire excluded for scope, see
+[data-quality-flags.md](data-quality-flags.md)):
 
 | feature | per-fire AUC (90% CI) | pooled |
 |---|---|---|
-| single_frame_conf (baseline) | 0.569 [0.458, 0.671] | 0.595 |
-| **anchored_change** | **0.706 [0.609, 0.797]** | 0.624 |
-| **anchored_ratio** | **0.705 [0.611, 0.795]** | 0.636 |
-| floating_change (cloud control) | 0.556 [0.448, 0.662] | 0.537 |
-| conf + anchored (naive sum) | 0.662 [0.562, 0.761] | 0.646 |
+| single_frame_conf (baseline) | 0.570 [0.461, 0.680] | 0.598 |
+| **anchored_change** | **0.708 [0.606, 0.807]** | 0.640 |
+| **anchored_ratio** | **0.708 [0.605, 0.800]** | 0.651 |
+| floating_change (cloud control) | 0.566 [0.456, 0.675] | 0.536 |
+| conf + anchored (naive sum) | 0.662 [0.561, 0.760] | 0.658 |
 
-**All 24 local fires (context):** `anchored_change` per-fire AUC **0.715**, beating conf in **17 of
-24 fires** (one-sided sign-test p ≈ 0.03), mean per-fire lift **+0.147**, anchored AUC ≥ 0.7 in 14
-fires and ≥ 0.8 in 12. Holding out the eval fires barely moved it (0.715 → 0.706) — the signal lives
-in the training set.
+**The head-to-head, stated plainly.** `anchored_change` beats conf in **11 of 17 fires** (mean per-fire
+lift **+0.14**; anchored AUC ≥ 0.7 in 11 fires, ≥ 0.8 in 9), but at n = 17 that win-count is **not
+statistically significant** (one-sided sign-test p = 0.17). An earlier writeup cited "17 of 24,
+p ≈ 0.03" — that number mixed in the held-out eval fires and is not reproducible from the probe
+artifact; this is the leak-aware, day-only, reproducible replacement. The defensible claim is therefore
+narrower than a clean win over the detector: **anchored motion separates onset above chance** (its
+90% CI [0.606, 0.807] excludes 0.5) and **carries signal the detector misses** — a complementary
+channel, which is all Phase C needs it to be.
 
 Three things to read from this:
 1. **Anchoring works, and the control confirms the mechanism.** `anchored_change` (0.71) clears both
-   the conf baseline (0.57) and the `floating_change` cloud control (0.56, CI straddling 0.5 — null).
+   the conf baseline (0.57) and the `floating_change` cloud control (0.57, CI straddling 0.5 — null).
    It is *anchoring* doing the work, not merely "more motion."
-2. **The per-fire *measurement* was decisive.** The pooled AUC (~0.62) badly understates the feature:
+2. **The per-fire *measurement* was decisive.** The pooled AUC (0.64) understates the feature:
    anchored-change *magnitude* varies by scene, so pooling frames across fires lets between-fire scale
    swamp the within-fire onset signal. Measured the operationally correct way — within a fire — it is
    0.71.
 3. **Complementarity, not redundancy.** Fires the appearance detector is weak on are rescued by
-   motion: `syp-w` conf 0.23 → anchored 0.97; `Bahrman` 0.63 → 0.96. That orthogonal signal is the
-   whole argument for a motion channel in Phase C.
+   motion, and they are exactly the hard imaging cases: `syp-w` conf 0.23 → anchored 0.97; the faint
+   distant `so-w-mobo-c` 0.07 → 0.79; the oversaturated `Dehesa` 0.12 → 0.80. That orthogonal signal is
+   the whole argument for a motion channel in Phase C.
 
 **On fusion:** the naive equal-weight rank-sum of conf + anchored *hurts* (0.66 < 0.71), because it
 dilutes the stronger motion feature with the weaker confidence. This is **not** evidence of
@@ -88,13 +95,14 @@ sum; the naive number is reported only as a control, not as the combined-value t
 ## The failure cases are diagnostic
 
 The fires where anchored motion fails are physical, not evidence against the mechanism:
-- **`mg-n-iqeye` (anchored 0.26–0.33)** — the flagged dirty-lens sequence; the smeared cover injects
-  false motion everywhere, breaking differencing. A known confound.
-- **`wc-s-mobo-c` (anchored 0.03, conf 0.64)** — a single catastrophic horizon mis-placement (the
+- **`mg-n-iqeye` (anchored 0.33, conf 0.39)** — the flagged dirty-lens sequence; the smeared cover
+  injects false motion everywhere, breaking differencing. A known confound.
+- **`wc-s-mobo-c` (anchored 0.00, conf 0.64)** — a single catastrophic horizon mis-placement (the
   estimate lands off the true skyline, so the plume never crosses the band). Not recovered by the
   skyline attempt below — its problem is specific, not the flat-vs-skyline choice.
-- **`HighwayFire` (anchored 0.55)** — a recent, plausibly wind-driven diffuse plume that never anchors
-  cleanly; the "windy day → hardest to detect" case.
+- **`rm-w-mobo-c` (anchored 0.57, conf 0.98)** — a case the appearance detector nails (conf AUC 0.98)
+  but motion does not add to; the plume is high-contrast and single-frame-obvious, so there is no
+  motion gap to close. Motion earns its keep on the faint plumes, not these.
 
 ## Three negative results, reported as such
 
@@ -105,16 +113,17 @@ The fires where anchored motion fails are physical, not evidence against the mec
   product breaks exactly under the atmospheric conditions that matter, so it was cut.
 - **Smoothed-skyline horizon — tried and reverted.** To fix `wc-s`, a per-column skyline (median-
   smoothed steepest per-column gradient) with a column-warp to flatten the terrain contour was built.
-  It made things *worse* — apples-to-apples on 24 fires, `anchored_change` fell 0.715 → 0.616, and
-  `wc-s` stayed broken (0.03). Per-column gradient estimates are noisy and warping by them scrambled
+  It made things *worse* — apples-to-apples (on the pre-cleanup fire set, before the day-only /
+  night-exclusion pass), `anchored_change` fell 0.715 → 0.616, and `wc-s` stayed broken (0.03). Per-column gradient estimates are noisy and warping by them scrambled
   the vertical structure anchoring depends on; the flat median row is more robust. Reverted.
 - **Luminosity sky/ground mask — tried and reverted.** Following the intuition (from photo editing)
   that absolute luminosity splits sky from ground, we built a per-fire Otsu threshold on the averaged
   pre-ignition frame → ground mask, then flooded change *upward from the ground* through connected
   change pixels (a warp-free A/B against the flat horizon). It underperformed badly: per-fire
-  `anchored_lum` **0.537** vs flat-horizon `anchored_change` **0.706** on the training set, with the
-  `floating_lum` control (0.582) actually *beating* `anchored_lum` — the fingerprint of a mask that
-  mislabels sky vs ground. None of the 18 masks were degenerate (ground fractions 0.34–0.90), so it is
+  `anchored_lum` **0.537** vs flat-horizon `anchored_change` **0.706** on the training set (pre-cleanup
+  fire set), with the `floating_lum` control (0.582) actually *beating* `anchored_lum` — the fingerprint
+  of a mask that mislabels sky vs ground. None of the masks were degenerate (ground fractions
+  0.34–0.90), so it is
   a genuine feature-quality result, not an artifact: on FIgLib's variable imagery (haze, backlight,
   dark forest, bright cloud) *absolute* brightness does not track the horizon, whereas the flat
   estimator keys on *relative* brightness change (a gradient) and is robust to those level shifts.
@@ -130,7 +139,8 @@ time-to-detection*, not just raises separability.
 
 Open threads:
 - **Learned combiner** — the naive fusion is the wrong test; the temporal head is the right one.
-- **Tighter CIs** — 18–24 fires is small; Phase B onset data (FIgLib-full / PYRONEAR) would sharpen it.
+- **Tighter CIs** — 17 fires is small (and the reason the head-to-head sign-test is underpowered);
+  Phase B onset data (FIgLib-full / PYRONEAR) would sharpen it.
 - **The horizon estimator is settled** — three variants tried (flat brightness-gradient row, per-column
   smoothed skyline, luminosity sky/ground mask); the simplest won and the other two are documented
   negatives above. Not worth further tuning; the learned head can refine anchoring if it needs to.

@@ -42,6 +42,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from math import comb
 from pathlib import Path
 
 import numpy as np
@@ -66,6 +67,13 @@ EVAL_FIRES = {
     "20250612_HighwayFire_hp-e-mobo-c",
     "20250908_CochesFire_sm-n-mobo-c",
 }
+
+# NIGHT EXCLUSION: optical smoke detection collapses to flame/glow detection at night (a night
+# "detection" is glow, not the incipient plume), and every published number in this field -- and the
+# canonical FIgLib benchmark -- is day-only. So night fires are dropped unconditionally here (not
+# behind --exclude-eval): keeping them would make our POD/TTD/motion numbers non-comparable to the
+# literature. Name-based, since FIgLib tags nocturnal sequences in the folder name.
+NIGHT_PATTERN = r"night|nocturnal"
 
 
 # --- data (mirrors figlib_temporal.scan_frames; kept local so this eval needs only numpy/pandas) ---
@@ -400,15 +408,23 @@ def motion_separability(df: pd.DataFrame, width: int, boot: int = 2000, seed: in
 
     # per-fire AUC: compute within each fire, keep the vector of fire-level AUCs
     per_fire = {n: [] for n in order}
+    paired = []                                              # (anchored, conf) per fire, both valid
+    per_fire_by_seq = {}                                     # seq -> {anchored_change, single_frame_conf}
     for seq in np.unique(seqs):
         m = (seqs == seq) & valid
         lab = label[m]
         if lab.sum() == 0 or (lab == 0).sum() == 0:          # need both classes in the fire
             continue
+        row = {}
         for n in order:
             a = auc(series(n, m), lab)
             if not np.isnan(a):
                 per_fire[n].append(a)
+                row[n] = a
+        if "anchored_change" in row and "single_frame_conf" in row:
+            paired.append((row["anchored_change"], row["single_frame_conf"]))
+            per_fire_by_seq[str(seq)] = {"anchored_change": round(row["anchored_change"], 3),
+                                         "single_frame_conf": round(row["single_frame_conf"], 3)}
 
     rng = np.random.default_rng(seed)
 
@@ -424,6 +440,18 @@ def motion_separability(df: pd.DataFrame, width: int, boot: int = 2000, seed: in
     for n in order:
         mean_auc[n], ci[n] = agg(per_fire[n])
 
+    # paired anchored-vs-conf read (leak-aware, per fire): win count, mean lift, one-sided sign-test.
+    # Ties (anchored == conf) are dropped, the standard sign-test convention.
+    anch = np.array([a for a, _ in paired], float)
+    cf = np.array([c for _, c in paired], float)
+    diff = anch - cf
+    wins = int((diff > 0).sum())
+    n_eff = int((diff != 0).sum())                          # non-tie fires
+    # one-sided P(X >= wins) under Binom(n_eff, 0.5)
+    sign_p = float(sum(comb(n_eff, k) for k in range(wins, n_eff + 1)) / (2 ** n_eff)) \
+        if n_eff else None
+    anchored_vals = np.array(per_fire["anchored_change"], float)
+
     return {
         "order": order,
         "n_frames_scored": int(valid.sum()),
@@ -432,6 +460,16 @@ def motion_separability(df: pd.DataFrame, width: int, boot: int = 2000, seed: in
         "auc_per_fire_mean": mean_auc,
         "auc_per_fire_ci90": ci,
         "auc_pooled": {n: (None if np.isnan(v) else round(v, 3)) for n, v in pooled.items()},
+        "anchored_vs_conf": {
+            "n_fires_paired": len(paired),
+            "anchored_beats_conf": wins,
+            "n_non_tie": n_eff,
+            "sign_test_p_onesided": None if sign_p is None else round(sign_p, 4),
+            "mean_lift": round(float(diff.mean()), 3) if len(diff) else None,
+            "n_anchored_ge_0.7": int((anchored_vals >= 0.7).sum()),
+            "n_anchored_ge_0.8": int((anchored_vals >= 0.8).sum()),
+        },
+        "per_fire_auc": per_fire_by_seq,
     }
 
 
@@ -456,6 +494,12 @@ def main() -> None:
     args = ap.parse_args()
 
     df = load_conf(scan_frames(), Path(args.features))
+    n_before = df["seq"].nunique()
+    df = df[~df["seq"].str.contains(NIGHT_PATTERN, case=False, regex=True)].reset_index(drop=True)
+    n_night = n_before - df["seq"].nunique()
+    if n_night:
+        print(f"NIGHT EXCLUSION: dropped {n_night} nocturnal fire(s) — day-only scope, "
+              f"comparable to the FIgLib benchmark")
     if args.exclude_eval:
         before = df["seq"].nunique()
         df = df[~df["seq"].isin(EVAL_FIRES)].reset_index(drop=True)
@@ -517,6 +561,11 @@ def main() -> None:
             cis = "" if lo is None else f"[{lo:.3f}, {hi:.3f}]"
             ps = "n/a" if p is None else f"{p:.3f}"
             print(f"    {name:<28s} {ms:>5s} {cis:<20s} {ps:>6s}{flag}")
+        vc = motion["anchored_vs_conf"]
+        print(f"  anchored beats conf in {vc['anchored_beats_conf']}/{vc['n_non_tie']} fires "
+              f"(one-sided sign-test p = {vc['sign_test_p_onesided']}), mean per-fire lift "
+              f"{vc['mean_lift']:+.3f}; anchored AUC >= 0.7 in {vc['n_anchored_ge_0.7']}, "
+              f">= 0.8 in {vc['n_anchored_ge_0.8']}")
         print("  (per-fire AUC is the leak-aware read -- computed within each fire, then averaged.\n"
               "   >0.5 separates onset. anchored_change/anchored_ratio are the motion features;\n"
               "   floating_change is the cloud-drift control (want ~0.5). conf_plus_anchored_naive is\n"

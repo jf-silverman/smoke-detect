@@ -136,9 +136,10 @@ onset. The mechanism, confirmed both ways.
 ## 8. Time-to-detection
 
 Time-to-detection (TTD) is the metric operators and the academic reference actually lead with, and the
-project had lacked it. A cache-only, leak-safe leave-one-fire-out harness on 24 held-out California
-onset fires gives the first numbers: a zero-shot detector detects **50% of fires at a median 8
-minutes** (16.7% within 5 min; pre-ignition false-alarm rate ~5.9%). Resolution shows up here too —
+project had lacked it. A cache-only, leak-safe leave-one-fire-out harness on 23 held-out California
+onset fires (day-only, matching the FIgLib benchmark) gives the first numbers: a zero-shot detector
+detects **48% of fires at a median 8 minutes** (17% within 5 min; pre-ignition false-alarm rate
+~5.7%). Resolution shows up here too —
 native tiling detects more fires *and* detects them minutes sooner. But the harness also surfaces the
 motivating miss: **the most recent CA fires (Palisades, Coches, Tenaja) are missed entirely** — a
 distribution-shift signal that a French-tower detector does not transfer to recent California smoke.
@@ -151,13 +152,19 @@ legible only by its **motion** across frames, invisible in any single still. A t
 tests whether inter-frame change **anchored to the horizon** (connected to the ground, unlike
 free-floating cloud drift) separates ignition onset from pre-ignition frames.
 
-It does, and — importantly — it is *complementary* to the appearance detector. On the training fires,
-horizon-anchored motion separates onset at **per-fire AUC 0.706** versus **0.569** for the detector's
-own confidence, with a floating-change *control* at chance (0.556) — so it is anchoring, not merely
-motion, doing the work. Across all 24 fires it beats the detector in **17 of 24** (sign-test p ≈ 0.03),
-and rescues fires the detector is weak on (conf 0.23 → anchored 0.97). The measurement mattered as
-much as the feature: pooling frames across fires understated it (~0.62) because absolute motion scale
-varies by scene; scored *within* each fire it is 0.71.
+It does, and — importantly — it is *complementary* to the appearance detector. On the 17 day-only
+training fires, horizon-anchored motion separates onset at **per-fire AUC 0.708** (90% CI
+[0.606, 0.807], excluding chance) versus **0.570** for the detector's own confidence, with a
+floating-change *control* near chance (0.566) — so it is anchoring, not merely motion, doing the work.
+Where it pays off most is exactly the hard imaging cases: the faint distant plume of `so-w-mobo-c`
+(conf AUC 0.07 → anchored 0.79), the oversaturated Dehesa plume (0.12 → 0.80), and `syp-w-mobo-c`
+(0.23 → 0.97) — plumes the appearance detector scores near chance. It beats the detector's confidence
+in **11 of 17** fires (mean per-fire lift +0.14; anchored AUC ≥ 0.7 in 11 fires, ≥ 0.8 in 9), but at
+this sample size that head-to-head win-count is **not itself significant** (one-sided sign-test
+p = 0.17). The reproducible, defensible claim is narrower than a clean victory: anchored motion
+*separates onset above chance* and *carries signal the appearance detector misses* — a complementary
+channel, not a replacement. The measurement mattered too: pooling frames across fires understated it
+(0.64) because absolute motion scale varies by scene; scored *within* each fire it is 0.71.
 
 The same probe produced **three clean negative results**, each reported as such: a texture cue
 (diffuse-haze × hard-edge) that breaks under the very atmospheric conditions that matter; and two

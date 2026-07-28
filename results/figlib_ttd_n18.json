@@ -2,112 +2,107 @@
   "headline": {
     "far_target": 0.05,
     "persist_k": 1,
-    "n_fires": 18,
-    "detection_rate": 0.556,
-    "median_ttd_min": 8.0,
-    "mean_ttd_min": 9.1,
-    "pct_within_5min_of_all": 0.167,
-    "mean_preignition_far_heldout": 0.0613,
+    "n_fires": 17,
+    "detection_rate": 0.471,
+    "median_ttd_min": 7.5,
+    "mean_ttd_min": 7.25,
+    "pct_within_5min_of_all": 0.176,
+    "mean_preignition_far_heldout": 0.059,
     "per_fire": {
       "20160604_FIRE_rm-n-mobo-c": {
         "detected": false,
         "ttd_min": null,
-        "threshold": 0.5195
+        "threshold": 0.509
+      },
+      "20160619_FIRE_lp-e-iqeye": {
+        "detected": false,
+        "ttd_min": null,
+        "threshold": 0.5056
       },
       "20170520_FIRE_pi-w-mobo-c": {
         "detected": false,
         "ttd_min": null,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20170722_FIRE_mg-n-iqeye": {
         "detected": false,
         "ttd_min": null,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20171207_Lilac_rm-s-mobo": {
         "detected": true,
         "ttd_min": 8.0,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20180603_FIRE_smer-tcs9-mobo-c": {
         "detected": true,
         "ttd_min": 7.0,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20180718_FIRE_syp-w-mobo-c": {
         "detected": true,
         "ttd_min": 1.0,
-        "threshold": 0.4988
+        "threshold": 0.4941
       },
       "20180806_FIRE_vo-w-mobo-c": {
         "detected": true,
         "ttd_min": 9.0,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20190620_FIRE_rm-w-mobo-c": {
         "detected": true,
         "ttd_min": 8.0,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20190728_Dehesa_lp-n-mobo": {
         "detected": false,
         "ttd_min": null,
-        "threshold": 0.5074
+        "threshold": 0.5029
       },
       "20190827_FIRE_so-w-mobo-c": {
         "detected": false,
         "ttd_min": null,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20190925_FIRE_wc-s-mobo-c": {
         "detected": false,
         "ttd_min": null,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20191006_FIRE_lp-e-mobo-c": {
         "detected": true,
         "ttd_min": 0.98,
-        "threshold": 0.5029
+        "threshold": 0.4983
       },
       "20200306_FIRE_mlo-n-mobo-c": {
         "detected": false,
         "ttd_min": null,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20200618_FIRE_om-w-mobo-c": {
         "detected": false,
         "ttd_min": null,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20200808_OliveFire_wc-e-mobo-c": {
         "detected": true,
         "ttd_min": 20.0,
-        "threshold": 0.5195
-      },
-      "20201202_BondFire-nightime_sp-w-mobo-c": {
-        "detected": true,
-        "ttd_min": 23.0,
-        "threshold": 0.5195
+        "threshold": 0.509
       },
       "20210204_FIRE_tp-s-mobo-c": {
         "detected": true,
         "ttd_min": 4.0,
-        "threshold": 0.5074
-      },
-      "20240708_VistaFire_wilson-e-mobo-c": {
-        "detected": true,
-        "ttd_min": 10.03,
-        "threshold": 0.5041
+        "threshold": 0.5029
       }
     },
     "ci90": {
       "detection_rate_ci90": [
-        0.333,
-        0.722
+        0.294,
+        0.647
       ],
       "median_ttd_ci90": [
-        4.0,
-        10.03
+        2.5,
+        9.0
       ]
     }
   },
@@ -115,14 +110,19 @@
     {
       "far_target": 0.02,
       "persist_k": 1,
-      "n_fires": 18,
-      "detection_rate": 0.444,
-      "median_ttd_min": 8.5,
-      "mean_ttd_min": 11.5,
-      "pct_within_5min_of_all": 0.111,
-      "mean_preignition_far_heldout": 0.0287,
+      "n_fires": 17,
+      "detection_rate": 0.412,
+      "median_ttd_min": 8.0,
+      "mean_ttd_min": 9.85,
+      "pct_within_5min_of_all": 0.118,
+      "mean_preignition_far_heldout": 0.0319,
       "per_fire": {
         "20160604_FIRE_rm-n-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5649
+        },
+        "20160619_FIRE_lp-e-iqeye": {
           "detected": false,
           "ttd_min": null,
           "threshold": 0.5649
@@ -150,7 +150,7 @@
         "20180718_FIRE_syp-w-mobo-c": {
           "detected": true,
           "ttd_min": 8.0,
-          "threshold": 0.542
+          "threshold": 0.529
         },
         "20180806_FIRE_vo-w-mobo-c": {
           "detected": true,
@@ -180,7 +180,7 @@
         "20191006_FIRE_lp-e-mobo-c": {
           "detected": true,
           "ttd_min": 0.98,
-          "threshold": 0.5351
+          "threshold": 0.5304
         },
         "20200306_FIRE_mlo-n-mobo-c": {
           "detected": false,
@@ -197,326 +197,301 @@
           "ttd_min": 25.0,
           "threshold": 0.5649
         },
-        "20201202_BondFire-nightime_sp-w-mobo-c": {
-          "detected": true,
-          "ttd_min": 23.0,
-          "threshold": 0.5649
-        },
         "20210204_FIRE_tp-s-mobo-c": {
           "detected": true,
           "ttd_min": 4.0,
           "threshold": 0.5581
-        },
-        "20240708_VistaFire_wilson-e-mobo-c": {
-          "detected": false,
-          "ttd_min": null,
-          "threshold": 0.5609
         }
       }
     },
     {
       "far_target": 0.05,
       "persist_k": 1,
-      "n_fires": 18,
-      "detection_rate": 0.556,
-      "median_ttd_min": 8.0,
-      "mean_ttd_min": 9.1,
-      "pct_within_5min_of_all": 0.167,
-      "mean_preignition_far_heldout": 0.0613,
+      "n_fires": 17,
+      "detection_rate": 0.471,
+      "median_ttd_min": 7.5,
+      "mean_ttd_min": 7.25,
+      "pct_within_5min_of_all": 0.176,
+      "mean_preignition_far_heldout": 0.059,
       "per_fire": {
         "20160604_FIRE_rm-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
+        },
+        "20160619_FIRE_lp-e-iqeye": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5056
         },
         "20170520_FIRE_pi-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20170722_FIRE_mg-n-iqeye": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20171207_Lilac_rm-s-mobo": {
           "detected": true,
           "ttd_min": 8.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20180603_FIRE_smer-tcs9-mobo-c": {
           "detected": true,
           "ttd_min": 7.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20180718_FIRE_syp-w-mobo-c": {
           "detected": true,
           "ttd_min": 1.0,
-          "threshold": 0.4988
+          "threshold": 0.4941
         },
         "20180806_FIRE_vo-w-mobo-c": {
           "detected": true,
           "ttd_min": 9.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190620_FIRE_rm-w-mobo-c": {
           "detected": true,
           "ttd_min": 8.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190728_Dehesa_lp-n-mobo": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5074
+          "threshold": 0.5029
         },
         "20190827_FIRE_so-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190925_FIRE_wc-s-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20191006_FIRE_lp-e-mobo-c": {
           "detected": true,
           "ttd_min": 0.98,
-          "threshold": 0.5029
+          "threshold": 0.4983
         },
         "20200306_FIRE_mlo-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20200618_FIRE_om-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20200808_OliveFire_wc-e-mobo-c": {
           "detected": true,
           "ttd_min": 20.0,
-          "threshold": 0.5195
-        },
-        "20201202_BondFire-nightime_sp-w-mobo-c": {
-          "detected": true,
-          "ttd_min": 23.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20210204_FIRE_tp-s-mobo-c": {
           "detected": true,
           "ttd_min": 4.0,
-          "threshold": 0.5074
-        },
-        "20240708_VistaFire_wilson-e-mobo-c": {
-          "detected": true,
-          "ttd_min": 10.03,
-          "threshold": 0.5041
+          "threshold": 0.5029
         }
       }
     },
     {
       "far_target": 0.1,
       "persist_k": 1,
-      "n_fires": 18,
-      "detection_rate": 0.611,
-      "median_ttd_min": 4.0,
-      "mean_ttd_min": 7.09,
-      "pct_within_5min_of_all": 0.333,
-      "mean_preignition_far_heldout": 0.1204,
+      "n_fires": 17,
+      "detection_rate": 0.588,
+      "median_ttd_min": 5.5,
+      "mean_ttd_min": 6.6,
+      "pct_within_5min_of_all": 0.294,
+      "mean_preignition_far_heldout": 0.1181,
       "per_fire": {
         "20160604_FIRE_rm-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4777
+          "threshold": 0.467
+        },
+        "20160619_FIRE_lp-e-iqeye": {
+          "detected": true,
+          "ttd_min": 22.0,
+          "threshold": 0.4616
         },
         "20170520_FIRE_pi-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4777
+          "threshold": 0.467
         },
         "20170722_FIRE_mg-n-iqeye": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4777
+          "threshold": 0.467
         },
         "20171207_Lilac_rm-s-mobo": {
           "detected": true,
           "ttd_min": 8.0,
-          "threshold": 0.477
+          "threshold": 0.4659
         },
         "20180603_FIRE_smer-tcs9-mobo-c": {
           "detected": true,
           "ttd_min": 7.0,
-          "threshold": 0.4777
+          "threshold": 0.467
         },
         "20180718_FIRE_syp-w-mobo-c": {
           "detected": true,
           "ttd_min": 0.0,
-          "threshold": 0.4603
+          "threshold": 0.4391
         },
         "20180806_FIRE_vo-w-mobo-c": {
           "detected": true,
           "ttd_min": 9.0,
-          "threshold": 0.4777
+          "threshold": 0.467
         },
         "20190620_FIRE_rm-w-mobo-c": {
           "detected": true,
           "ttd_min": 4.0,
-          "threshold": 0.4777
+          "threshold": 0.467
         },
         "20190728_Dehesa_lp-n-mobo": {
           "detected": true,
           "ttd_min": 4.0,
-          "threshold": 0.4637
+          "threshold": 0.4465
         },
         "20190827_FIRE_so-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4777
+          "threshold": 0.467
         },
         "20190925_FIRE_wc-s-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.477
+          "threshold": 0.4659
         },
         "20191006_FIRE_lp-e-mobo-c": {
           "detected": true,
           "ttd_min": 0.98,
-          "threshold": 0.4647
+          "threshold": 0.4482
         },
         "20200306_FIRE_mlo-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4777
+          "threshold": 0.467
         },
         "20200618_FIRE_om-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4777
+          "threshold": 0.467
         },
         "20200808_OliveFire_wc-e-mobo-c": {
           "detected": true,
-          "ttd_min": 20.0,
-          "threshold": 0.4753
-        },
-        "20201202_BondFire-nightime_sp-w-mobo-c": {
-          "detected": true,
-          "ttd_min": 23.0,
-          "threshold": 0.4777
+          "ttd_min": 10.0,
+          "threshold": 0.4603
         },
         "20210204_FIRE_tp-s-mobo-c": {
           "detected": true,
           "ttd_min": 1.0,
-          "threshold": 0.4647
-        },
-        "20240708_VistaFire_wilson-e-mobo-c": {
-          "detected": true,
-          "ttd_min": 1.02,
-          "threshold": 0.4578
+          "threshold": 0.4482
         }
       }
     },
     {
       "far_target": 0.2,
       "persist_k": 1,
-      "n_fires": 18,
-      "detection_rate": 0.722,
-      "median_ttd_min": 1.02,
-      "mean_ttd_min": 5.77,
-      "pct_within_5min_of_all": 0.389,
-      "mean_preignition_far_heldout": 0.2262,
+      "n_fires": 17,
+      "detection_rate": 0.765,
+      "median_ttd_min": 4.0,
+      "mean_ttd_min": 5.38,
+      "pct_within_5min_of_all": 0.412,
+      "mean_preignition_far_heldout": 0.2154,
       "per_fire": {
         "20160604_FIRE_rm-n-mobo-c": {
           "detected": true,
           "ttd_min": 6.0,
-          "threshold": 0.4117
+          "threshold": 0.3878
+        },
+        "20160619_FIRE_lp-e-iqeye": {
+          "detected": true,
+          "ttd_min": 4.0,
+          "threshold": 0.384
         },
         "20170520_FIRE_pi-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4117
+          "threshold": 0.3878
         },
         "20170722_FIRE_mg-n-iqeye": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4117
+          "threshold": 0.3878
         },
         "20171207_Lilac_rm-s-mobo": {
           "detected": true,
           "ttd_min": 8.0,
-          "threshold": 0.4076
+          "threshold": 0.3862
         },
         "20180603_FIRE_smer-tcs9-mobo-c": {
           "detected": true,
           "ttd_min": 7.0,
-          "threshold": 0.4117
+          "threshold": 0.3878
         },
         "20180718_FIRE_syp-w-mobo-c": {
           "detected": true,
           "ttd_min": 0.0,
-          "threshold": 0.3857
+          "threshold": 0.3631
         },
         "20180806_FIRE_vo-w-mobo-c": {
           "detected": true,
           "ttd_min": 8.0,
-          "threshold": 0.4117
+          "threshold": 0.3878
         },
         "20190620_FIRE_rm-w-mobo-c": {
           "detected": true,
           "ttd_min": 1.0,
-          "threshold": 0.4104
+          "threshold": 0.3873
         },
         "20190728_Dehesa_lp-n-mobo": {
           "detected": true,
           "ttd_min": 1.0,
-          "threshold": 0.3837
+          "threshold": 0.3617
         },
         "20190827_FIRE_so-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4089
+          "threshold": 0.3865
         },
         "20190925_FIRE_wc-s-mobo-c": {
-          "detected": false,
-          "ttd_min": null,
-          "threshold": 0.4104
+          "detected": true,
+          "ttd_min": 17.0,
+          "threshold": 0.3873
         },
         "20191006_FIRE_lp-e-mobo-c": {
           "detected": true,
           "ttd_min": 0.0,
-          "threshold": 0.3942
+          "threshold": 0.3717
         },
         "20200306_FIRE_mlo-n-mobo-c": {
           "detected": true,
-          "ttd_min": 21.0,
-          "threshold": 0.4117
+          "ttd_min": 17.0,
+          "threshold": 0.3878
         },
         "20200618_FIRE_om-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4117
+          "threshold": 0.3878
         },
         "20200808_OliveFire_wc-e-mobo-c": {
           "detected": true,
           "ttd_min": 0.0,
-          "threshold": 0.3953
-        },
-        "20201202_BondFire-nightime_sp-w-mobo-c": {
-          "detected": true,
-          "ttd_min": 21.0,
-          "threshold": 0.4104
+          "threshold": 0.3712
         },
         "20210204_FIRE_tp-s-mobo-c": {
           "detected": true,
           "ttd_min": 1.0,
-          "threshold": 0.3911
-        },
-        "20240708_VistaFire_wilson-e-mobo-c": {
-          "detected": true,
-          "ttd_min": 1.02,
-          "threshold": 0.3776
+          "threshold": 0.3696
         }
       }
     }
@@ -525,306 +500,291 @@
     {
       "far_target": 0.05,
       "persist_k": 1,
-      "n_fires": 18,
-      "detection_rate": 0.556,
-      "median_ttd_min": 8.0,
-      "mean_ttd_min": 9.1,
-      "pct_within_5min_of_all": 0.167,
-      "mean_preignition_far_heldout": 0.0613,
+      "n_fires": 17,
+      "detection_rate": 0.471,
+      "median_ttd_min": 7.5,
+      "mean_ttd_min": 7.25,
+      "pct_within_5min_of_all": 0.176,
+      "mean_preignition_far_heldout": 0.059,
       "per_fire": {
         "20160604_FIRE_rm-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
+        },
+        "20160619_FIRE_lp-e-iqeye": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5056
         },
         "20170520_FIRE_pi-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20170722_FIRE_mg-n-iqeye": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20171207_Lilac_rm-s-mobo": {
           "detected": true,
           "ttd_min": 8.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20180603_FIRE_smer-tcs9-mobo-c": {
           "detected": true,
           "ttd_min": 7.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20180718_FIRE_syp-w-mobo-c": {
           "detected": true,
           "ttd_min": 1.0,
-          "threshold": 0.4988
+          "threshold": 0.4941
         },
         "20180806_FIRE_vo-w-mobo-c": {
           "detected": true,
           "ttd_min": 9.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190620_FIRE_rm-w-mobo-c": {
           "detected": true,
           "ttd_min": 8.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190728_Dehesa_lp-n-mobo": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5074
+          "threshold": 0.5029
         },
         "20190827_FIRE_so-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190925_FIRE_wc-s-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20191006_FIRE_lp-e-mobo-c": {
           "detected": true,
           "ttd_min": 0.98,
-          "threshold": 0.5029
+          "threshold": 0.4983
         },
         "20200306_FIRE_mlo-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20200618_FIRE_om-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20200808_OliveFire_wc-e-mobo-c": {
           "detected": true,
           "ttd_min": 20.0,
-          "threshold": 0.5195
-        },
-        "20201202_BondFire-nightime_sp-w-mobo-c": {
-          "detected": true,
-          "ttd_min": 23.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20210204_FIRE_tp-s-mobo-c": {
           "detected": true,
           "ttd_min": 4.0,
-          "threshold": 0.5074
-        },
-        "20240708_VistaFire_wilson-e-mobo-c": {
-          "detected": true,
-          "ttd_min": 10.03,
-          "threshold": 0.5041
+          "threshold": 0.5029
         }
       }
     },
     {
       "far_target": 0.05,
       "persist_k": 2,
-      "n_fires": 18,
-      "detection_rate": 0.278,
+      "n_fires": 17,
+      "detection_rate": 0.294,
       "median_ttd_min": 10.0,
-      "mean_ttd_min": 12.2,
+      "mean_ttd_min": 14.4,
       "pct_within_5min_of_all": 0.0,
-      "mean_preignition_far_heldout": 0.0613,
+      "mean_preignition_far_heldout": 0.059,
       "per_fire": {
         "20160604_FIRE_rm-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
+        },
+        "20160619_FIRE_lp-e-iqeye": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5056
         },
         "20170520_FIRE_pi-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20170722_FIRE_mg-n-iqeye": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20171207_Lilac_rm-s-mobo": {
-          "detected": false,
-          "ttd_min": null,
-          "threshold": 0.5195
+          "detected": true,
+          "ttd_min": 22.0,
+          "threshold": 0.509
         },
         "20180603_FIRE_smer-tcs9-mobo-c": {
           "detected": true,
           "ttd_min": 8.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20180718_FIRE_syp-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4988
+          "threshold": 0.4941
         },
         "20180806_FIRE_vo-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190620_FIRE_rm-w-mobo-c": {
           "detected": true,
           "ttd_min": 9.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190728_Dehesa_lp-n-mobo": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5074
+          "threshold": 0.5029
         },
         "20190827_FIRE_so-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190925_FIRE_wc-s-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20191006_FIRE_lp-e-mobo-c": {
           "detected": true,
           "ttd_min": 22.98,
-          "threshold": 0.5029
+          "threshold": 0.4983
         },
         "20200306_FIRE_mlo-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20200618_FIRE_om-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20200808_OliveFire_wc-e-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
-        },
-        "20201202_BondFire-nightime_sp-w-mobo-c": {
-          "detected": false,
-          "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20210204_FIRE_tp-s-mobo-c": {
           "detected": true,
           "ttd_min": 10.0,
-          "threshold": 0.5074
-        },
-        "20240708_VistaFire_wilson-e-mobo-c": {
-          "detected": true,
-          "ttd_min": 11.02,
-          "threshold": 0.5041
+          "threshold": 0.5029
         }
       }
     },
     {
       "far_target": 0.05,
       "persist_k": 3,
-      "n_fires": 18,
-      "detection_rate": 0.222,
-      "median_ttd_min": 10.5,
-      "mean_ttd_min": 13.5,
+      "n_fires": 17,
+      "detection_rate": 0.294,
+      "median_ttd_min": 11.0,
+      "mean_ttd_min": 15.4,
       "pct_within_5min_of_all": 0.0,
-      "mean_preignition_far_heldout": 0.0613,
+      "mean_preignition_far_heldout": 0.059,
       "per_fire": {
         "20160604_FIRE_rm-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
+        },
+        "20160619_FIRE_lp-e-iqeye": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5056
         },
         "20170520_FIRE_pi-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20170722_FIRE_mg-n-iqeye": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20171207_Lilac_rm-s-mobo": {
-          "detected": false,
-          "ttd_min": null,
-          "threshold": 0.5195
+          "detected": true,
+          "ttd_min": 23.0,
+          "threshold": 0.509
         },
         "20180603_FIRE_smer-tcs9-mobo-c": {
           "detected": true,
           "ttd_min": 9.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20180718_FIRE_syp-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.4988
+          "threshold": 0.4941
         },
         "20180806_FIRE_vo-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190620_FIRE_rm-w-mobo-c": {
           "detected": true,
           "ttd_min": 10.0,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190728_Dehesa_lp-n-mobo": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5074
+          "threshold": 0.5029
         },
         "20190827_FIRE_so-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20190925_FIRE_wc-s-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20191006_FIRE_lp-e-mobo-c": {
           "detected": true,
           "ttd_min": 23.98,
-          "threshold": 0.5029
+          "threshold": 0.4983
         },
         "20200306_FIRE_mlo-n-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20200618_FIRE_om-w-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20200808_OliveFire_wc-e-mobo-c": {
           "detected": false,
           "ttd_min": null,
-          "threshold": 0.5195
-        },
-        "20201202_BondFire-nightime_sp-w-mobo-c": {
-          "detected": false,
-          "ttd_min": null,
-          "threshold": 0.5195
+          "threshold": 0.509
         },
         "20210204_FIRE_tp-s-mobo-c": {
           "detected": true,
           "ttd_min": 11.0,
-          "threshold": 0.5074
-        },
-        "20240708_VistaFire_wilson-e-mobo-c": {
-          "detected": false,
-          "ttd_min": null,
-          "threshold": 0.5041
+          "threshold": 0.5029
         }
       }
     }
