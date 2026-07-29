@@ -90,6 +90,16 @@ a per-frame *linear* fusion underdelivers; the onset signal that helps TTD lives
 *transition*, which a per-frame model can't target — motivating the temporal sequence head as the next
 test.
 
+**Temporal LSTM — tested, a positional-leak artifact (2026-07-28).** The causal LSTM sequel *looked*
+decisive (train LOO AUC 0.858, several eval fires at 1.000, TTD 0.97 min) but built-in ablation controls
+exposed it as a **temporal-position leak**: with all features zeroed it still scores LOO 0.994 / eval
+1.000 (pure positional prior — FIgLib's monotonic onset-centered label lets a sequence model "detect" by
+counting frames), and with the time order shuffled it collapses to LOO 0.612 ≈ the per-frame LR (chance
+on eval). Net: on FIgLib as-structured, a sequence model adds nothing validated over appearance, and TTD
+cannot be fairly measured for a temporal model on these fixed-position sequences — a valid test needs
+continuous-feed / onset-randomized data (backlog). See
+[motion-findings.md](motion-findings.md#the-temporal-lstm--tested-2026-07-28-a-positional-leak-artifact-caught-by-controls).
+
 ## Caveats
 
 - **n = 6.** Detection-rate 90% CI is [50%, 100%]; read the direction, not the point value.

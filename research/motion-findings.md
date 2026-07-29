@@ -232,6 +232,59 @@ that helps TTD lives in the **onset transition** (the early frames), which a per
 target by construction. That is precisely the case for a **temporal (sequence) model** that can weight
 the change *over time* — the next test, run with clear-eyed expectations rather than hope.
 
+## The temporal LSTM — tested (2026-07-28): a positional-leak artifact, caught by controls
+
+Built the sequence model the per-frame result motivated: a one-layer **causal LSTM** over the same four
+features, run left-to-right so frame *t* only sees frames ≤ *t* ([`figlib_lstm.py`](../src/models/figlib_lstm.py)),
+fit on the 17 training fires and applied to the 6 held-out `EVAL_FIRES` — same leak-free construction as
+the per-frame fusion (zero-shot conf + training-free motion).
+
+**Unablated, it looked like a decisive win — which is exactly why it warranted suspicion:**
+
+| | train LOO AUC | eval pooled AUC | TTD @5% FA |
+|---|---|---|---|
+| conf-alone | 0.689 | 0.728 | 4/6, 3.45 min, 16.7% FA |
+| per-frame LR | 0.623 | 0.793 | 5/6, 4.0 min, 15.0% FA |
+| **LSTM (unablated)** | **0.858** | **0.874** (Vista/Bahrman/Highway/Coches all → 1.000) | **5/6, 0.97 min, 6.8% FA** |
+
+An LSTM leaping to 0.858 LOO and *saturating* several held-out fires at AUC 1.000, with TTD dropping to
+under a minute, is not plausible from a signal the per-frame combiner could barely use. The red flag was
+structural: **FIgLib sorts each fire by offset and the onset label is a perfect monotonic step** (all
+pre-ignition frames, then all onset frames), with every sequence centered on ignition at ~frame 40. A
+sequence model can therefore score near-perfectly by learning **"elapsed frames → onset" — the position
+in the sequence — without ever using the smoke features.** FIgLib's fixed structure cannot falsify that
+on its own.
+
+**Two controls settle it** (both built into `figlib_lstm.py` via the `ABLATE` env var):
+
+| control | what the LSTM is fed | train LOO AUC | eval pooled AUC |
+|---|---|---|---|
+| **`zero`** | *all features set to 0* | **0.994** | **1.000** |
+| **`shuffle`** | features kept, within-fire time order permuted | 0.612 | 0.499 |
+
+- **`zero` is the smoking gun.** With literally no input — every feature zeroed — the LSTM still scores
+  **0.994 LOO / 1.000 pooled**. It is reading *nothing but position*: a deterministic rising ramp over
+  frame index, which the monotonic step label rewards with near-perfect AUC. All of the unablated lift is
+  this artifact.
+- **`shuffle` confirms the converse.** Destroy the position→label monotonicity (permute the time order,
+  features and labels travelling together) and the LSTM **collapses to 0.612 LOO** — statistically
+  indistinguishable from the per-frame LR's 0.623 — and **0.499 (chance) on eval**. Once it can't count
+  frames, the sequence architecture extracts nothing beyond the per-frame combiner.
+
+So the impressive TTD (0.97 min, "rescuing" Vista and Coches at thresholds crushed to ~0.03) is
+**meaningless**: a position-ramp model "detects" at roughly the mean onset frame on *any* FIgLib-shaped
+sequence — it would fire the same way on a fire that never produced a visible plume. This is precisely
+the kind of subtle temporal leak the leak-free discipline exists to catch, and the controls caught it.
+
+**What it means.** On FIgLib's fixed onset-centered sequences, a temporal model **cannot be validly
+evaluated for TTD or onset-AUC** — the sequence structure hands it a positional shortcut that swamps any
+real signal. The leak-free ceiling for a sequence model on this feature set is **no better than the
+per-frame LR (~0.62)**. A genuine temporal test needs data where ignition is *not* at a fixed sequence
+position: **continuous camera feeds** (variable, unknown onset time) or **onset-position-randomized
+windows** — which is a concrete argument for the continuous-feed data thread (HPWREN archive /
+ALERTCalifornia) in the [backlog](backlog.md), not more modelling on FIgLib as-structured. The module is
+kept as the reproducible demonstration of the leak.
+
 ## What this means for Phase C, and what's open
 
 The probe has done its job: there is real motion signal that **separates onset above chance** on both
@@ -242,11 +295,14 @@ channel to the learned temporal head**, where the real payoff test is whether it
 time-to-detection*, not just raises separability.
 
 Open threads:
-- **Learned combiner — first cut done, underwhelming (see section above).** The per-frame LR is
-  appearance-dominated and its frame-AUC is mixed-to-negative; a small operational (TTD) lift exists
-  but is n=6-noisy. The **temporal sequence head** (weighting the onset transition over time) is the
-  next test — the per-frame result motivates it precisely because a per-frame model *can't* target the
-  onset transition.
+- **Learned combiners — both cuts done; neither beats appearance on this data.** The per-frame LR is
+  appearance-dominated with mixed-to-negative frame-AUC and only an n=6-noisy TTD lift (section above).
+  The temporal **LSTM** looked far better but the controls exposed it as a **temporal-position leak**
+  — leak-free, it collapses to the per-frame LR (~0.62). Net: on FIgLib as-structured, motion does not
+  add a validated win over the appearance detector, and a sequence model cannot be fairly tested here.
+- **A valid temporal test needs continuous-feed / onset-position-randomized data** (HPWREN archive,
+  ALERTCalifornia) — FIgLib's fixed onset-centered sequences leak position to any sequence model. This
+  is now the gating requirement for the temporal thread, recorded in the [backlog](backlog.md).
 - **Tighter CIs** — 17 fires is small (and the reason the head-to-head sign-test is underpowered);
   Phase B onset data (FIgLib-full / PYRONEAR) would sharpen it.
 - **The horizon estimator is settled** — three variants tried (flat brightness-gradient row, per-column

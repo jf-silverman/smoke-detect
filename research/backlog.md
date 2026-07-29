@@ -263,9 +263,21 @@ bright cloud) *absolute* brightness does not track the horizon, while the flat e
 *relative* brightness change and is robust. Three horizon variants tried; the simplest wins. See
 [motion-findings.md](motion-findings.md).
 
-**Next:** carry anchored motion as an input channel to the Phase C learned temporal head and test the
-real payoff — does it **lower TTD**, not just raise separability. The horizon estimator is settled
-(flat brightness-gradient row); no further tuning warranted.
+**Learned combiners — both tested (2026-07-28), neither a validated win; see
+[motion-findings.md](motion-findings.md).** (1) *Per-frame logistic fusion* of base conf + the three
+motion features ([`figlib_fusion.py`](../src/models/figlib_fusion.py)): leak-free (zero-shot conf +
+training-free motion), but appearance-dominated (conf weight +0.77 vs motion ≤0.18), training LOO AUC
+0.623 < conf-alone 0.689, eval frame-AUC inconsistent; only an n=6-noisy TTD lift (5/6 vs 4/6). (2)
+*Causal LSTM* ([`figlib_lstm.py`](../src/models/figlib_lstm.py)): looked decisive (LOO 0.858, eval fires
+at 1.000, TTD 0.97 min) but the ablation controls exposed a **temporal-POSITION leak** — `ABLATE=zero`
+(all features zeroed) still scores LOO 0.994 / eval 1.000 (FIgLib's monotonic onset-centered label lets
+a sequence model "detect" by counting frames), and `ABLATE=shuffle` (time order permuted) collapses it to
+LOO 0.612 ≈ the per-frame LR. **Gating requirement now recorded:** FIgLib's fixed onset-centered
+sequences cannot validly evaluate a temporal model for TTD/onset-AUC — a real temporal test needs
+**continuous-feed or onset-position-randomized data** (HPWREN archive / ALERTCalifornia; see the
+[net-new CA data](#net-new-california-data--evaluated-2026-07-28-next-data-steps) and
+[public data sources](#public-data-sources-for-the-temporal--time-to-detection-thread) sections). The
+horizon estimator is settled (flat brightness-gradient row); no further tuning warranted.
 
 ## Also noted (lower priority)
 
