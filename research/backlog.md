@@ -75,6 +75,37 @@ roughly by leverage. Completed threads have their own findings reports (see the 
           pre-ignition frames + empty labels into a separate set, merged with the CVAT-corrected
           positives when the Phase C training config is built.
 
+## Net-new California data — evaluated 2026-07-28 (next data steps)
+
+The recurring bottleneck is recent-California onset data that does **not leak** into the FIgLib /
+recent-CA eval. Our base is pyro-sdis (French towers); our eval is FIgLib (HPWREN So-Cal cameras) plus
+the 6 recent-CA `EVAL_FIRES` (2024–2025). **Leakage lens:** any HPWREN-derived set shares cameras and
+sequences with FIgLib and is leaky by construction — this downgrades the two most convenient sources
+([AI For Mankind](https://github.com/aiformankind/wildfire-smoke-dataset), 2,192 VOC-boxed HPWREN
+frames; the raw [HPWREN archive](https://www.hpwren.ucsd.edu/news/20180501/)) to training-only-with-
+hard-exclusion.
+
+- **Nemo — the pullable quick win (queued next data add).** COCO-format smoke boxes from **1,073
+  ALERTWildfire PTZ videos** (Nevada + CA), ~2,564 train / 250 val images, 3 fine-grained smoke
+  classes + a 100-image hard-negative set; incipient-stage framing matches our TTD goal (Yazdi/
+  SayBender et al., 2022; [GitHub](https://github.com/SayBender/Nemo),
+  [paper](https://www.mdpi.com/2072-4292/14/16/3979)). One `git clone`, no request. ALERTWildfire ≠
+  HPWREN → **no FIgLib overlap**, and it broadens beyond both HPWREN and French towers. *Action:* pull,
+  inventory against our smoke label schema, gate against any camera/date in our eval, then use as
+  extra Phase-C training data. Cheap; do this before the ALERTCalifornia thread.
+- **ALERTCalifornia archive — the recent-CA distribution-shift prize (Phase D, by request).** UCSD's
+  statewide network: **1,200+ cameras**, and critically the **2023+ era** — the same generation and
+  geography as our 6 recent-CA eval fires, so it's the source that could genuinely close the recent-CA
+  gap rather than just add volume ([FAQs](https://alertcalifornia.org/faqs/);
+  [Wikipedia](https://en.wikipedia.org/wiki/ALERTCalifornia);
+  [CA GIS camera layer](https://gis.data.ca.gov/documents/California::alertcalifornia-fire-cameras/explore)).
+  Data is open-source but **not a clean API** — request footage as a scientist/partner via
+  `alertcalifornianews@ucsd.edu`; it arrives *unlabeled*, so it feeds the **pseudo-label → hand-correct
+  in CVAT** loop already built for Phase C. Multi-week thread (email → footage → labeling), so it's a
+  Phase D decision, not a today one — but the eval-era match makes it the highest-leverage data play on
+  the board. *Caveat:* whole-fire holdout must be preserved (any fire that appears in `EVAL_FIRES`
+  stays out of training).
+
 ## Recently completed (folded into reports)
 
 - **Combine the two levers — native-res training + hard-negative mining (full scale, @1280).**
