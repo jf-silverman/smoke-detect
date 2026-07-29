@@ -1,0 +1,352 @@
+{
+  "headline": {
+    "far_target": 0.05,
+    "persist_k": 1,
+    "n_fires": 6,
+    "detection_rate": 0.667,
+    "median_ttd_min": 3.45,
+    "mean_ttd_min": 4.22,
+    "pct_within_5min_of_all": 0.5,
+    "mean_preignition_far_heldout": 0.1667,
+    "per_fire": {
+      "20240708_VistaFire_wilson-e-mobo-c": {
+        "detected": false,
+        "ttd_min": null,
+        "threshold": 0.5757
+      },
+      "20240825_TenajaFire_buff-n-mobo-c": {
+        "detected": true,
+        "ttd_min": 4.0,
+        "threshold": 0.5757
+      },
+      "20241009_BahrmanFire_hp-n-mobo-c": {
+        "detected": true,
+        "ttd_min": 2.9,
+        "threshold": 0.5757
+      },
+      "20250107_PalisadesFire_69bravo-e-mobo-c": {
+        "detected": true,
+        "ttd_min": 0.0,
+        "threshold": 0.2744
+      },
+      "20250612_HighwayFire_hp-e-mobo-c": {
+        "detected": true,
+        "ttd_min": 9.97,
+        "threshold": 0.5757
+      },
+      "20250908_CochesFire_sm-n-mobo-c": {
+        "detected": false,
+        "ttd_min": null,
+        "threshold": 0.5757
+      }
+    },
+    "ci90": {
+      "detection_rate_ci90": [
+        0.333,
+        1.0
+      ],
+      "median_ttd_ci90": [
+        0.0,
+        9.97
+      ]
+    }
+  },
+  "far_sweep": [
+    {
+      "far_target": 0.02,
+      "persist_k": 1,
+      "n_fires": 6,
+      "detection_rate": 0.667,
+      "median_ttd_min": 6.98,
+      "mean_ttd_min": 6.22,
+      "pct_within_5min_of_all": 0.333,
+      "mean_preignition_far_heldout": 0.1667,
+      "per_fire": {
+        "20240708_VistaFire_wilson-e-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.6142
+        },
+        "20240825_TenajaFire_buff-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 4.0,
+          "threshold": 0.6142
+        },
+        "20241009_BahrmanFire_hp-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 10.9,
+          "threshold": 0.6142
+        },
+        "20250107_PalisadesFire_69bravo-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 0.0,
+          "threshold": 0.3326
+        },
+        "20250612_HighwayFire_hp-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 9.97,
+          "threshold": 0.6142
+        },
+        "20250908_CochesFire_sm-n-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.6142
+        }
+      }
+    },
+    {
+      "far_target": 0.05,
+      "persist_k": 1,
+      "n_fires": 6,
+      "detection_rate": 0.667,
+      "median_ttd_min": 3.45,
+      "mean_ttd_min": 4.22,
+      "pct_within_5min_of_all": 0.5,
+      "mean_preignition_far_heldout": 0.1667,
+      "per_fire": {
+        "20240708_VistaFire_wilson-e-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5757
+        },
+        "20240825_TenajaFire_buff-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 4.0,
+          "threshold": 0.5757
+        },
+        "20241009_BahrmanFire_hp-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 2.9,
+          "threshold": 0.5757
+        },
+        "20250107_PalisadesFire_69bravo-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 0.0,
+          "threshold": 0.2744
+        },
+        "20250612_HighwayFire_hp-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 9.97,
+          "threshold": 0.5757
+        },
+        "20250908_CochesFire_sm-n-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5757
+        }
+      }
+    },
+    {
+      "far_target": 0.1,
+      "persist_k": 1,
+      "n_fires": 6,
+      "detection_rate": 0.667,
+      "median_ttd_min": 2.44,
+      "mean_ttd_min": 3.21,
+      "pct_within_5min_of_all": 0.5,
+      "mean_preignition_far_heldout": 0.1667,
+      "per_fire": {
+        "20240708_VistaFire_wilson-e-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5226
+        },
+        "20240825_TenajaFire_buff-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 4.0,
+          "threshold": 0.5226
+        },
+        "20241009_BahrmanFire_hp-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 0.88,
+          "threshold": 0.5226
+        },
+        "20250107_PalisadesFire_69bravo-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 0.0,
+          "threshold": 0.2415
+        },
+        "20250612_HighwayFire_hp-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 7.97,
+          "threshold": 0.5226
+        },
+        "20250908_CochesFire_sm-n-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5226
+        }
+      }
+    },
+    {
+      "far_target": 0.2,
+      "persist_k": 1,
+      "n_fires": 6,
+      "detection_rate": 0.833,
+      "median_ttd_min": 4.0,
+      "mean_ttd_min": 8.57,
+      "pct_within_5min_of_all": 0.667,
+      "mean_preignition_far_heldout": 0.175,
+      "per_fire": {
+        "20240708_VistaFire_wilson-e-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.3958
+        },
+        "20240825_TenajaFire_buff-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 4.0,
+          "threshold": 0.3958
+        },
+        "20241009_BahrmanFire_hp-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 0.88,
+          "threshold": 0.3553
+        },
+        "20250107_PalisadesFire_69bravo-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 0.0,
+          "threshold": 0.1935
+        },
+        "20250612_HighwayFire_hp-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 4.97,
+          "threshold": 0.3958
+        },
+        "20250908_CochesFire_sm-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 32.98,
+          "threshold": 0.3958
+        }
+      }
+    }
+  ],
+  "persist_sweep": [
+    {
+      "far_target": 0.05,
+      "persist_k": 1,
+      "n_fires": 6,
+      "detection_rate": 0.667,
+      "median_ttd_min": 3.45,
+      "mean_ttd_min": 4.22,
+      "pct_within_5min_of_all": 0.5,
+      "mean_preignition_far_heldout": 0.1667,
+      "per_fire": {
+        "20240708_VistaFire_wilson-e-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5757
+        },
+        "20240825_TenajaFire_buff-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 4.0,
+          "threshold": 0.5757
+        },
+        "20241009_BahrmanFire_hp-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 2.9,
+          "threshold": 0.5757
+        },
+        "20250107_PalisadesFire_69bravo-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 0.0,
+          "threshold": 0.2744
+        },
+        "20250612_HighwayFire_hp-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 9.97,
+          "threshold": 0.5757
+        },
+        "20250908_CochesFire_sm-n-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5757
+        }
+      }
+    },
+    {
+      "far_target": 0.05,
+      "persist_k": 2,
+      "n_fires": 6,
+      "detection_rate": 0.667,
+      "median_ttd_min": 7.98,
+      "mean_ttd_min": 8.47,
+      "pct_within_5min_of_all": 0.333,
+      "mean_preignition_far_heldout": 0.1667,
+      "per_fire": {
+        "20240708_VistaFire_wilson-e-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5757
+        },
+        "20240825_TenajaFire_buff-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 5.0,
+          "threshold": 0.5757
+        },
+        "20241009_BahrmanFire_hp-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 16.9,
+          "threshold": 0.5757
+        },
+        "20250107_PalisadesFire_69bravo-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 1.0,
+          "threshold": 0.2744
+        },
+        "20250612_HighwayFire_hp-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 10.97,
+          "threshold": 0.5757
+        },
+        "20250908_CochesFire_sm-n-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5757
+        }
+      }
+    },
+    {
+      "far_target": 0.05,
+      "persist_k": 3,
+      "n_fires": 6,
+      "detection_rate": 0.667,
+      "median_ttd_min": 14.94,
+      "mean_ttd_min": 12.47,
+      "pct_within_5min_of_all": 0.167,
+      "mean_preignition_far_heldout": 0.1667,
+      "per_fire": {
+        "20240708_VistaFire_wilson-e-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5757
+        },
+        "20240825_TenajaFire_buff-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 18.0,
+          "threshold": 0.5757
+        },
+        "20241009_BahrmanFire_hp-n-mobo-c": {
+          "detected": true,
+          "ttd_min": 17.9,
+          "threshold": 0.5757
+        },
+        "20250107_PalisadesFire_69bravo-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 2.02,
+          "threshold": 0.2744
+        },
+        "20250612_HighwayFire_hp-e-mobo-c": {
+          "detected": true,
+          "ttd_min": 11.98,
+          "threshold": 0.5757
+        },
+        "20250908_CochesFire_sm-n-mobo-c": {
+          "detected": false,
+          "ttd_min": null,
+          "threshold": 0.5757
+        }
+      }
+    }
+  ]
+}

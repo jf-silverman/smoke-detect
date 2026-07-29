@@ -130,11 +130,23 @@ The fires where anchored motion fails are physical, not evidence against the mec
   Reverted. Three horizon variants tried, the simplest (flat brightness-gradient row) wins — the
   lesson is to stop tuning the horizon and let the Phase C learned head do the heavy lifting.
 
+## Generalization to the held-out recent-CA fires
+
+Measured standalone on the 6 held-out `EVAL_FIRES` (the Phase C test set, never used to tune the
+probe), `anchored_change` per-fire AUC is **0.742 [0.648, 0.850]** — CI excludes 0.5, and a touch
+*higher* than the 0.708 on the training fires — with the `floating_change` control at **0.554** (near
+chance). So the anchoring cue **transfers to recent California smoke it was never tuned on**. It beats
+the fine-tuned Phase C detector's confidence in only 2/6 fires (mean lift +0.05): the stronger
+in-distribution detector narrows the complementarity gap, but the naive fusion (0.756) still edges
+either single signal, hinting at residual orthogonal signal. See [phase-c-findings.md](phase-c-findings.md).
+
 ## What this means for Phase C, and what's open
 
-The probe has done its job: there is real, complementary motion signal (per-fire ~0.71, statistically
-above the detector's own confidence, with a null cloud control), so **anchored motion goes into Phase
-C as an input channel to the learned temporal head**, where the real payoff test is whether it *lowers
+The probe has done its job: there is real motion signal that **separates onset above chance** on both
+training and held-out fires (per-fire ~0.71–0.74, CI excluding 0.5, with a null cloud control) and is
+*complementary* to the appearance detector — though the head-to-head win-count over the detector is
+not itself significant at these sample sizes. So **anchored motion goes into Phase C as an input
+channel to the learned temporal head**, where the real payoff test is whether it *lowers
 time-to-detection*, not just raises separability.
 
 Open threads:

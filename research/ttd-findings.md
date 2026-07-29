@@ -109,10 +109,12 @@ question.
   until the bug was found, and adding the 6 recovered fires moved detection 56%→50%. It then dropped
   to 23 when the one nocturnal fire was excluded for scope (day-only), easing detection 50%→48%
   because that fire had only ever been "detected" via flame glow at 23 min. Tellingly, only **2 of the
-  6 recovered fires were detected** (Bahrman 2.9 min, Highway 14.0 min); the recent California headline
-  fires — **Tenaja, Palisades, Coches** — were all missed by the zero-shot French-tower detector. That
-  the newest, largest fires transfer *worst* is the sharpest case yet for the Phase C in-distribution
-  detector.
+  6 recovered fires were detected** (Bahrman 2.9 min, Highway 14.0 min); with this **proof-scale**
+  zero-shot detector the recent California fires — **Tenaja, Palisades, Coches** — are all missed.
+  That the newest fires transfer worst is what motivated Phase C. **Update:** the *full-scale* base
+  (`gcp_grouped_1280`) already recovers Palisades and Tenaja, and Phase C fine-tuning then adds Coches
+  and more than halves the false-alarm rate — see [phase-c-findings.md](phase-c-findings.md). So the
+  "misses all three" line above is specifically the proof-scale model's behaviour, not the ceiling.
 - **Day-only, curated onset.** FIgLib is daytime and built around clean ignitions; real deployment
   is harder. The one nocturnal fire in our pull is excluded so the numbers stay comparable to the
   day-only benchmark ([data-quality-flags.md](data-quality-flags.md)).
@@ -120,8 +122,10 @@ question.
 ## What sharpens this next
 
 - **Phase B — more fires** (FIgLib-full ~315 fires via WIFIRE Commons; PYRONEAR-2025) → tighter CIs.
-- **Phase C — an in-distribution detector** trained on FIgLib's own boxes → the AUC 0.658 floor
-  rises, and TTD should drop toward the SmokeyNet range. The same harness scores it unchanged.
+- **Phase C — an in-distribution detector** (done, first result): fine-tuning on hand-corrected
+  Californian boxes lifts held-out detection 4/6 → 5/6 and halves the pre-ignition false-alarm rate on
+  the 6 recent CA fires — scored by this same harness in `--eval-only` mode. See
+  [phase-c-findings.md](phase-c-findings.md).
 
 ## Reproduce
 

@@ -5,7 +5,7 @@
 # single tar.gz for upload to GCS. The base weights are NOT bundled -- they already live in the
 # bucket at runs/gcp_grouped_1280/weights/best.pt and the VM pulls them from there.
 #
-# Usage:  bash cloud/build_phaseC_bundle.sh
+# Usage:  bash infra/build_phaseC_bundle.sh
 # Output: data/phaseC_bundle.tar.gz   (gitignored)
 set -euo pipefail
 

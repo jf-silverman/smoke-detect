@@ -379,14 +379,15 @@ def _fusion(conf: np.ndarray, anchored: np.ndarray) -> np.ndarray:
     return out
 
 
-def motion_separability(df: pd.DataFrame, width: int, boot: int = 2000, seed: int = 0) -> dict:
+def motion_separability(df: pd.DataFrame, width: int, cache_path: Path = MOTION_CACHE,
+                        boot: int = 2000, seed: int = 0) -> dict:
     """Onset-vs-pre-ignition separability of anchored-motion features vs single-frame confidence.
 
     Reports BOTH a per-fire AUC (computed within each fire, then averaged with a bootstrap-over-fires
     90% CI -- the leak-aware read, since it never pools frames across fires) and a pooled AUC for
     reference. The fusion (conf + anchored motion) is computed within each fire for the per-fire read.
     """
-    feats = compute_motion_features(df, MOTION_CACHE, width)
+    feats = compute_motion_features(df, cache_path, width)
     nan_row = (np.nan,) * len(FEAT_NAMES)
     cols = {n: df["stem"].map(lambda s, i=i: feats.get(s, nan_row)[i]).to_numpy(float)
             for i, n in enumerate(FEAT_NAMES)}
@@ -488,10 +489,18 @@ def main() -> None:
                          "(reads frames; still no model). Caches to data/figlib/motion_feats.npz")
     ap.add_argument("--motion-width", type=int, default=512,
                     help="downscaled width for the motion probe's frame differencing (default 512)")
+    ap.add_argument("--motion-cache", default=str(MOTION_CACHE),
+                    help="npz cache for motion features; use a separate file for --eval-only so the "
+                         "training-fire cache is left intact")
     ap.add_argument("--exclude-eval", action="store_true",
                     help="drop the 6 recent CA fires held out for Phase C (EVAL_FIRES) so pre-Phase-C "
                          "analysis never peeks at them. Use with --tag train.")
+    ap.add_argument("--eval-only", action="store_true",
+                    help="score ONLY the 6 held-out EVAL_FIRES (inverse of --exclude-eval) -- the "
+                         "Phase C held-out test. Pair with --features <phaseC/base npz> and --tag.")
     args = ap.parse_args()
+    if args.eval_only and args.exclude_eval:
+        raise SystemExit("--eval-only and --exclude-eval are mutually exclusive")
 
     df = load_conf(scan_frames(), Path(args.features))
     n_before = df["seq"].nunique()
@@ -500,7 +509,11 @@ def main() -> None:
     if n_night:
         print(f"NIGHT EXCLUSION: dropped {n_night} nocturnal fire(s) — day-only scope, "
               f"comparable to the FIgLib benchmark")
-    if args.exclude_eval:
+    if args.eval_only:
+        df = df[df["seq"].isin(EVAL_FIRES)].reset_index(drop=True)
+        print(f"--eval-only: scoring ONLY the {df['seq'].nunique()} held-out eval fires "
+              f"(the Phase C distribution-shift test)")
+    elif args.exclude_eval:
         before = df["seq"].nunique()
         df = df[~df["seq"].isin(EVAL_FIRES)].reset_index(drop=True)
         print(f"--exclude-eval: holding out {before - df['seq'].nunique()} recent CA eval fires "
@@ -548,7 +561,7 @@ def main() -> None:
     if args.motion:
         print("\n--- Motion / horizon-anchored change-detection probe (onset vs pre-ignition) ---")
         print("    reading frames (cached after first run)...")
-        motion = motion_separability(df, args.motion_width)
+        motion = motion_separability(df, args.motion_width, Path(args.motion_cache))
         print(f"  scored {motion['n_frames_scored']} frames across {motion['n_fires_scored']} fires "
               f"({motion['n_onset']} onset / {motion['n_preignition']} pre-ignition)")
         print(f"    {'feature':<28s} {'per-fire AUC (90% CI)':<26s} pooled")

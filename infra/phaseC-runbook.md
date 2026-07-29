@@ -18,7 +18,7 @@ insurance against a forgotten resource.
 ## 1. Build the data bundle (local)
 
 ```bash
-bash cloud/build_phaseC_bundle.sh
+bash infra/build_phaseC_bundle.sh
 ```
 Produces `data/phaseC_bundle.tar.gz` (~350 MB: 501 images + 416 label files; the 85 negatives are the
 unlabeled images).
@@ -39,19 +39,21 @@ gcloud compute instances create figlib-phasec \
   --zone=us-central1-a \
   --machine-type=n1-standard-4 \
   --accelerator=type=nvidia-tesla-t4,count=1 \
-  --image-family=pytorch-latest-gpu \
+  --image-family=pytorch-2-9-cu129-ubuntu-2204-nvidia-580 \
   --image-project=deeplearning-platform-release \
   --maintenance-policy=TERMINATE \
-  --provisioning-model=SPOT \
-  --instance-termination-action=DELETE \
   --boot-disk-size=100GB \
   --scopes=storage-rw \
-  --metadata=install-nvidia-driver=True \
-  --metadata-from-file=startup-script=cloud/phaseC_vm_startup.sh
+  --metadata-from-file=startup-script=infra/phaseC_vm_startup.sh
 ```
-`--instance-termination-action=DELETE` means a *preemption* cleans the VM up automatically (just
-re-run this command if that happens — the job is short, so preemption is unlikely). On normal
-completion the startup script instead **stops** the VM (halts GPU billing); you delete it in step 6.
+The image family is version-pinned (Google retired `pytorch-latest-gpu`); this one ships PyTorch 2.9
++ CUDA 12.9 with the NVIDIA driver preinstalled, so no `install-nvidia-driver` metadata is needed.
+**On-demand, not spot:** for a ~1 h job the spot savings aren't worth the preemption risk (an early
+run here was preempted 3 min in). On-demand T4 is ~$0.35–0.55/hr → still ~$0.35–0.80 total.
+`--maintenance-policy=TERMINATE` is required for any GPU VM (GPUs can't live-migrate). On completion
+the startup script **stops** the VM (halts GPU billing); you delete it in step 6. If you'd rather use
+spot, add `--provisioning-model=SPOT --instance-termination-action=DELETE` and just re-run this
+command whenever a preemption vanishes the VM.
 
 ## 4. Watch it run
 
@@ -87,7 +89,7 @@ gcloud compute instances list                  # confirm: no instances left
 - **Cost hygiene:** GPU billing stops when the VM stops (step 4 → TERMINATED) or is deleted (step 6).
   The persistent disk costs ~pennies/day until the VM is deleted — so still do step 6.
 - **OOM at 1280?** Unlikely for this nano model on a 16 GB T4, but if the log shows CUDA OOM, lower
-  `batch=8` → `batch=4` in `cloud/phaseC_vm_startup.sh` and recreate the VM.
+  `batch=8` → `batch=4` in `infra/phaseC_vm_startup.sh` and recreate the VM.
 - **Preempted mid-run?** With `=DELETE` the VM is gone; just re-run step 3. (No checkpoint/resume is
   wired because the job is ~1 h; add per-epoch `gsutil rsync` + `resume=True` only if you move to a
   long run.)

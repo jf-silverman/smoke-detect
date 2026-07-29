@@ -141,9 +141,11 @@ onset fires (day-only, matching the FIgLib benchmark) gives the first numbers: a
 detects **48% of fires at a median 8 minutes** (17% within 5 min; pre-ignition false-alarm rate
 ~5.7%). Resolution shows up here too —
 native tiling detects more fires *and* detects them minutes sooner. But the harness also surfaces the
-motivating miss: **the most recent CA fires (Palisades, Coches, Tenaja) are missed entirely** — a
-distribution-shift signal that a French-tower detector does not transfer to recent California smoke.
-Detail: [`research/ttd-findings.md`](../research/ttd-findings.md).
+motivating miss: with this **proof-scale** zero-shot detector, the most recent CA fires (Palisades,
+Coches, Tenaja) are missed — a distribution-shift signal that a French-tower detector does not
+transfer to recent California smoke. Closing that miss is exactly what Phase C set out to do (§10),
+and it is where the story turns from diagnosis to fix. Detail:
+[`research/ttd-findings.md`](../research/ttd-findings.md).
 
 ## 9. Motion: horizon-anchored change
 
@@ -174,18 +176,30 @@ both *underperformed* the simplest flat horizon and were reverted. Detail:
 
 ## 10. Where the gap stands, and what's next
 
-The deployable recipe reaches ~133 FP/camera/day at POD 0.80 — a real result, still far from the < 1
-an operator can live with. Closing that needs more than the two proven levers. Two threads are open:
+**Phase C ran, and it moved the held-out numbers.** The recent-CA miss is a distribution-shift
+problem, so we fine-tuned the full-scale pyro-sdis detector on our own **hand-corrected** Californian
+smoke boxes (pseudo-labeled by the base detector, then corrected in CVAT by the author; night fire
+excluded; strict whole-fire holdout), trained on a GCP L4 for ~$0.35. Measured on the 6 held-out
+recent CA fires against the *exact base model it started from*:
 
-- **An in-distribution detector (Phase C).** The recent-CA miss is a distribution-shift problem; the
-  fix is training on Californian smoke boxes. Public box sources were scouted and set aside (the most
-  recent, PYRONEAR-2025, can't close the recency gap and re-imports a leak we already audited), so the
-  chosen path is to **pseudo-label our own onset fires** under strict whole-fire holdout.
-- **Motion as a temporal channel.** Anchored motion carries signal the appearance detector does not,
-  so it goes into the Phase C learned temporal head — where the real payoff test is whether it *lowers
-  TTD*, not just raises separability.
+- **Detection 4/6 → 5/6** — Coches (2025) flips from missed to detected.
+- **Pre-ignition false alarms 16.7% → 7.1%** — more than halved, *while detecting more*. Phase C
+  dominates its base at this operating point, and behaves far more consistently across unseen fires
+  (a threshold set on 5 fires transfers to the 6th) — that consistency is the shift closing.
+- **A correction to our own earlier claim**: the "misses Palisades/Coches/Tenaja" line was the
+  *proof-scale* zero-shot model. The full-scale base already recovers Palisades and Tenaja; Phase C's
+  honest adds are Coches plus the halved false-alarm rate. Vista (2024) is still missed by both.
+- **Motion generalizes**: horizon-anchored motion separates onset on the held-out fires at per-fire
+  AUC **0.742** (CI excludes chance) — the cue transfers to recent CA smoke it was never tuned on.
 
-Both are tracked, with the full open-thread list, in [`research/backlog.md`](../research/backlog.md).
+Directional (n = 6, wide CIs), but the first evidence that in-distribution fine-tuning closes part of
+the gap. Detail: [`research/phase-c-findings.md`](../research/phase-c-findings.md).
+
+**What's still open.** The deployable single-frame recipe reaches ~133 FP/camera/day at POD 0.80 —
+still far from the < 1 an operator can live with. The live threads: **motion as a learned temporal
+channel** (the payoff test is whether it *lowers TTD*, not just raises separability); **more fires**
+(Phase B — FIgLib-full) to tighten the n = 6 eval; and a matched-false-alarm comparison. All tracked
+in [`research/backlog.md`](../research/backlog.md).
 
 ## 11. Works cited
 

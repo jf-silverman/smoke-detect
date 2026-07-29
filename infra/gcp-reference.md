@@ -1,6 +1,6 @@
 # GCP reference — GPU training, done cheaply and correctly
 
-Read this before touching GCP infra. Companion docs: [../reports/gcp-plan.md](../reports/gcp-plan.md)
+Read this before touching GCP infra. Companion docs: [../research/gcp-plan.md](../research/gcp-plan.md)
 (strategy + cost model for this project) and [gcp-runbook.md](gcp-runbook.md) (the executable
 steps + scripts we actually run: `gcp_setup.sh`, `train_vm_startup.sh`). This file is the
 "why" and the gotchas; the runbook is the "how."

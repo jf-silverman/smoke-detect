@@ -98,15 +98,19 @@ overcast) — a measured version of the documented single-frame failure mode, wh
 fires on nearly every cloud. The report found no such public corpus exists, so
 `results/confuser_corpus.csv` is a small original contribution.
 
-**Where this is going next.** Extending the pipeline onto the field's headline metric —
-[time-to-detection](research/ttd-findings.md) — a zero-shot detector on 23 held-out (day-only)
-California onset fires detects 48% of them at a median 8 minutes, but *misses the most recent CA fires
-entirely* (Palisades, Coches, Tenaja). That miss is a distribution-shift signal, and the fix is an
-in-distribution detector trained on Californian smoke boxes. The candidate public box sources were
-scouted and set aside — the most recent (PYRONEAR-2025) can't close the recency gap and re-imports
-the leak we already audited — so the chosen path is to **pseudo-label our own onset fires** (we hold
-the frames and onset labels; only the boxes are missing) under strict whole-fire holdout. Tracked in
-the [backlog](research/backlog.md).
+**The distribution-shift test — and Phase C's answer.** Extending the pipeline onto the field's
+headline metric — [time-to-detection](research/ttd-findings.md) — a zero-shot detector on 23 held-out
+(day-only) California onset fires detects 48% of them at a median 8 minutes, but the *most recent* CA
+fires are the hardest. So we ran **Phase C**: fine-tune the full-scale pyro-sdis detector on our own
+**hand-corrected** Californian smoke boxes (pseudo-labeled then corrected in CVAT by the author, a
+career wildland-fire professional; strict whole-fire holdout), trained on a GCP L4 for ~$0.35. On the
+6 held-out recent fires, versus the exact base it started from, fine-tuning lifts detection **4/6 →
+5/6** (Coches rescued) *and* more than halves the pre-ignition false-alarm rate (**16.7% → 7.1%**) —
+the first evidence that in-distribution training closes part of the gap. (A correction it also forced:
+the full-scale base already detects Palisades and Tenaja, so the earlier "misses all three recent
+fires" was a *proof-scale* artifact; Phase C's honest add is Coches plus the halved false alarms.)
+Directional at n = 6. Detail: [phase-c-findings.md](research/phase-c-findings.md); tracked in the
+[backlog](research/backlog.md).
 
 A second thread came straight from a domain observation while hand-correcting those labels: a plume is
 often legible only by its **motion** across frames. A training-free probe
@@ -138,7 +142,8 @@ Two folders, two audiences. **`reports/`** holds the polished reports written fo
   [resolution](research/resolution-findings.md), [hard-negative](research/hard-negative-findings.md),
   [temporal](research/temporal-findings.md), [confuser corpus](research/confuser-corpus.md),
   [FIgLib](research/figlib-findings.md), [time-to-detection](research/ttd-findings.md),
-  [motion](research/motion-findings.md)); [background primers](research/background-topics.md); and
+  [motion](research/motion-findings.md), [Phase C](research/phase-c-findings.md));
+  [background primers](research/background-topics.md); and
   working notes (the [backlog](research/backlog.md), [data-quality flags](research/data-quality-flags.md),
   [GPU plan](research/gcp-plan.md)).
 - [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining, confuser corpus

@@ -1,6 +1,6 @@
 # GCP runbook — training on a cloud GPU
 
-Executable companion to [../reports/gcp-plan.md](../reports/gcp-plan.md) (strategy + costs). Scripts
+Executable companion to [../research/gcp-plan.md](../research/gcp-plan.md) (strategy + costs). Scripts
 here; run them from the repo root. Auth and resource creation happen on **your** account.
 
 ## Order of operations
@@ -33,4 +33,4 @@ here; run them from the repo root. Auth and resource creation happen on **your**
 ## Cost reminder
 
 Storage a few $/month; a full 40-epoch run ~$3–6 (T4 spot) to ~$9–17 (L4 on-demand); a new-account
-$300 trial covers it. Set a budget alert. See [gcp-plan.md](../reports/gcp-plan.md).
+$300 trial covers it. Set a budget alert. See [gcp-plan.md](../research/gcp-plan.md).

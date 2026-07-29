@@ -21,9 +21,16 @@ roughly by leverage. Completed threads have their own findings reports (see the 
   - **Phase B — next:** pull more onset fires (FIgLib-full via WIFIRE Commons; PYRONEAR-2025) to
     tighten the CIs. FIgLib-full (~20–25 GB) fits local; PYRONEAR video set may want cloud
     ([gcp-plan.md](gcp-plan.md)).
-  - **Phase C:** train an in-distribution detector on FIgLib boxes → the AUC 0.658 floor rises and
-    TTD should drop toward the SmokeyNet range; then test a *learned* temporal head. Best run on a
-    cloud GPU ([gcp-plan.md](gcp-plan.md)) rather than the ~92-min/epoch local box.
+  - **Phase C — DONE (first result, 2026-07-28), see [phase-c-findings.md](phase-c-findings.md).**
+    Fine-tuned `gcp_grouped_1280` on the hand-corrected day-only set (17 fires, 452 boxes, 85
+    negatives) on a GCP L4 (~$0.35). Held-out eval on the 6 recent CA fires: detection **4/6 → 5/6**
+    (Coches rescued), pre-ignition FA **16.7% → 7.1%**; anchored motion generalizes (0.742 on the
+    held-out fires). Corrected an overclaim: the full-scale base already gets Palisades/Tenaja, so the
+    "recent miss" was partly proof-scale. **Still open:** a *learned* temporal head fusing motion
+    (payoff = lower TTD), Phase B more fires to tighten n=6, matched-FA comparison.
+    - _(original plan, for the record)_ train an in-distribution detector on FIgLib boxes → the AUC
+    0.658 floor rises and TTD should drop toward the SmokeyNet range; then test a *learned* temporal
+    head. Best run on a cloud GPU ([gcp-plan.md](gcp-plan.md)) rather than the ~92-min/epoch local box.
     - **Data-source decision (2026-07): pseudo-label our own local FIgLib fires.** Phase C needs
       bounding boxes, which canonical FIgLib lacks (only onset labels via the filename offset). The
       external box sources were evaluated and set aside:
