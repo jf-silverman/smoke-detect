@@ -85,14 +85,20 @@ sequences with FIgLib and is leaky by construction — this downgrades the two m
 frames; the raw [HPWREN archive](https://www.hpwren.ucsd.edu/news/20180501/)) to training-only-with-
 hard-exclusion.
 
-- **Nemo — the pullable quick win (queued next data add).** COCO-format smoke boxes from **1,073
-  ALERTWildfire PTZ videos** (Nevada + CA), ~2,564 train / 250 val images, 3 fine-grained smoke
-  classes + a 100-image hard-negative set; incipient-stage framing matches our TTD goal (Yazdi/
-  SayBender et al., 2022; [GitHub](https://github.com/SayBender/Nemo),
-  [paper](https://www.mdpi.com/2072-4292/14/16/3979)). One `git clone`, no request. ALERTWildfire ≠
-  HPWREN → **no FIgLib overlap**, and it broadens beyond both HPWREN and French towers. *Action:* pull,
-  inventory against our smoke label schema, gate against any camera/date in our eval, then use as
-  extra Phase-C training data. Cheap; do this before the ALERTCalifornia thread.
+- **Nemo — ANNOTATIONS only, images not public (checked 2026-07-28; downgraded from "quick win").**
+  COCO smoke boxes over ALERTWildfire (Nevada + CA) frames — leak-clean vs our HPWREN/FIgLib eval, which
+  is why it was attractive (Yazdi/SayBender et al., 2022; [GitHub](https://github.com/SayBender/Nemo),
+  [paper](https://www.mdpi.com/2072-4292/14/16/3979)). But a `git clone` yields **only the annotation
+  JSONs + 8 sample frames**: single-class `sc` (2,342 train / 237 val, one `smoke` class) and density
+  `dg` (2,680 train, low/mid/high), no `coco_url` per image. The **image frames have no public download
+  URL** — the README leaves it as the literal placeholder `[ADD A URL ONCE DATASET IS PUBLIC]`, and the
+  only live image link is a fallback to **Govil et al.'s Fuego** (Google Drive), which is **HPWREN-
+  sourced → leaky** (same class as AI For Mankind; ~1,661-image public subset). So there is no clean,
+  immediately-pullable Nemo image set. *Options if we want it:* (a) open a GitHub issue / email the
+  authors for the image URL (non-immediate); (b) reconstruct frames from the source ALERTWildfire
+  timelapse videos named in the annotation filenames (scrape + extract + match — real effort). Annotation
+  JSONs are archived locally for reference. **Net: not the cheap add it looked like; the ALERTCalifornia
+  request below is now the leading net-new-CA data step.**
 - **ALERTCalifornia archive — the recent-CA distribution-shift prize (Phase D, by request).** UCSD's
   statewide network: **1,200+ cameras**, and critically the **2023+ era** — the same generation and
   geography as our 6 recent-CA eval fires, so it's the source that could genuinely close the recent-CA
