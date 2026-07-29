@@ -12,6 +12,32 @@ decision.
 > are one flag change from full scale. Absolute deployment burdens (FP/camera/day) are extrapolations
 > at an assumed base rate, not measured field rates.
 
+## Bottom line
+
+The central move is evaluation, not architecture: judge the detector on **detection rate and
+false-alarm burden** (what an operator lives with), not F1 (which mis-weights a missed fire as merely a
+false alarm). Read against that yardstick, the results that matter:
+
+- **In-distribution fine-tuning closes part of the gap.** Fine-tuning the detector on hand-corrected
+  Californian smoke lifted held-out detection **4/6 → 5/6** *and* **halved** the pre-ignition
+  false-alarm rate (16.7% → 7.1%) — the strongest evidence here that the recent-CA miss is distribution
+  shift, not an unfixable limit (§8, §10).
+- **Resolution sets the detection ceiling.** Native-resolution inference roughly doubles the catchable
+  early plumes (POD 0.68 → 0.86); native-resolution *training* holds POD 0.83 at ~half the false-alarm
+  burden (§5).
+- **The false alarms are structured, not random** — 74% are clouds — which is why hard-negative mining
+  helps and a flicker-suppressing temporal rule does not (§6, §7).
+- **Two negative results, reported as such.** A temporal model gave no matched-recall gain on this
+  data (§7); a motion cue separates onset above chance but its learned fusions don't yet beat the
+  appearance detector — and a temporal LSTM's apparent win was caught as a position-leak artifact (§9).
+- **The gap is real.** The best single-frame recipe still sits far above the < 1 FP/camera/day an
+  operator needs (§10).
+
+**Who this is for / how to read it.** For the framing and the outcomes, read §1, §2, and §10. For the
+modeling and evaluation method, read §2 and §4–§7. For the field-facing results and lessons, read
+§8–§10 and the companion [research narrative](research-narrative.md). A plain-language overview for a
+general audience is in the [top-level README](../README.md).
+
 ## Contents
 
 1. [The problem, and the frame](#1-the-problem-and-the-frame)
@@ -24,7 +50,8 @@ decision.
 8. [Time-to-detection](#8-time-to-detection)
 9. [Motion: horizon-anchored change](#9-motion-horizon-anchored-change)
 10. [Where the gap stands, and what's next](#10-where-the-gap-stands-and-whats-next)
-11. [Works cited](#11-works-cited)
+11. [Glossary](#11-glossary)
+12. [Works cited](#12-works-cited)
 
 ---
 
@@ -201,7 +228,104 @@ channel** (the payoff test is whether it *lowers TTD*, not just raises separabil
 (Phase B — FIgLib-full) to tighten the n = 6 eval; and a matched-false-alarm comparison. All tracked
 in [`research/backlog.md`](../research/backlog.md).
 
-## 11. Works cited
+## 11. Glossary
+
+Plain-language definitions of the terms and abbreviations used above, grouped by theme. Where a term
+has a specific meaning *in this project*, that meaning is given.
+
+### Evaluation and metrics
+
+- **Detection rate (POD, probability of detection)** — the share of real fires the detector catches;
+  the recall-first headline metric here ("how high can detection go?").
+- **Recall / recall ceiling** — the same idea as detection rate; the *ceiling* is the most it can catch
+  at any threshold setting.
+- **Precision** — of the alarms the detector raises, the share that are genuinely smoke.
+- **Base rate** — how often the target event actually occurs (~1% of frames contain smoke). Rare events
+  make field precision far worse than a balanced test set suggests.
+- **Precision@1% (precision at the deployment base rate)** — precision recomputed for smoke's real-world
+  rarity; the field-realistic number a test set hides.
+- **False alarm / false positive** — the detector flags smoke where there is none.
+- **False-alarm burden (FP per camera per day)** — how many false alarms one camera produces in a day;
+  the operator's real constraint (Pano AI's target is < 1).
+- **F1 score** — a single score averaging precision and recall that weights a missed fire and a false
+  alarm *equally* — the wrong trade for wildfire, which is why this project does not lead with it.
+- **mAP (mean average precision)** — a standard object-detection accuracy score; computed here but
+  demoted to context.
+- **AUC (area under the ROC curve)** — a 0.5-to-1 measure of how well a score separates two groups (here,
+  onset vs pre-ignition frames): 0.5 is chance, 1.0 is perfect.
+- **Relative economic value / cost-loss ratio** — a meteorology score for decisions where the two kinds
+  of error cost very different amounts; used to compare detectors under wildfire's asymmetric costs.
+- **Confidence interval (CI)** — a range that likely contains the true value; a "90% CI excluding chance
+  (0.5)" means the result is unlikely to be a fluke.
+- **Sign test / p-value** — a simple test of whether one method beats another more often than chance
+  would explain; p = 0.17 means "not strong enough to be sure."
+- **Bootstrap** — estimating a range of uncertainty by resampling the data many times.
+- **Operating point / threshold** — the confidence cutoff at which a score becomes an alarm; moving it
+  trades detection against false alarms.
+
+### Modeling and machine-learning methods
+
+- **YOLO** — "You Only Look Once," a family of fast real-time object detectors; the model used here is
+  YOLO11n.
+- **Single-frame detector** — a model that judges each still image on its own, with no memory of earlier
+  frames.
+- **Temporal model / frame-to-frame context** — a model that uses a sequence of frames over time rather
+  than a single still.
+- **Persistence rule** — only raise an alarm when a detection repeats across several consecutive frames;
+  suppresses flicker.
+- **LSTM (Long Short-Term Memory)** — a neural network for sequences that can weigh how its inputs change
+  over time.
+- **Hard-negative mining** — retraining the model on the specific non-smoke images it wrongly flagged, to
+  teach it from its own mistakes.
+- **Confuser / confuser corpus** — the catalog of things that fool the detector (mostly clouds), grouped
+  into named failure types.
+- **Data leakage / leak-safe** — leakage is when the test accidentally shares information with training
+  (e.g., the same camera in both), inflating scores; leak-safe means the test is kept genuinely separate.
+- **Site-holdout / whole-fire holdout / leave-one-fire-out** — ways to keep the test honest by holding
+  out entire camera sites or entire fires, so the model is only judged on things it never trained on.
+- **Zero-shot** — testing a model on a new dataset with no additional training.
+- **Fine-tuning (Phase C)** — taking an already-trained model and training it a little more on new,
+  in-region data.
+- **Pseudo-labeling / pre-annotation** — using the model to propose draft labels, then having a human
+  correct them.
+- **CVAT** — an open-source image-annotation tool, used here to hand-correct the smoke boxes.
+- **Native resolution / tiling / downscaling** — downscaling shrinks a large frame and loses tiny
+  plumes; tiling instead cuts the full-resolution frame into pieces the detector reads at native size.
+- **Position leak (temporal-position leak)** — a subtle flaw where a sequence model "cheats" by learning
+  *when* in a clip a fire usually appears rather than *what* smoke looks like.
+- **Proof-scale vs full-scale** — proof-scale runs use a fraction of the data to test an idea fast;
+  full-scale runs use all of it.
+- **In-distribution / out-of-distribution** — data similar to (vs different from) what the model trained
+  on.
+- **Distribution shift** — when field data differs from training data (e.g., French towers → California
+  smoke), degrading performance; the problem Phase C targets.
+
+### Data, datasets, and sources
+
+- **pyro-sdis** — the main training dataset: 33,636 images from French fire-detection towers (Pyronear).
+- **FIgLib (Fire Ignition Library)** — California onset sequences spanning ~40 minutes before to after
+  ignition, from HPWREN cameras; the temporal and time-to-detection benchmark.
+- **HPWREN** — the Southern-California research camera network FIgLib is drawn from.
+- **PyroNear / Pyronear** — the European open-source wildfire-detection project behind pyro-sdis.
+- **SmokeyNet** — the most-cited academic smoke-detection model (Dewangan et al., 2022); the paper
+  yardstick this project measures against.
+- **Pano AI** — a commercial wildfire-camera vendor; source of the < 1 FP/camera/day operational target.
+- **ALERTCalifornia / ALERTWildfire** — large public and operational camera networks (UC San Diego).
+
+### Wildfire and smoke domain terms
+
+- **Plume** — the rising column of smoke from a fire.
+- **Ignition onset / onset frames** — the moment a plume first becomes visible and the frames at or after
+  it (time offset ≥ 0).
+- **Pre-ignition frames** — frames before the plume appears (offset < 0); used to measure false alarms.
+- **Time-to-detection (TTD)** — minutes from ignition to the first alarm; the field's headline speed
+  metric.
+- **Horizon-anchored change** — inter-frame motion that stays connected to the ground/horizon (like a
+  rising plume), as opposed to "floating" change that drifts free of the skyline (like clouds).
+- **Watchstander / fire lookout** — the person monitoring camera feeds who reviews each candidate
+  detection before any crews are dispatched.
+
+## 12. Works cited
 
 - Dewangan, A., Pande, Y., Braun, H.-W., Vernon, F., Perez, I., Altintas, I., Cottrell, G. W., &
   Nguyen, M. H. (2022). FIgLib & SmokeyNet: Dataset and deep learning model for real-time wildland

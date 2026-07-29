@@ -1,17 +1,10 @@
-# Background Topics
+# Object Detection — A Primer
 
-A growing reference of background primers for this project. Each section is a self-contained
-explainer on a topic that context for the smoke-detection work draws on. Sections are added as
-the need comes up.
+A self-contained explainer on object detection — its task, model families, how it is measured, video
+methods, and how different domains specialize it — as background for the smoke-detection work. (The
+rest of [`research/`](.) is the project's wider collection of background topics and findings.)
 
-**Contents**
-1. [Object detection — a primer (with video and cross-domain methods)](#1-object-detection--a-primer)
-
----
-
-## 1. Object detection — a primer
-
-### 1.1 What object detection is
+## 1. What object detection is
 
 Object detection answers two questions at once for every object in an image: **where is it**
 (localization) and **what is it** (classification). It sits between two neighbors:
@@ -31,7 +24,7 @@ non-maximum suppression ([NMS](#nms)). Second, most of an image is background, s
 severe **foreground/background imbalance** (addressed by [focal loss](#focal-loss) and [hard-negative mining](#hard-negative-mining);
 Lin et al., 2017b).
 
-### 1.2 The architectural families
+## 2. The architectural families
 
 **Two-stage detectors (region-based).** First propose candidate regions, then classify and refine
 each. The [R-CNN](#r-cnn) lineage — R-CNN (Girshick et al., 2014) → Fast R-CNN (Girshick, 2015) → Faster
@@ -64,7 +57,7 @@ al., 2016), EfficientNet (Tan & Le, 2019), and the transformer backbones [ViT](#
 2021) and Swin (Liu et al., 2021). Feature Pyramid Networks ([FPN](#fpn); Lin et al., 2017a) let a detector
 use multiple scales at once — important for small objects like distant smoke.
 
-### 1.3 How performance is measured (and a caveat)
+## 3. How performance is measured (and a caveat)
 
 The standard metric is **mean Average Precision ([mAP](#map))**: average precision (area under the
 precision-recall curve) per class, meaned over classes and over IoU thresholds (COCO averages IoU
@@ -76,7 +69,7 @@ poor proxy for field usefulness — which is why the [metrics report](metrics.md
 evaluation around detection rate and false-alarm burden instead. mAP is a general-purpose metric,
 not a universal one.
 
-### 1.4 Current best methods (2024–2026)
+## 4. Current best methods (2024–2026)
 
 - **Real-time:** the recent **YOLO** releases (v8/v11/v12) and **RT-DETR** are the practical
   front-runners; the choice is often ecosystem and latency, not raw accuracy.
@@ -89,7 +82,7 @@ not a universal one.
   These matter when labels are scarce — though, as the [research notes](../research/methods.md)
   record, they degrade on out-of-distribution, semi-transparent targets like smoke.
 
-### 1.5 Detection in *video*
+## 5. Detection in *video*
 
 Video is not merely a stack of independent images. It brings both a problem and a gift.
 
@@ -128,7 +121,7 @@ frozen detector's per-frame evidence), and its central finding is that the tempo
 **dataset-dependent** — it needs onset sequences to pay off ([temporal](temporal-findings.md),
 [figlib](figlib-findings.md)).
 
-### 1.6 What different domains actually use
+## 6. What different domains actually use
 
 The same detection toolbox is specialized very differently across domains, driven by the data and
 the cost of errors:
@@ -158,11 +151,11 @@ the cost of errors:
   IoU, F1, whole-frame downscaling, frame-level splits) transfer poorly, and why the project
   rebuilds evaluation around detection rate, false-alarm burden, tiling, and leak-safe splits.
 
-### 1.7 The through-line for this project
+## 7. The through-line for this project
 
 The takeaways that recur in the rest of the reports:
 - **One-stage detector (yolo11n)** for a real-time smoke task.
-- **Tiling / native resolution** because the target is small (§1.6 remote sensing; §1.5 video).
+- **Tiling / native resolution** because the target is small (§6 remote sensing; §5 video).
 - **Temporal modeling helps only when the data carries the signal** — motion and onset — which is
   the whole subject of the temporal and FIgLib findings.
 - **Metrics and splits must be built for the domain**, not inherited from COCO.
