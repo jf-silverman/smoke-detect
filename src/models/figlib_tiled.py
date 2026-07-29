@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FIGLIB = ROOT / "data" / "figlib"
 sys.path.insert(0, str(ROOT / "src"))
 from models.figlib_temporal import scan_frames, split_by_fire  # noqa: E402
-from models.figlib_ttd import EVAL_FIRES  # noqa: E402  (single source of the 6 held-out eval fires)
+from models.figlib_ttd import EVAL_FIRES, NIGHT_PATTERN  # noqa: E402  (held-out fires; night filter)
 
 
 def pick_device() -> str:
@@ -68,7 +68,12 @@ def main() -> None:
     ap.add_argument("--eval-only", action="store_true",
                     help="score ONLY the 6 held-out EVAL_FIRES (the Phase C held-out eval set) -- "
                          "the inverse of the training-set filter, for before/after model comparison")
+    ap.add_argument("--exclude-eval", action="store_true",
+                    help="score the day-only TRAINING fires (drop the 6 EVAL_FIRES and any night "
+                         "fire) -- the fusion training set")
     args = ap.parse_args()
+    if args.eval_only and args.exclude_eval:
+        raise SystemExit("--eval-only and --exclude-eval are mutually exclusive")
 
     device = pick_device()
     wpath = Path(args.weights)
@@ -77,6 +82,10 @@ def main() -> None:
     if args.eval_only:
         df = df[df["seq"].isin(EVAL_FIRES)].reset_index(drop=True)
         print(f"EVAL-ONLY: scoring the {df['seq'].nunique()} held-out eval fires")
+    elif args.exclude_eval:
+        df = df[~df["seq"].isin(EVAL_FIRES)
+                & ~df["seq"].str.contains(NIGHT_PATTERN, case=False, regex=True)].reset_index(drop=True)
+        print(f"TRAIN fires (day-only, eval held out): {df['seq'].nunique()} fires")
     print(f"tiled inference on {len(df)} frames, tile={args.tile} stride={args.stride}, {device}")
 
     max_conf = np.zeros(len(df), dtype=np.float32)
@@ -99,8 +108,8 @@ def main() -> None:
     np.savez_compressed(out_path, stems=df["stem"].to_numpy(), conf_tiled=max_conf)
     print(f"\nwrote {out_path}")
 
-    if args.eval_only:
-        # No train/test split on a 6-fire held-out subset; the TTD harness scores it next.
+    if args.eval_only or args.exclude_eval:
+        # No train/test split on a fire subset; the fusion / TTD harness consume this next.
         import pandas as pd
         df["conf_tiled"] = max_conf
         df["bucket"] = pd.cut(df["offset"], [-99999, -1, 600, 1800, 99999],

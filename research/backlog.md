@@ -75,6 +75,37 @@ roughly by leverage. Completed threads have their own findings reports (see the 
           pre-ignition frames + empty labels into a separate set, merged with the CVAT-corrected
           positives when the Phase C training config is built.
 
+## Net-new California data — evaluated 2026-07-28 (next data steps)
+
+The recurring bottleneck is recent-California onset data that does **not leak** into the FIgLib /
+recent-CA eval. Our base is pyro-sdis (French towers); our eval is FIgLib (HPWREN So-Cal cameras) plus
+the 6 recent-CA `EVAL_FIRES` (2024–2025). **Leakage lens:** any HPWREN-derived set shares cameras and
+sequences with FIgLib and is leaky by construction — this downgrades the two most convenient sources
+([AI For Mankind](https://github.com/aiformankind/wildfire-smoke-dataset), 2,192 VOC-boxed HPWREN
+frames; the raw [HPWREN archive](https://www.hpwren.ucsd.edu/news/20180501/)) to training-only-with-
+hard-exclusion.
+
+- **Nemo — the pullable quick win (queued next data add).** COCO-format smoke boxes from **1,073
+  ALERTWildfire PTZ videos** (Nevada + CA), ~2,564 train / 250 val images, 3 fine-grained smoke
+  classes + a 100-image hard-negative set; incipient-stage framing matches our TTD goal (Yazdi/
+  SayBender et al., 2022; [GitHub](https://github.com/SayBender/Nemo),
+  [paper](https://www.mdpi.com/2072-4292/14/16/3979)). One `git clone`, no request. ALERTWildfire ≠
+  HPWREN → **no FIgLib overlap**, and it broadens beyond both HPWREN and French towers. *Action:* pull,
+  inventory against our smoke label schema, gate against any camera/date in our eval, then use as
+  extra Phase-C training data. Cheap; do this before the ALERTCalifornia thread.
+- **ALERTCalifornia archive — the recent-CA distribution-shift prize (Phase D, by request).** UCSD's
+  statewide network: **1,200+ cameras**, and critically the **2023+ era** — the same generation and
+  geography as our 6 recent-CA eval fires, so it's the source that could genuinely close the recent-CA
+  gap rather than just add volume ([FAQs](https://alertcalifornia.org/faqs/);
+  [Wikipedia](https://en.wikipedia.org/wiki/ALERTCalifornia);
+  [CA GIS camera layer](https://gis.data.ca.gov/documents/California::alertcalifornia-fire-cameras/explore)).
+  Data is open-source but **not a clean API** — request footage as a scientist/partner via
+  `alertcalifornianews@ucsd.edu`; it arrives *unlabeled*, so it feeds the **pseudo-label → hand-correct
+  in CVAT** loop already built for Phase C. Multi-week thread (email → footage → labeling), so it's a
+  Phase D decision, not a today one — but the eval-era match makes it the highest-leverage data play on
+  the board. *Caveat:* whole-fire holdout must be preserved (any fire that appears in `EVAL_FIRES`
+  stays out of training).
+
 ## Recently completed (folded into reports)
 
 - **Combine the two levers — native-res training + hard-negative mining (full scale, @1280).**
@@ -232,9 +263,21 @@ bright cloud) *absolute* brightness does not track the horizon, while the flat e
 *relative* brightness change and is robust. Three horizon variants tried; the simplest wins. See
 [motion-findings.md](motion-findings.md).
 
-**Next:** carry anchored motion as an input channel to the Phase C learned temporal head and test the
-real payoff — does it **lower TTD**, not just raise separability. The horizon estimator is settled
-(flat brightness-gradient row); no further tuning warranted.
+**Learned combiners — both tested (2026-07-28), neither a validated win; see
+[motion-findings.md](motion-findings.md).** (1) *Per-frame logistic fusion* of base conf + the three
+motion features ([`figlib_fusion.py`](../src/models/figlib_fusion.py)): leak-free (zero-shot conf +
+training-free motion), but appearance-dominated (conf weight +0.77 vs motion ≤0.18), training LOO AUC
+0.623 < conf-alone 0.689, eval frame-AUC inconsistent; only an n=6-noisy TTD lift (5/6 vs 4/6). (2)
+*Causal LSTM* ([`figlib_lstm.py`](../src/models/figlib_lstm.py)): looked decisive (LOO 0.858, eval fires
+at 1.000, TTD 0.97 min) but the ablation controls exposed a **temporal-POSITION leak** — `ABLATE=zero`
+(all features zeroed) still scores LOO 0.994 / eval 1.000 (FIgLib's monotonic onset-centered label lets
+a sequence model "detect" by counting frames), and `ABLATE=shuffle` (time order permuted) collapses it to
+LOO 0.612 ≈ the per-frame LR. **Gating requirement now recorded:** FIgLib's fixed onset-centered
+sequences cannot validly evaluate a temporal model for TTD/onset-AUC — a real temporal test needs
+**continuous-feed or onset-position-randomized data** (HPWREN archive / ALERTCalifornia; see the
+[net-new CA data](#net-new-california-data--evaluated-2026-07-28-next-data-steps) and
+[public data sources](#public-data-sources-for-the-temporal--time-to-detection-thread) sections). The
+horizon estimator is settled (flat brightness-gradient row); no further tuning warranted.
 
 ## Also noted (lower priority)
 
