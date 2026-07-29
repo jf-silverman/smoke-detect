@@ -36,11 +36,29 @@ the only variable. At the 5% pre-ignition false-alarm target, leave-one-fire-out
 | **held-out pre-ignition FA** | **16.7%** | **7.1%** |
 
 **Phase C dominates the base at this operating point**: it detects *more* fires (5/6 vs 4/6, Coches
-rescued) while *more than halving* the false-alarm rate (16.7% → 7.1%). The base's faster median TTD
-(3.4 vs 8.0 min) is bought with 2.4× the false alarms — not a fair trade; matched-FA would favour
-Phase C further. The sharpest signal is calibration: a threshold set on 5 fires transfers to the 6th
-far better after fine-tuning (7.1% vs 16.7% achieved FA), i.e. the model behaves *consistently* across
-unseen recent fires — that consistency is the distribution shift closing.
+rescued) while *more than halving* the false-alarm rate (16.7% → 7.1%). The sharpest signal is
+calibration: a threshold set on 5 fires transfers to the 6th far better after fine-tuning (7.1% vs
+16.7% *achieved* FA), i.e. the model behaves *consistently* across unseen recent fires — that
+consistency is the distribution shift closing.
+
+### Did TTD drop? Not at the headline point — but that's a false-alarm mismatch
+
+At the nominal 5% target the base shows a *faster* median TTD (3.4 vs 8.0 min), which looks like Phase
+C regressed. It didn't: the base's threshold, calibrated on 5 fires, lands at **16.7%** achieved FA on
+the held-out 6th, so its speed is bought by alarming 2.4× as often. The fair read is at **matched
+false-alarm rate**. From the FA-budget sweep, at ~16–17% achieved FA:
+
+| at ~16–17% achieved pre-ignition FA | detection | median TTD |
+|---|---|---|
+| base (`gcp_grouped_1280`) | 4/6 | 3.45 min |
+| **Phase C** | **5/6** | **~3.0 min** |
+
+So controlling for false alarms, Phase C is **marginally faster (3.0 vs 3.45 min) *and* detects one
+more fire** — it converted the same speed into more detections plus far better calibration, rather
+than lowering TTD outright. The headline 5%-point slowdown is driven by the *newly rescued* Coches
+arriving late (17 min — a good problem) and Tenaja genuinely slowing (4 → 17 min); per fire it is
+mixed (Bahrman and Highway got faster). **Lowering TTD outright is the motion temporal channel's job**
+(not this appearance fine-tune) and remains untested — see [motion-findings.md](motion-findings.md).
 
 ## Correcting the recent-CA framing
 
