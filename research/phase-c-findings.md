@@ -79,6 +79,17 @@ in only 2/6 fires (mean lift +0.05) — the fine-tuned appearance detector narro
 naive fusion (0.756) edging both single signals suggests residual complementarity worth a learned
 temporal head.
 
+**Learned per-frame combiner — tested, mixed (2026-07-28).** The first learned combiner (a leak-free
+per-frame logistic regression over the base conf + the three motion features → onset probability;
+[motion-findings.md](motion-findings.md#the-learned-per-frame-combiner--tested-2026-07-28-a-mixed-appearance-dominated-result))
+is appearance-dominated (conf weight +0.77 vs motion ≤0.18) and its frame-AUC is inconsistent
+(training LOO 0.623 vs conf-alone 0.689; eval pooled 0.728→0.793 but hurts Vista/Palisades while
+rescuing Coches). Operationally it detects **5/6 vs 4/6** and, at matched ~16% FA, is comparable-to-faster
+(1.0 vs 2.4–3.5 min median), but that is an n=6-noisy lift resting on one late Coches rescue. The read:
+a per-frame *linear* fusion underdelivers; the onset signal that helps TTD lives in the temporal
+*transition*, which a per-frame model can't target — motivating the temporal sequence head as the next
+test.
+
 ## Caveats
 
 - **n = 6.** Detection-rate 90% CI is [50%, 100%]; read the direction, not the point value.

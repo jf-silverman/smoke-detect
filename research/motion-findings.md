@@ -140,6 +140,98 @@ the fine-tuned Phase C detector's confidence in only 2/6 fires (mean lift +0.05)
 in-distribution detector narrows the complementarity gap, but the naive fusion (0.756) still edges
 either single signal, hinting at residual orthogonal signal. See [phase-c-findings.md](phase-c-findings.md).
 
+## The learned per-frame combiner — tested (2026-07-28): a mixed, appearance-dominated result
+
+The motion-findings above promised a *learned* combiner in place of the naive sum. The first, simplest
+one — a **per-frame logistic regression** over `[conf, anchored_change, anchored_ratio, floating_change]`
+→ onset probability ([`figlib_fusion.py`](../src/models/figlib_fusion.py)) — is now run. It is
+**leak-free by construction**: the appearance `conf` is the zero-shot base detector (`gcp_grouped_1280`,
+never trained on FIgLib) and the motion features are training-free, so the LR is *fit on the 17 training
+fires and applied to the 6 held-out `EVAL_FIRES`* with no leakage. The fused score is written as a
+`conf_tiled` npz and scored through the unchanged TTD harness.
+
+The verdict is **mixed and underwhelming** — worth recording plainly rather than dressing up.
+
+**Learned weights (standardized — sign and magnitude comparable):**
+
+| feature | weight |
+|---|---|
+| conf | **+0.773** |
+| anchored_ratio | +0.175 |
+| anchored_change | −0.101 |
+| floating_change | −0.043 |
+
+The combiner leans overwhelmingly on **appearance**. Motion enters mainly through `anchored_ratio`
+(+0.18); `anchored_change` even takes a small *negative* weight (the two anchored features are
+correlated, so the LR splits the credit), and `floating_change` — the cloud control — is correctly
+near zero. So a *linear* combiner extracts only a little from motion once a strong appearance detector
+is in the mix.
+
+**Frame-level AUC — the discouraging part.** A leave-one-fire-out fit on the *training* fires makes
+cross-fire generalization **worse**, not better:
+
+| training LOO per-fire AUC | value |
+|---|---|
+| conf-alone | **0.689** |
+| fused (conf + motion) | 0.623 |
+
+On the held-out eval fires the *pooled* AUC does rise (conf 0.728 → fused 0.793), but per fire it is
+inconsistent — it helps exactly one of the two weak fires and hurts the other:
+
+| held-out fire | conf-alone | fused |
+|---|---|---|
+| Vista (2024) | 0.729 | **0.531** ↓ |
+| Tenaja (2024) | 0.982 | 0.976 |
+| Bahrman (2024) | 0.956 | 0.959 |
+| Palisades (2025) | 0.640 | **0.462** ↓ |
+| Highway (2025) | 0.945 | 0.940 |
+| Coches (2025) | 0.730 | **0.852** ↑ |
+| **pooled** | 0.728 | 0.793 |
+
+The pooled gain is **Coches-driven** (0.73 → 0.85); Vista and Palisades — the other two soft fires —
+get *worse*. So the linear fusion is not a reliable frame-ranking improvement, and the training LOO
+says it can actively hurt.
+
+**Operational (TTD / detection) — a modest, noisy positive that points the other way.** Scored through
+the TTD harness, the fused signal detects **more fires** and, at matched false-alarm rate, is
+**comparable-to-faster**. Per fire at the 5% pre-ignition-FA target, leave-one-fire-out:
+
+| fire | base conf | fused |
+|---|---|---|
+| Vista | miss | miss |
+| Tenaja | 4.0 min | 4.0 min |
+| Bahrman | 2.9 min | **0.9 min** |
+| Palisades | 0.0 min | 1.0 min |
+| Highway | 10.0 min | **8.0 min** |
+| Coches | **miss** | **33.0 min** ← rescued (late) |
+| **detection** | **4/6** | **5/6** |
+| achieved FA | 16.7% | 15.0% |
+
+At **matched ~16% achieved FA** (from the FA-budget sweep), the picture favors fusion:
+
+| at ~15–17% achieved pre-ignition FA | detection | median TTD |
+|---|---|---|
+| base conf (`gcp_grouped_1280`) | 4/6 | 2.44–3.45 min |
+| **fused (conf + motion)** | **5/6** | **1.0 min** |
+
+So operationally the fusion detects one more fire (rescues Coches, though at a barely-useful 33 min)
+and is at least as fast — faster on Bahrman and Highway — at equal-or-lower FA.
+
+**Reconciling the two reads.** Frame-AUC and TTD disagree because they measure different things:
+AUC scores *overall frame ranking*, TTD scores the *first onset frame to cross threshold*. Motion can
+lower TTD (help the early-onset frames of Bahrman/Highway, rescue Coches) while adding noise elsewhere
+(hurting Vista/Palisades pooled ranking). But this is a fragile, **n = 6** operational win resting
+heavily on one late Coches rescue, and it partly overlaps what the Phase C appearance fine-tune already
+achieved (Coches rescue, lower FA) by a different route.
+
+**Bottom line.** A per-frame *linear* combiner underdelivers: it leans on appearance, its
+cross-validated training AUC drops below conf-alone, its eval frame-AUC is inconsistent, and its
+operational lift is small and noisy. This is a legitimate negative-leaning result — *a lopsided-signal
+problem does not become a win just by learning linear weights.* Its value is diagnostic: the signal
+that helps TTD lives in the **onset transition** (the early frames), which a per-frame model cannot
+target by construction. That is precisely the case for a **temporal (sequence) model** that can weight
+the change *over time* — the next test, run with clear-eyed expectations rather than hope.
+
 ## What this means for Phase C, and what's open
 
 The probe has done its job: there is real motion signal that **separates onset above chance** on both
@@ -150,7 +242,11 @@ channel to the learned temporal head**, where the real payoff test is whether it
 time-to-detection*, not just raises separability.
 
 Open threads:
-- **Learned combiner** — the naive fusion is the wrong test; the temporal head is the right one.
+- **Learned combiner — first cut done, underwhelming (see section above).** The per-frame LR is
+  appearance-dominated and its frame-AUC is mixed-to-negative; a small operational (TTD) lift exists
+  but is n=6-noisy. The **temporal sequence head** (weighting the onset transition over time) is the
+  next test — the per-frame result motivates it precisely because a per-frame model *can't* target the
+  onset transition.
 - **Tighter CIs** — 17 fires is small (and the reason the head-to-head sign-test is underpowered);
   Phase B onset data (FIgLib-full / PYRONEAR) would sharpen it.
 - **The horizon estimator is settled** — three variants tried (flat brightness-gradient row, per-column
