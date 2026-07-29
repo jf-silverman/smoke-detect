@@ -98,11 +98,11 @@ Folder map:
 - **[`research/`](research/)** — the detailed notes behind every result: the
   [field survey](research/state-of-smoke-detection.md), the
   [measurement rationale](research/metrics.md), and per-topic findings for
-  [baseline](research/baseline-findings.md), [resolution](research/resolution-findings.md),
-  [learning from mistakes](research/hard-negative-findings.md),
-  [what fools the detector](research/confuser-corpus.md), [motion over time](research/temporal-findings.md),
-  [the California test](research/figlib-findings.md), [speed to detection](research/ttd-findings.md),
-  [the motion cue](research/motion-findings.md), and [region adaptation](research/phase-c-findings.md).
+  [baseline](research/findings%20-%20baseline.md), [resolution](research/findings%20-%20resolution.md),
+  [learning from mistakes](research/findings%20-%20hard-negative.md),
+  [what fools the detector](research/findings%20-%20confuser-corpus.md), [motion over time](research/findings%20-%20temporal.md),
+  [the California test](research/findings%20-%20figlib.md), [speed to detection](research/findings%20-%20ttd.md),
+  [the motion cue](research/findings%20-%20motion.md), and [region adaptation](research/findings%20-%20phase-c.md).
   Working notes live alongside them (the [backlog](research/backlog.md),
   [data-quality flags](research/data-quality-flags.md)).
 - **[`src/`](src/)** — the pipeline: dataset preparation and honest splits

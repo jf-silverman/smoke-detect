@@ -19,7 +19,7 @@ only as movement (recorded in [data-quality-flags.md](data-quality-flags.md)).
 The physical refinement mattered. The first cut weighted motion *below* the horizon, which is wrong —
 plumes rise. The correct property is that smoke **starts and stays anchored to the ground**: the base
 sits at/near/below the horizon and the growing column stays *connected* to the horizon line. Clouds —
-this project's dominant confuser (74% of false alarms; [confuser-corpus.md](confuser-corpus.md)) —
+this project's dominant confuser (74% of false alarms; [findings - confuser-corpus.md](findings%20-%20confuser-corpus.md)) —
 appear as change that **floats** entirely above the skyline, disconnected from it. So the feature is
 horizon-*anchored* change, not below-horizon change. It is deliberately **probabilistic, not a gate**:
 rare wind-driven or low-in-scene fires never clear the ridge.
@@ -138,7 +138,7 @@ probe), `anchored_change` per-fire AUC is **0.742 [0.648, 0.850]** — CI exclud
 chance). So the anchoring cue **transfers to recent California smoke it was never tuned on**. It beats
 the fine-tuned Phase C detector's confidence in only 2/6 fires (mean lift +0.05): the stronger
 in-distribution detector narrows the complementarity gap, but the naive fusion (0.756) still edges
-either single signal, hinting at residual orthogonal signal. See [phase-c-findings.md](phase-c-findings.md).
+either single signal, hinting at residual orthogonal signal. See [findings - phase-c.md](findings%20-%20phase-c.md).
 
 ## The learned per-frame combiner — tested (2026-07-28): a mixed, appearance-dominated result
 

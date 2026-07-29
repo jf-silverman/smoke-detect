@@ -19,7 +19,7 @@ Reported (the operator-relevant PAIR -- 'early' must not be bought with 'cries w
   * % of fires within 5 min  -- comparable to SmokeyNet's ~80%.
   * pre-ignition FA rate     -- fraction of pre-ignition frames that alarm, at the operating point.
   * persistence-k variant    -- require k consecutive crossings before alarming; its TTD cost
-                               directly extends the persistence sign-flip finding (figlib-findings.md).
+                               directly extends the persistence sign-flip finding (findings - figlib.md).
 
     python src/models/figlib_tiled.py --tile 640 --stride 640   # once: caches features_tiled.npz
     python src/models/figlib_ttd.py --far-target 0.05           # this eval (no model, no GPU)

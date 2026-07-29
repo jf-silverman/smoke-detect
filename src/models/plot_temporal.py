@@ -1,6 +1,6 @@
 """Figure for the temporal finding: it does not beat single-frame, and why.
 
-Two panels, from the numbers in research/temporal-findings.md:
+Two panels, from the numbers in research/findings - temporal.md:
 
   (left)  false-alarm rate on clean frames at MATCHED recall -- the three methods
           sit on top of each other, and persistence is worse where it matters.

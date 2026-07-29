@@ -4,7 +4,7 @@
 until the first alarm — computed for the first time in this project, on 23 local (day-only) FIgLib
 onset sequences using a **zero-shot** pyro-sdis detector (never trained on FIgLib). The absolute numbers
 are weak and the fire count is small (wide confidence intervals); the value here is a **leak-safe
-TTD harness** and a clean result that the [resolution lever](resolution-findings.md) moves TTD, not
+TTD harness** and a clean result that the [resolution lever](findings%20-%20resolution.md) moves TTD, not
 just AUC. Phases B–C (more fires; an in-distribution detector) sharpen the magnitudes — see
 [backlog.md](backlog.md#pre-scoping-3--hpwren--time-to-detection).
 
@@ -84,7 +84,7 @@ central resolution finding onto the time axis.
 | 20% | 74% | 3.0 min | 48% |
 
 **Requiring temporal persistence *hurts* TTD here** — the opposite of its effect on the
-false-alarm-at-matched-recall axis ([figlib-findings.md](figlib-findings.md)):
+false-alarm-at-matched-recall axis ([findings - figlib.md](findings%20-%20figlib.md)):
 
 | persistence k | detection rate | median TTD | within 5 min |
 |---|---|---|---|
@@ -113,7 +113,7 @@ question.
   zero-shot detector the recent California fires — **Tenaja, Palisades, Coches** — are all missed.
   That the newest fires transfer worst is what motivated Phase C. **Update:** the *full-scale* base
   (`gcp_grouped_1280`) already recovers Palisades and Tenaja, and Phase C fine-tuning then adds Coches
-  and more than halves the false-alarm rate — see [phase-c-findings.md](phase-c-findings.md). So the
+  and more than halves the false-alarm rate — see [findings - phase-c.md](findings%20-%20phase-c.md). So the
   "misses all three" line above is specifically the proof-scale model's behaviour, not the ceiling.
 - **Day-only, curated onset.** FIgLib is daytime and built around clean ignitions; real deployment
   is harder. The one nocturnal fire in our pull is excluded so the numbers stay comparable to the
@@ -125,7 +125,7 @@ question.
 - **Phase C — an in-distribution detector** (done, first result): fine-tuning on hand-corrected
   Californian boxes lifts held-out detection 4/6 → 5/6 and halves the pre-ignition false-alarm rate on
   the 6 recent CA fires — scored by this same harness in `--eval-only` mode. See
-  [phase-c-findings.md](phase-c-findings.md).
+  [findings - phase-c.md](findings%20-%20phase-c.md).
 
 ## Reproduce
 

@@ -105,7 +105,7 @@ A single-frame YOLO detector on [pyro-sdis](https://huggingface.co/datasets/pyro
 IDs are really 8 physical towers, so whole *sites* are held out and the model is only tested on
 terrain it never trained on. It reproduces the documented failure mode: **42% false alarms on clean
 frames**, and once corrected to a 1% deployment base rate, **precision ≈ 1.6%** — the field number
-the benchmark hides. Detail: [`research/baseline-findings.md`](../research/baseline-findings.md).
+the benchmark hides. Detail: [`research/findings - baseline.md`](../research/findings%20-%20baseline.md).
 
 ## 5. Resolution: one lever, both axes
 
@@ -126,7 +126,7 @@ of a downscaled whole frame moved two things at once:
 **Resolution raises the detection ceiling.** The 640 model structurally caps at POD 0.68 (it never
 sees the small plumes); native-resolution inference reaches 0.86, and training at native resolution
 to convergence holds 0.83 at **roughly half the false-alarm burden**. Detail:
-[`research/resolution-findings.md`](../research/resolution-findings.md).
+[`research/findings - resolution.md`](../research/findings%20-%20resolution.md).
 
 ## 6. Into the negatives: hard-negative mining and the confuser corpus
 
@@ -136,13 +136,13 @@ native-resolution training *plus* mining, the deployable recipe — cuts the bur
 (173 → 133 FP/camera/day) and lifts precision@1% (2.3% → 2.9%), at the cost of ~2.4 points of recall
 ceiling. A real but *incremental* win; the converged model still false-alarms on **57.6% of clean
 frames**, so resolution buys recall, not calm. Detail:
-[`research/hard-negative-findings.md`](../research/hard-negative-findings.md).
+[`research/findings - hard-negative.md`](../research/findings%20-%20hard-negative.md).
 
 To see *what* it fires on, we clustered the 2,305 false-alarm frames into named failure modes. The
 result is one clean number — **74% of the false alarms are clouds** (cumulus, backlit stratus, broken
 overcast) — a measured version of the documented single-frame failure mode. No such public corpus
 existed, so [`results/confuser_corpus.csv`](../results/confuser_corpus.csv) is a small original
-contribution. Detail: [`research/confuser-corpus.md`](../research/confuser-corpus.md).
+contribution. Detail: [`research/findings - confuser-corpus.md`](../research/findings%20-%20confuser-corpus.md).
 
 ## 7. Temporal: a negative result, and a sign-flip
 
@@ -151,9 +151,9 @@ et al., 2022). We built it and it **did not transfer to pyro-sdis** — at match
 method beat the single-frame detector. Measuring *why* reframed the project: **76% of the false alarms
 are persistent structures** (fixed cloud banks, glare, ridge haze), not the flicker a persistence rule
 suppresses. On pyro-sdis, the leverage is in the negatives, not the time axis. Reported as the
-negative result it is. Detail: [`research/temporal-findings.md`](../research/temporal-findings.md).
+negative result it is. Detail: [`research/findings - temporal.md`](../research/findings%20-%20temporal.md).
 
-The control that confirmed the mechanism came on [**FIgLib**](../research/figlib-findings.md), the
+The control that confirmed the mechanism came on [**FIgLib**](../research/findings%20-%20figlib.md), the
 onset-sequence dataset. The first run looked dead (AUC 0.454, worse than random) until the resolution
 fix: native-resolution tiling lifted AUC to **0.658**, and the positive control then landed —
 requiring temporal persistence **cuts** false alarms 12–19 points on FIgLib, where the *same rule
@@ -172,7 +172,7 @@ motivating miss: with this **proof-scale** zero-shot detector, the most recent C
 Coches, Tenaja) are missed — a distribution-shift signal that a French-tower detector does not
 transfer to recent California smoke. Closing that miss is exactly what Phase C set out to do (§10),
 and it is where the story turns from diagnosis to fix. Detail:
-[`research/ttd-findings.md`](../research/ttd-findings.md).
+[`research/findings - ttd.md`](../research/findings%20-%20ttd.md).
 
 ## 9. Motion: horizon-anchored change
 
@@ -199,7 +199,7 @@ The same probe produced **three clean negative results**, each reported as such:
 (diffuse-haze × hard-edge) that breaks under the very atmospheric conditions that matter; and two
 horizon-estimator "upgrades" (a per-column smoothed skyline, and a luminosity sky/ground mask) that
 both *underperformed* the simplest flat horizon and were reverted. Detail:
-[`research/motion-findings.md`](../research/motion-findings.md).
+[`research/findings - motion.md`](../research/findings%20-%20motion.md).
 
 ## 10. Where the gap stands, and what's next
 
@@ -220,7 +220,7 @@ recent CA fires against the *exact base model it started from*:
   AUC **0.742** (CI excludes chance) — the cue transfers to recent CA smoke it was never tuned on.
 
 Directional (n = 6, wide CIs), but the first evidence that in-distribution fine-tuning closes part of
-the gap. Detail: [`research/phase-c-findings.md`](../research/phase-c-findings.md).
+the gap. Detail: [`research/findings - phase-c.md`](../research/findings%20-%20phase-c.md).
 
 **What's still open.** The deployable single-frame recipe reaches ~133 FP/camera/day at POD 0.80 —
 still far from the < 1 an operator can live with. The live threads: **motion as a learned temporal

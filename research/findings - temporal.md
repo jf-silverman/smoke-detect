@@ -77,7 +77,7 @@ largely absent, and where a scene *is* ambiguous, it is ambiguous in a temporall
 
 The temporal advantage is **real but dataset-dependent**: it needs sequences that capture
 onset against a clean background, and confusers that are transient. pyro-sdis provides neither
-at the scale FIgLib does. We tested this directly — see [figlib-findings.md](figlib-findings.md):
+at the scale FIgLib does. We tested this directly — see [findings - figlib.md](findings%20-%20figlib.md):
 the same persistence rule that *hurts* here flips to *helping* by up to 13.8 points on FIgLib's
 onset sequences, confirming the mechanism from the opposite direction.
 
@@ -95,7 +95,7 @@ onset sequences, confirming the mechanism from the opposite direction.
 
 The earlier reports named the temporal model as the expected fix for the false-alarm floor.
 It is not, on this dataset. The result that *did* move the false-alarm rate was
-[hard-negative mining](hard-negative-findings.md) (42% → 20%) — teaching the detector what a
+[hard-negative mining](findings%20-%20hard-negative.md) (42% → 20%) — teaching the detector what a
 false alarm looks like, which attacks the persistent confusers head-on rather than hoping they
 flicker. On pyro-sdis, **the leverage is in the negatives, not the time axis.** A temporal
 model earns its keep on onset-capturing data (FIgLib-style); porting one here would be

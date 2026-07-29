@@ -203,7 +203,7 @@ with."*
 > actually worked was Stage-4-style **hard-negative mining** (false alarms 42% → 20%). The
 > temporal literature summary above (§4) remains accurate *for FIgLib*; the lesson is that the
 > temporal advantage is dataset-dependent, not universal. See
-> [`temporal-findings.md`](temporal-findings.md) and [`hard-negative-findings.md`](hard-negative-findings.md).
+> [`findings - temporal.md`](findings%20-%20temporal.md) and [`findings - hard-negative.md`](findings%20-%20hard-negative.md).
 
 ---
 

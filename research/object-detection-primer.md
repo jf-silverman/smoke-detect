@@ -97,7 +97,7 @@ Video is not merely a stack of independent images. It brings both a problem and 
   little — a strong prior a per-frame model throws away.
 - **Streaming constraints.** Many uses (driving, surveillance, fire watch) are online: the model
   must decide on frame *t* using only frames up to *t*, under a latency budget. This project's
-  temporal head uses exactly such a **causal window** ([temporal findings](temporal-findings.md)).
+  temporal head uses exactly such a **causal window** ([temporal findings](findings%20-%20temporal.md)).
 
 **The main approaches, roughly in order of integration:**
 1. **Post-processing the per-frame outputs.** Run an image detector, then reconcile boxes across
@@ -118,8 +118,8 @@ Video is not merely a stack of independent images. It brings both a problem and 
 
 The project's own temporal experiments are a lightweight instance of category 3/4 (a [GRU](#gru) over a
 frozen detector's per-frame evidence), and its central finding is that the temporal gain is
-**dataset-dependent** — it needs onset sequences to pay off ([temporal](temporal-findings.md),
-[figlib](figlib-findings.md)).
+**dataset-dependent** — it needs onset sequences to pay off ([temporal](findings%20-%20temporal.md),
+[figlib](findings%20-%20figlib.md)).
 
 ## 6. What different domains actually use
 
@@ -138,7 +138,7 @@ the cost of errors:
   validation matter.
 - **Remote sensing / satellite.** Huge images tiled into patches, **oriented** bounding boxes
   (objects at any rotation), and extreme small-object scales — the same tiling logic this project
-  needed for high-resolution FIgLib frames ([resolution](resolution-findings.md)).
+  needed for high-resolution FIgLib frames ([resolution](findings%20-%20resolution.md)).
 - **Manufacturing / retail.** Defect and anomaly detection, often with few or no positive
   examples, pushing toward one-class and self-supervised methods rather than supervised boxes.
 - **Ecology / wildlife.** Camera-trap detection paired with **re-identification** to count and

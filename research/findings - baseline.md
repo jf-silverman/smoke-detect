@@ -29,7 +29,7 @@ Pano's operational target is < 1 FP/camera/day.</sub>
 An underfit proof model reaching POD 0.68 on **sites it has never seen** is a legitimately
 encouraging baseline (in the range of the ~0.70 F1 PyroNear reports on their hard in-the-wild
 benchmark). But POD caps at 0.68 here — the model *cannot* be pushed to the ≥0.90 detection rate
-this domain wants, because it never detects the small plumes ([resolution](resolution-findings.md)
+this domain wants, because it never detects the small plumes ([resolution](findings%20-%20resolution.md)
 raises that ceiling). *(For reference, the best-F1 point is conf 0.05: precision 0.938, recall
 0.676, F1 0.786 — but F1 weights a missed fire like a false alarm, which this domain does not.)*
 
@@ -65,12 +65,12 @@ it misses ~32% of fires *and* over-alarms — so both levers below are needed.
    burden as FP/camera/day, and relative economic value across cost-loss ratios (all in the eval
    JSON). See [metrics.md](metrics.md).
 2. **Raise the detection ceiling.** POD caps at 0.68 because the model misses small plumes;
-   native-resolution inference/training lifts it to 0.86 ([resolution](resolution-findings.md)).
+   native-resolution inference/training lifts it to 0.86 ([resolution](findings%20-%20resolution.md)).
 3. **Lower the false-alarm burden.** The burden is set by the false-alarm rate on clean frames,
    so hard-negative mining (curating the clouds/fog/glare it fires on) directly attacks the ~208
-   FP/camera/day. The [confuser corpus](confuser-corpus.md) shows 74% of them are clouds.
+   FP/camera/day. The [confuser corpus](findings%20-%20confuser-corpus.md) shows 74% of them are clouds.
 4. **Temporal context** was the literature's proposed fix — but it did *not* transfer here
-   ([temporal](temporal-findings.md)); the leverage on pyro-sdis is in the negatives, not time.
+   ([temporal](findings%20-%20temporal.md)); the leverage on pyro-sdis is in the negatives, not time.
 
 ## Resolution is a hidden lever
 
@@ -80,7 +80,7 @@ does — pyro-sdis smoke is small (median box shorter-side 28 px native, ~14 px 
 This became its own thread, including a full 640-vs-1280 training comparison and the recall-first
 reframing (a missed fire costs far more than a false alarm). The converged full-scale 1280 run
 later confirmed it: max POD 0.827 at roughly half the false-alarm burden of downscaled-inference-
-only. See [resolution-findings.md](resolution-findings.md).
+only. See [findings - resolution.md](findings%20-%20resolution.md).
 
 ## Reproduce
 
