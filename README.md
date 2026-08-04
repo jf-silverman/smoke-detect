@@ -45,7 +45,7 @@ firefighter and fire ecologist for the National Park Service and Forest Service 
 fires and studying their effects on ecosystems — before a NASA-funded master's degree turned me toward
 satellite imagery and, eventually, data science. This project brings those two parts together.
 
-[Read the full background →](about_the_author.md)
+[Read the full background →](research/about-the-author.md)
 
 ## Find what you're looking for
 
