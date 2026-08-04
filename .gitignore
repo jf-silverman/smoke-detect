@@ -25,3 +25,6 @@ data/figlib_corrected/
 # NOTE: data/figlib_corrected_boxes.zip (the hand-corrected CVAT export) is intentionally
 # tracked -- it is the small, self-contained record of the annotation work. Not ignored.
 data/phaseC_bundle.tar.gz
+
+# scratch / personal drafts kept in-repo but never committed (e.g. outreach emails)
+ignored/
