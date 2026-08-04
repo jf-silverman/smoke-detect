@@ -8,7 +8,7 @@ found no public corpus of labeled smoke confusers exists, and named building one
 highest-leverage, lowest-cost contribution an individual can make to this problem.
 
 **How it was built.** The 2,305 clean frames the baseline detector false-alarms on (mined
-leak-safely from *training* sites only — see [hard-negative findings](hard-negative-findings.md))
+leak-safely from *training* sites only — see [hard-negative findings](findings%20-%20hard-negative.md))
 were clustered on their 256-d detector embeddings (KMeans, k=6 chosen near the silhouette peak),
 representatives pulled per cluster, and each cluster labeled by eye from the montage below.
 
@@ -24,9 +24,9 @@ representatives pulled per cluster, and each cluster labeled by eye from the mon
 The detector does not fail on a long tail of exotic edge cases. It fails, three times out of
 four, on **clouds** — bright cumulus, backlit stratus, broken overcast on a ridgeline. This is
 the documented single-frame failure mode of firing on nearly every cloud, measured and quantified on real camera data.
-It is also *why the temporal model didn't help* ([temporal findings](temporal-findings.md)):
+It is also *why the temporal model didn't help* ([temporal findings](findings%20-%20temporal.md)):
 clouds are persistent, not flicker, so no temporal smoothing removes them — but they are a
-learnable appearance, which is exactly why [hard-negative mining](hard-negative-findings.md)
+learnable appearance, which is exactly why [hard-negative mining](findings%20-%20hard-negative.md)
 (teaching the detector what a cloud looks like) is what actually moved the false-alarm rate.
 
 ## The six confuser types

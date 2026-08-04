@@ -20,7 +20,7 @@ the result that matters; the held-out eval below is.
 
 ## Held-out eval — before vs after fine-tuning
 
-Same leak-safe TTD harness ([ttd-findings.md](ttd-findings.md)), run `--eval-only` on the 6 held-out
+Same leak-safe TTD harness ([findings - ttd.md](findings%20-%20ttd.md)), run `--eval-only` on the 6 held-out
 fires, scoring the *exact base model Phase C started from* vs the fine-tuned model — so fine-tuning is
 the only variable. At the 5% pre-ignition false-alarm target, leave-one-fire-out:
 
@@ -58,7 +58,7 @@ more fire** — it converted the same speed into more detections plus far better
 than lowering TTD outright. The headline 5%-point slowdown is driven by the *newly rescued* Coches
 arriving late (17 min — a good problem) and Tenaja genuinely slowing (4 → 17 min); per fire it is
 mixed (Bahrman and Highway got faster). **Lowering TTD outright is the motion temporal channel's job**
-(not this appearance fine-tune) and remains untested — see [motion-findings.md](motion-findings.md).
+(not this appearance fine-tune) and remains untested — see [findings - motion.md](findings%20-%20motion.md).
 
 ## Correcting the recent-CA framing
 
@@ -71,7 +71,7 @@ is still missed by both and is the remaining hard case.
 
 ## Motion generalizes to the held-out fires
 
-The [horizon-anchored motion](motion-findings.md) cue, measured standalone on the 6 held-out fires:
+The [horizon-anchored motion](findings%20-%20motion.md) cue, measured standalone on the 6 held-out fires:
 per-fire `anchored_change` AUC **0.742 [0.648, 0.850]** (CI excludes 0.5), floating-change control
 **0.554** (near chance) — so anchored motion **separates onset on recent CA fires it was never tuned
 on**, a touch stronger than on the training fires (0.708). It beats the now-strong Phase C confidence
@@ -81,7 +81,7 @@ temporal head.
 
 **Learned per-frame combiner — tested, mixed (2026-07-28).** The first learned combiner (a leak-free
 per-frame logistic regression over the base conf + the three motion features → onset probability;
-[motion-findings.md](motion-findings.md#the-learned-per-frame-combiner--tested-2026-07-28-a-mixed-appearance-dominated-result))
+[findings - motion.md](findings%20-%20motion.md#the-learned-per-frame-combiner--tested-2026-07-28-a-mixed-appearance-dominated-result))
 is appearance-dominated (conf weight +0.77 vs motion ≤0.18) and its frame-AUC is inconsistent
 (training LOO 0.623 vs conf-alone 0.689; eval pooled 0.728→0.793 but hurts Vista/Palisades while
 rescuing Coches). Operationally it detects **5/6 vs 4/6** and, at matched ~16% FA, is comparable-to-faster
@@ -98,7 +98,7 @@ counting frames), and with the time order shuffled it collapses to LOO 0.612 ≈
 on eval). Net: on FIgLib as-structured, a sequence model adds nothing validated over appearance, and TTD
 cannot be fairly measured for a temporal model on these fixed-position sequences — a valid test needs
 continuous-feed / onset-randomized data (backlog). See
-[motion-findings.md](motion-findings.md#the-temporal-lstm--tested-2026-07-28-a-positional-leak-artifact-caught-by-controls).
+[findings - motion.md](findings%20-%20motion.md#the-temporal-lstm--tested-2026-07-28-a-positional-leak-artifact-caught-by-controls).
 
 ## Caveats
 

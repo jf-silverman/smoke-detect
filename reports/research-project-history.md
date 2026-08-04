@@ -1,4 +1,4 @@
-# How this project was actually built: a research narrative
+# How this project was actually built: a research project history
 
 Most write-ups present findings as if they arrived in order, cleanly. This one didn't, and the
 messy version is more useful — because the sharpest turns came from the *interaction* between an
@@ -161,7 +161,7 @@ hard-edged column with no haze, a windy day an all-diffuse one with no edge. A p
 smoothed-skyline horizon *upgrade* was built, measured, found to make things worse (0.715 → 0.616),
 and reverted — a fix that wasn't. And a luminosity sky/ground mask (the author's photo-editing
 intuition) underperformed the plain flat horizon and was reverted too. None was papered over. See
-[motion-findings.md](../research/motion-findings.md).
+[findings - motion.md](../research/findings%20-%20motion.md).
 
 ## Why this is the interesting story
 
@@ -186,12 +186,12 @@ results happen.
 Each step has its own report with the numbers and caveats:
 [state-of-smoke-detection](../research/state-of-smoke-detection.md) ·
 [metrics](../research/metrics.md) ·
-[baseline-findings](../research/baseline-findings.md) ·
-[hard-negative-findings](../research/hard-negative-findings.md) ·
-[temporal-findings](../research/temporal-findings.md) ·
-[confuser-corpus](../research/confuser-corpus.md) ·
-[figlib-findings](../research/figlib-findings.md) ·
-[resolution-findings](../research/resolution-findings.md) ·
-[ttd-findings](../research/ttd-findings.md) ·
-[motion-findings](../research/motion-findings.md) ·
+[baseline-findings](../research/findings%20-%20baseline.md) ·
+[hard-negative-findings](../research/findings%20-%20hard-negative.md) ·
+[temporal-findings](../research/findings%20-%20temporal.md) ·
+[confuser-corpus](../research/findings%20-%20confuser-corpus.md) ·
+[figlib-findings](../research/findings%20-%20figlib.md) ·
+[resolution-findings](../research/findings%20-%20resolution.md) ·
+[ttd-findings](../research/findings%20-%20ttd.md) ·
+[motion-findings](../research/findings%20-%20motion.md) ·
 [backlog](../research/backlog.md)

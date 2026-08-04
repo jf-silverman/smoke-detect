@@ -66,8 +66,8 @@ One sobering note for the recall-first objective: at the high-recall operating p
 demands, the false-alarm rate is still very high (recall 0.85 → **78% of clean frames alarm**,
 reachable only by the 1280-inference model). Resolution lets you *reach* high recall; it does
 nothing about the false alarms you accumulate getting there. Those are the persistent
-cloud/glare/haze confusers the [confuser corpus](confuser-corpus.md) catalogued (74% clouds) and
-that [hard-negative mining](hard-negative-findings.md) is the tool for. **The deployable recipe
+cloud/glare/haze confusers the [confuser corpus](findings%20-%20confuser-corpus.md) catalogued (74% clouds) and
+that [hard-negative mining](findings%20-%20hard-negative.md) is the tool for. **The deployable recipe
 is native resolution (for the recall ceiling) *plus* confuser-targeted false-alarm reduction
 (to make that recall reviewable).** Neither alone suffices.
 

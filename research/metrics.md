@@ -77,7 +77,7 @@ levers have now been tested apart *and* together:
 - **Native-resolution *training*** (row 3) raised the recall ceiling — POD 0.83, within a hair of
   the 0.86 from downscaled inference — while roughly halving the false-alarm burden vs
   inference-only (~173 vs ~388 FP/camera/day). The earlier proof 1280 run only looked worse
-  because it was undertrained ([resolution-findings](resolution-findings.md)).
+  because it was undertrained ([resolution-findings](findings%20-%20resolution.md)).
 - **Adding hard-negative mining** (row 4) trims the burden further — **~173 → ~133 FP/camera/day
   (−23%)**, deployment precision 2.3% → 2.9%, and the best moderate-cost value in the table
   (REV +0.54 at C/L=0.01) — at the cost of ~2.4 pts of recall ceiling (0.83 → 0.80). Because that
@@ -87,7 +87,7 @@ levers have now been tested apart *and* together:
 So the deployable recipe helps, but **incrementally**: combining the levers is the best config in
 the moderate-cost regime, yet ~133 FP/camera/day is still far from the < 1 an operator can live
 with, and it gives back a little recall. Closing that gap needs more than these two levers — see
-[hard-negative-findings](hard-negative-findings.md).
+[hard-negative-findings](findings%20-%20hard-negative.md).
 
 ## Caveats
 
@@ -95,7 +95,7 @@ with, and it gives back a little recall. Closing that gap needs more than these 
   assumed frame cadence (500/camera/day) and deployment base rate (1%). The *ratios between
   configs* are trustworthy; the absolute per-day numbers are illustrative.
 - **Time-to-detection is not yet computed.** It needs onset sequences; pyro-sdis lacks them, but
-  FIgLib has them, so [TTD](#ttd) is a natural addition on that data ([figlib-findings](figlib-findings.md)).
+  FIgLib has them, so [TTD](#ttd) is a natural addition on that data ([figlib-findings](findings%20-%20figlib.md)).
 - The **1280-train row is now a full-scale, converged run** (40 epochs, full data); the two
   640-train rows remain proof scale. So the *training-resolution* comparison is trustworthy in
   absolute terms; the cross-config false-alarm ratios still favor direction over absolutes.

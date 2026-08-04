@@ -105,7 +105,7 @@ is simply to stop downscaling.
 
 Comparisons: `results/figlib_temporal_comparison.json` (whole-frame),
 `results/figlib_tiled_comparison.json` (tiled). pyro-sdis counterpart:
-`results/temporal_comparison.json`. See also [temporal-findings.md](temporal-findings.md).
+`results/temporal_comparison.json`. See also [findings - temporal.md](findings%20-%20temporal.md).
 
 ## Glossary
 

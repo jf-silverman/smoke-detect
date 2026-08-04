@@ -11,8 +11,8 @@ roughly by leverage. Completed threads have their own findings reports (see the 
   clips to (a) compute **time-to-detection** and (b) train a *learned* temporal model on enough
   onset fires to finally beat the parameter-free persistence rule (18 FIgLib fires were far too
   few). Concrete data path + TTD-eval sketch in [Pre-scoping #3](#pre-scoping-3--hpwren--time-to-detection)
-  below. Builds on [temporal-findings.md](temporal-findings.md) and [figlib-findings.md](figlib-findings.md).
-  - **Phase A — DONE** ([ttd-findings.md](ttd-findings.md)): leak-safe LOFO TTD harness
+  below. Builds on [findings - temporal.md](findings%20-%20temporal.md) and [findings - figlib.md](findings%20-%20figlib.md).
+  - **Phase A — DONE** ([findings - ttd.md](findings%20-%20ttd.md)): leak-safe LOFO TTD harness
     ([`figlib_ttd.py`](../src/models/figlib_ttd.py)) on 24 local fires (expanded from 18 after
     fixing an extraction bug that hid the nested 2024–2025 archives). Zero-shot headline
     50% detection / median TTD 8 min at a 5% pre-ignition FA budget; resolution lowers TTD, not
@@ -21,7 +21,7 @@ roughly by leverage. Completed threads have their own findings reports (see the 
   - **Phase B — next:** pull more onset fires (FIgLib-full via WIFIRE Commons; PYRONEAR-2025) to
     tighten the CIs. FIgLib-full (~20–25 GB) fits local; PYRONEAR video set may want cloud
     ([gcp-plan.md](gcp-plan.md)).
-  - **Phase C — DONE (first result, 2026-07-28), see [phase-c-findings.md](phase-c-findings.md).**
+  - **Phase C — DONE (first result, 2026-07-28), see [findings - phase-c.md](findings%20-%20phase-c.md).**
     Fine-tuned `gcp_grouped_1280` on the hand-corrected day-only set (17 fires, 452 boxes, 85
     negatives) on a GCP L4 (~$0.35). Held-out eval on the 6 recent CA fires: detection **4/6 → 5/6**
     (Coches rescued), pre-ignition FA **16.7% → 7.1%**; anchored motion generalizes (0.742 on the
@@ -56,7 +56,7 @@ roughly by leverage. Completed threads have their own findings reports (see the 
         311 empty). The empty post-ignition frames already act as some background negatives, but the
         set has **no clear-sky / cloud negatives**, exactly the confuser class this project's headline
         failure mode fires on (74% of false alarms are clouds; the converged 1280 model still
-        false-alarms on 57.6% of clean frames — see [hard-negative-findings.md](hard-negative-findings.md)).
+        false-alarms on 57.6% of clean frames — see [findings - hard-negative.md](findings%20-%20hard-negative.md)).
         So mix in a **negatives bundle** at training time (no CVAT work — negatives are empty-label by
         definition):
         - *Source:* pre-ignition frames (use a safe margin, offset < −120 s, to avoid the ambiguous
@@ -85,14 +85,20 @@ sequences with FIgLib and is leaky by construction — this downgrades the two m
 frames; the raw [HPWREN archive](https://www.hpwren.ucsd.edu/news/20180501/)) to training-only-with-
 hard-exclusion.
 
-- **Nemo — the pullable quick win (queued next data add).** COCO-format smoke boxes from **1,073
-  ALERTWildfire PTZ videos** (Nevada + CA), ~2,564 train / 250 val images, 3 fine-grained smoke
-  classes + a 100-image hard-negative set; incipient-stage framing matches our TTD goal (Yazdi/
-  SayBender et al., 2022; [GitHub](https://github.com/SayBender/Nemo),
-  [paper](https://www.mdpi.com/2072-4292/14/16/3979)). One `git clone`, no request. ALERTWildfire ≠
-  HPWREN → **no FIgLib overlap**, and it broadens beyond both HPWREN and French towers. *Action:* pull,
-  inventory against our smoke label schema, gate against any camera/date in our eval, then use as
-  extra Phase-C training data. Cheap; do this before the ALERTCalifornia thread.
+- **Nemo — ANNOTATIONS only, images not public (checked 2026-07-28; downgraded from "quick win").**
+  COCO smoke boxes over ALERTWildfire (Nevada + CA) frames — leak-clean vs our HPWREN/FIgLib eval, which
+  is why it was attractive (Yazdi/SayBender et al., 2022; [GitHub](https://github.com/SayBender/Nemo),
+  [paper](https://www.mdpi.com/2072-4292/14/16/3979)). But a `git clone` yields **only the annotation
+  JSONs + 8 sample frames**: single-class `sc` (2,342 train / 237 val, one `smoke` class) and density
+  `dg` (2,680 train, low/mid/high), no `coco_url` per image. The **image frames have no public download
+  URL** — the README leaves it as the literal placeholder `[ADD A URL ONCE DATASET IS PUBLIC]`, and the
+  only live image link is a fallback to **Govil et al.'s Fuego** (Google Drive), which is **HPWREN-
+  sourced → leaky** (same class as AI For Mankind; ~1,661-image public subset). So there is no clean,
+  immediately-pullable Nemo image set. *Options if we want it:* (a) open a GitHub issue / email the
+  authors for the image URL (non-immediate); (b) reconstruct frames from the source ALERTWildfire
+  timelapse videos named in the annotation filenames (scrape + extract + match — real effort). Annotation
+  JSONs are archived locally for reference. **Net: not the cheap add it looked like; the ALERTCalifornia
+  request below is now the leading net-new-CA data step.**
 - **ALERTCalifornia archive — the recent-CA distribution-shift prize (Phase D, by request).** UCSD's
   statewide network: **1,200+ cameras**, and critically the **2023+ era** — the same generation and
   geography as our 6 recent-CA eval fires, so it's the source that could genuinely close the recent-CA
@@ -114,11 +120,11 @@ hard-exclusion.
   share. Result: false-alarm burden ~173 → ~133 FP/camera/day (−23%), precision@1% 2.3% → 2.9%,
   best moderate-cost REV — at the cost of ~2.4 pts recall ceiling (0.83 → 0.80). A real but
   *incremental* win; 133 FP/day is still far from < 1. Stopped at epoch 24 (val plateaued). See
-  [hard-negative-findings.md](hard-negative-findings.md), [metrics.md](metrics.md).
+  [findings - hard-negative.md](findings%20-%20hard-negative.md), [metrics.md](metrics.md).
 - **Full-scale native-resolution (1280) training** — confirmed the resolution-findings prediction:
   the proof 1280 run only underperformed because it was undertrained. Full run reaches POD 0.827
   at ~173 FP/camera/day (roughly half the burden of downscaled-inference-only), the best config so
-  far. See [resolution-findings.md](resolution-findings.md), [metrics.md](metrics.md).
+  far. See [findings - resolution.md](findings%20-%20resolution.md), [metrics.md](metrics.md).
 
 ## Queued
 
@@ -136,9 +142,9 @@ hard-exclusion.
   it there), but it fits the *when-to-alarm* decision naturally. Frame it as sequential decision-
   making over the frame stream: at each step, alarm or wait, with a reward that heavily penalizes
   a missed or late detection and only lightly penalizes a false alarm — the RL-shaped encoding of
-  the [asymmetric-cost / recall-first](resolution-findings.md) objective. Closely related to
+  the [asymmetric-cost / recall-first](findings%20-%20resolution.md) objective. Closely related to
   the early-classification-of-time-series problem. Builds directly on the temporal work
-  ([temporal-findings.md](temporal-findings.md), [figlib-findings.md](figlib-findings.md)).
+  ([findings - temporal.md](findings%20-%20temporal.md), [findings - figlib.md](findings%20-%20figlib.md)).
   Precedent for RL *around* detection (not the classifier): EcoWild (energy-adaptive sensing),
   ForestProtector (PTZ camera orientation control).
 
@@ -171,7 +177,7 @@ the soft × hard product is noise, not signal, and the atmospheric conditions th
 the ones that matter. Removed for now.
 
 **How this differs from what we already tested.** The temporal work so far
-([temporal-findings.md](temporal-findings.md), [figlib-findings.md](figlib-findings.md)) tested
+([findings - temporal.md](findings%20-%20temporal.md), [findings - figlib.md](findings%20-%20figlib.md)) tested
 **persistence** — requiring a *detection* to recur across k frames to suppress flicker. That is the
 opposite operation from **motion/change** — surfacing a region *because* it changed. Persistence
 suppresses; differencing proposes. On FIgLib (onset data) persistence already *helped* by 12–19 pts,
@@ -261,10 +267,10 @@ fingerprint of a mislabeling mask). All 18 masks were non-degenerate (ground fra
 it is a real feature-quality result: on FIgLib's variable imagery (haze, backlight, dark forest,
 bright cloud) *absolute* brightness does not track the horizon, while the flat estimator keys on
 *relative* brightness change and is robust. Three horizon variants tried; the simplest wins. See
-[motion-findings.md](motion-findings.md).
+[findings - motion.md](findings%20-%20motion.md).
 
 **Learned combiners — both tested (2026-07-28), neither a validated win; see
-[motion-findings.md](motion-findings.md).** (1) *Per-frame logistic fusion* of base conf + the three
+[findings - motion.md](findings%20-%20motion.md).** (1) *Per-frame logistic fusion* of base conf + the three
 motion features ([`figlib_fusion.py`](../src/models/figlib_fusion.py)): leak-free (zero-shot conf +
 training-free motion), but appearance-dominated (conf weight +0.77 vs motion ≤0.18), training LOO AUC
 0.623 < conf-alone 0.689, eval frame-AUC inconsistent; only an n=6-noisy TTD lift (5/6 vs 4/6). (2)
@@ -287,7 +293,7 @@ horizon estimator is settled (flat brightness-gradient row); no further tuning w
 
 - **Sharpen the confuser corpus** by cropping to the alarm region before embedding, removing the
   terrain/skyline conflation so clusters become purer weather classes (fog / cumulus / stratus /
-  glare) rather than partly per-tower. See [confuser-corpus.md](confuser-corpus.md).
+  glare) rather than partly per-tower. See [findings - confuser-corpus.md](findings%20-%20confuser-corpus.md).
 
 - **Recall-first metric reporting.** Bake a recall-first operating point into `evaluate.py`
   (highest recall subject to a false-alarm budget) and report alarms-per-camera-per-day at a
@@ -337,7 +343,7 @@ test fire, `TTD = smallest t ≥ 0 (minutes) with confidence ≥ threshold`. Rep
 - **false-alarm rate on pre-ignition frames** (t < 0) — the trigger-happiness counterpart, so
   "early" is never bought with "cries wolf". TTD and this rate are the operator-relevant *pair*.
 - A **persistence-required variant** (alarm only after k consecutive frames cross) and its TTD
-  cost — directly extends the persistence sign-flip finding ([figlib-findings.md](figlib-findings.md)).
+  cost — directly extends the persistence sign-flip finding ([findings - figlib.md](findings%20-%20figlib.md)).
 
 **Phase A — TTD on the 18 fires we already have (no new data, ~a day).** New `figlib_ttd.py`:
 parse the time offset from filenames, reuse the tiled per-frame confidences, compute the metrics
@@ -354,7 +360,7 @@ already use:
 
 **Phase C — a learned temporal model that beats persistence.** With enough onset fires, train the
 causal GRU / small CNN-LSTM on tiled embeddings (the setup that lost on 18 fires purely for lack of
-data; [figlib-findings.md](figlib-findings.md)) and test two claims at matched recall: (1) it beats
+data; [findings - figlib.md](findings%20-%20figlib.md)) and test two claims at matched recall: (1) it beats
 the persistence rule on pre-ignition false alarms, and (2) it *lowers TTD* (detects earlier) — the
 payoff temporal context is supposed to buy. The persistence sign-flip predicts (1); (2) is the new
 question.

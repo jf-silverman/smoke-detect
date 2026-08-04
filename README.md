@@ -1,192 +1,155 @@
 # Wildfire Smoke Detection
 
-A data-science portfolio project on early wildfire smoke detection from fixed-camera
-imagery. The theme throughout is **field-realistic evaluation**: measuring what a detector
-would actually do in the field, not what it scores on a flattering benchmark.
+Teaching a camera to spot a wildfire in its first minutes — and, just as importantly, measuring
+honestly whether it actually works in the real world.
 
-## The one thing worth knowing
+## Bottom line
 
-The only comparable smoke detector with a published *field* number produced a **79%
-false-positive rate** in real deployment (Govil et al., 2020). The most-cited academic model,
-SmokeyNet, looks far stronger on paper — but it was never field-deployed, and its headline
-score is **F1, a metric that weights a missed fire exactly like a false alarm** (Dewangan et
-al., 2022). That is the wrong trade for wildfire, where a missed fire is catastrophic and a
-false alarm costs a watchstander a glance. The benchmark-vs-field gap — and the misleading
-yardstick behind it — is the problem this project is built around: it measures what a detector
-would actually do in the field (**detection rate and false-alarm burden**), not F1. See
-[`research/metrics.md`](research/metrics.md) and
-[`research/state-of-smoke-detection.md`](research/state-of-smoke-detection.md).
+Most published smoke detectors look great on their test sets and then struggle in the field. This
+project is built around closing that gap: it judges a detector the way a fire lookout would — **how
+many real fires does it catch, and how many false alarms does it raise** — instead of a lab score that
+treats a missed fire and a false alarm as equally bad.
 
-## What's here
+The headline results:
 
-**The [findings report](reports/smoke-detection-report.md)** — the one-stop technical read (with a
-table of contents), and its companion [research narrative](reports/research-narrative.md) tracing how
-the work actually unfolded. Both draw on the detailed material in [`research/`](research/), including
-a full **field survey** ([`research/state-of-smoke-detection.md`](research/state-of-smoke-detection.md))
-of public datasets, modeling approaches, how performance is really measured, and when these tools do
-and don't work.
+- **Training on local smoke works.** After some extra training on California fires it had never seen,
+  the detector caught **more fires (5 of 6, up from 4 of 6)** and **cut its false alarms by more than
+  half**. This is the clearest evidence in the project that a detector can be adapted to a new region.
+- **Sharper images matter most for early smoke.** Small, faint plumes disappear when a photo is shrunk
+  down. Keeping the full image resolution roughly **doubled** the share of fires the detector could
+  catch.
+- **Most false alarms are clouds** — about **74%** of them. Knowing exactly what fools the detector is
+  the first step to fixing it.
+- **Two popular "smart" ideas did not pan out here — and that's reported plainly.** A method that uses
+  motion across video frames failed to help on this data, and a more advanced version looked like a big
+  win until a careful check revealed it was quietly cheating (learning *when* in a clip a fire usually
+  appears rather than *what* smoke looks like). Catching that was one of the most valuable moments in
+  the project.
+- **The honest gap.** Even the best setup here still raises far more false alarms than a real operator
+  would tolerate. What it would take to close that gap is spelled out, not glossed over.
 
-**A working pipeline on [pyro-sdis](https://huggingface.co/datasets/pyronear/pyro-sdis)**
-(33,636 images, French detection towers; Pyronear, 2025) that takes evaluation integrity
-seriously:
+## Why this is hard
 
-- **Leak-safe splits** ([`src/data/splits.py`](src/data/splits.py)). The 40 camera IDs in the
-  dataset are really 8 physical towers — each ID is a `tower-bearing` view of the same mast — so
-  we hold out whole *sites* and a model is only ever tested on terrain it never trained on. Both a naive (leaky)
-  and a leak-safe (site-disjoint) split are produced, so the inflation from leakage can be
-  *measured*, not just asserted.
-- **Recall-first, field-standard metrics** ([`src/models/evaluate.py`](src/models/evaluate.py)).
-  A missed fire is catastrophic; a false alarm costs a watchstander a glance, since a human
-  reviews every candidate detection before any suppression resources are dispatched. So
-  evaluation is **not F1** — which weights the two errors
-  equally, wrong for this domain — but what the field actually uses: **probability of detection
-  (POD)**, the false-alarm burden as **false-positives-per-camera-per-day** (Pano's operational
-  target is < 1), and **relative economic value across cost-loss ratios** (meteorology's score
-  for asymmetric costs). mAP and F1 are computed but demoted to context.
+A wildfire caught in its first minutes can be stopped; one caught an hour later can become a disaster.
+So a smoke detector's mistakes are not equal: **missing a real fire is catastrophic, while a false
+alarm just costs a person a few seconds to glance at a camera** (a human always checks before any
+crews are sent). Yet the most-cited research scores its models with a measure that treats those two
+mistakes as equally bad — and the one comparable system with a real field report raised a false alarm
+**79% of the time**. This project measures the things that actually matter to the people watching the
+cameras.
 
-## Findings so far (mostly proof scale — directional; the native-resolution training row is a converged full-scale run)
+## About the project author
 
-The right question isn't the F1 score — it's **how high can detection (POD) go, and at what
-false-alarm burden.** On the held-out towers:
+I'm Joel Silverman, a data scientist with an unusual background. I began my career as a wildland
+firefighter and fire ecologist for the National Park Service and Forest Service — fighting and managing
+fires and studying their effects on ecosystems — before a NASA-funded master's degree turned me toward
+satellite imagery and, eventually, data science. This project brings those two parts together.
 
-| configuration | max detection rate (POD) | false-alarm burden* |
-|---|---|---|
-| single-frame baseline (infer @640) | 0.68 | ~208 FP/camera/day |
-| + native-resolution inference (@1280) | **0.86** | ~388 FP/camera/day |
-| + native-resolution **training** (@1280, full-scale) | 0.83 | ~173 FP/camera/day |
-| + hard-negative mining (@1280, both levers combined) | 0.80 | **~133 FP/camera/day** |
+[Read the full background →](about_the_author.md)
 
-<sub>*at an assumed 1% base rate and 500 frames/camera/day — an extrapolation, not a measured
-rate. Pano AI's operational target is < 1 FP/camera/day (Pano AI, 2024); the gap is the work
-that remains.</sub>
+## Find what you're looking for
 
-Two levers, two axes. **Resolution raises the detection *ceiling*** — the 640 model structurally
-caps at POD 0.68 (it never sees the small plumes), while native-resolution inference reaches 0.86,
-and native-resolution *training* to convergence holds 0.83 at **roughly half the false-alarm
-burden** (~173 vs ~388 FP/camera/day) — the best config so far
-([resolution](research/resolution-findings.md)). **[Hard-negative mining](research/hard-negative-findings.md)
-and the [confuser corpus](research/confuser-corpus.md) lower the false-alarm *burden*** (the
-baseline false-alarms on ~60% of clean frames — 74% of them clouds — and mining halves that).
-**Combining the two** — native-resolution training *plus* hard-negative mining, the deployable
-recipe — helps, but **incrementally**: it cuts the burden a further ~23% (173 → 133 FP/camera/day)
-and lifts deployment precision, at the cost of ~2.4 points of recall ceiling (0.83 → 0.80). A real
-win in the moderate-cost regime, but 133 FP/camera/day is still far from the < 1 an operator can
-live with — closing that gap needs more than these two levers.
+This project has three layers: this README (the plain-language overview), a **[Findings
+Report](reports/smoke-detection-report.md)** (the technical story, with a table of contents and a
+plain-language [glossary](reports/smoke-detection-report.md#11-glossary) of every term and
+abbreviation), and a **[`research/`](research/)** folder holding the detailed notes behind every result.
 
-The next step was a **temporal model** — the literature's headline fix (SmokeyNet's +26
-precision points from frame-to-frame context; Dewangan et al., 2022). We built it and it **did
-not transfer to this dataset**, and [the report explains why](research/temporal-findings.md): 76% of the false
-alarms are *persistent* structures (fixed cloud banks, glare, ridge haze), not the flicker a
-persistence model suppresses, and pyro-sdis's short bursts lack the ignition-onset dynamics
-that power temporal gains on FIgLib. At matched recall, no temporal method beats the
-single-frame detector here. That is reported as a **negative result**, because it is one —
-on pyro-sdis the leverage is in the negatives, not the time axis.
+**Two common paths:**
 
-As a check on that claim, we ran the same pipeline on [**FIgLib**](research/figlib-findings.md),
-the onset-sequence dataset the temporal literature used (Dewangan et al., 2022). The first run looked like a dead end —
-the detector scored AUC 0.45 (worse than random) — until a question about *resolution* found the
-real cause: we were downscaling FIgLib's native 3072×2048 frames to 640 px, pooling the tiny
-early plumes away. Running the same detector on native-resolution **tiles** lifted AUC to 0.658,
-and the positive control then landed: requiring temporal persistence **cuts** false alarms
-12–19 pts on FIgLib, where the very same rule **raised** them on pyro-sdis. Same rule, opposite
-sign, split by whether the data contains ignition onset — the mechanism, confirmed both ways.
+- **"How does the detector actually work?"** — the machine-learning and object-detection side: how
+  performance is measured, how the model was built and improved, and how evaluation was kept honest.
+  Start with the Findings Report, sections
+  [2 (how we measure)](reports/smoke-detection-report.md#2-how-performance-is-measured--and-why-not-f1),
+  [4 (the baseline)](reports/smoke-detection-report.md#4-baseline-the-precision-collapse),
+  [5 (image resolution)](reports/smoke-detection-report.md#5-resolution-one-lever-both-axes), and
+  [6 (learning from mistakes)](reports/smoke-detection-report.md#6-into-the-negatives-hard-negative-mining-and-the-confuser-corpus).
+  The code lives in [`src/`](src/).
+- **"How well did it perform, and what was learned?"** — the results and the story behind them: the
+  region-adaptation win, the motion experiments, the honest negatives, and how far this is from being
+  deployable. See Findings Report sections
+  [8 (speed to detection)](reports/smoke-detection-report.md#8-time-to-detection),
+  [9 (motion)](reports/smoke-detection-report.md#9-motion-horizon-anchored-change), and
+  [10 (where the gap stands)](reports/smoke-detection-report.md#10-where-the-gap-stands-and-whats-next),
+  plus the plain-English **[project history](reports/research-project-history.md)** of how the work
+  unfolded, decision by decision.
 
-So we went *into* the negatives and built a [**typed confuser corpus**](research/confuser-corpus.md):
-clustering the 2,305 frames the detector false-alarms on into named failure modes. The result
-is one clean number — **74% of the false alarms are clouds** (cumulus, backlit stratus, broken
-overcast) — a measured version of the documented single-frame failure mode, where the detector
-fires on nearly every cloud. The report found no such public corpus exists, so
-`results/confuser_corpus.csv` is a small original contribution.
+**By who you are:**
 
-**The distribution-shift test — and Phase C's answer.** Extending the pipeline onto the field's
-headline metric — [time-to-detection](research/ttd-findings.md) — a zero-shot detector on 23 held-out
-(day-only) California onset fires detects 48% of them at a median 8 minutes, but the *most recent* CA
-fires are the hardest. So we ran **Phase C**: fine-tune the full-scale pyro-sdis detector on our own
-**hand-corrected** Californian smoke boxes (pseudo-labeled then corrected in CVAT by the author, a
-career wildland-fire professional; strict whole-fire holdout), trained on a GCP L4 for ~$0.35. On the
-6 held-out recent fires, versus the exact base it started from, fine-tuning lifts detection **4/6 →
-5/6** (Coches rescued) *and* more than halves the pre-ignition false-alarm rate (**16.7% → 7.1%**) —
-the first evidence that in-distribution training closes part of the gap. (A correction it also forced:
-the full-scale base already detects Palisades and Tenaja, so the earlier "misses all three recent
-fires" was a *proof-scale* artifact; Phase C's honest add is Coches plus the halved false alarms.)
-Directional at n = 6. Detail: [phase-c-findings.md](research/phase-c-findings.md); tracked in the
-[backlog](research/backlog.md).
+| If you are a… | Start here |
+|---|---|
+| **Recruiter / hiring manager** | This page, then the Findings Report [section 1](reports/smoke-detection-report.md#1-the-problem-and-the-frame) and [section 10](reports/smoke-detection-report.md#10-where-the-gap-stands-and-whats-next) — the framing and the outcomes. |
+| **ML / data scientist** | The "how does it work" path above, the [project history](reports/research-project-history.md), and the code in [`src/`](src/). |
+| **Fire-detection researcher** | The [Findings Report](reports/smoke-detection-report.md) in full and the [field survey](research/state-of-smoke-detection.md) of datasets, methods, and how the field measures success. |
+| **Agency / wildfire manager** | This page, plus [section 10](reports/smoke-detection-report.md#10-where-the-gap-stands-and-whats-next) — what works today, what doesn't yet, and why. |
 
-A second thread came straight from a domain observation while hand-correcting those labels: a plume is
-often legible only by its **motion** across frames. A training-free probe
-([motion-findings.md](research/motion-findings.md)) shows that inter-frame change *anchored to the
-horizon* (connected to the ground, unlike free-floating cloud drift) separates ignition onset from
-pre-ignition frames at **per-fire AUC 0.71 vs 0.57** for the appearance detector (17 day-only fires),
-rescuing exactly the plumes the detector scores near chance — the faint distant `so-w-mobo-c`
-(0.07 → 0.79) and the oversaturated Dehesa (0.12 → 0.80). It is *complementary* to the detector,
-though the head-to-head win-count is not significant at this sample size (11/17, sign-test p = 0.17):
-the reproducible claim is that anchored motion separates onset above chance and carries signal the
-detector misses — the case for a motion channel in the in-distribution model. The same probe produced
-three negative results (a texture cue and two horizon-estimator upgrades), all reported as such.
+## What's in this project
 
-## Layout
+The detector is built and tested on [pyro-sdis](https://huggingface.co/datasets/pyronear/pyro-sdis)
+(33,636 images from French fire-detection towers; Pyronear, 2025), with additional tests on California
+onset fires from the HPWREN camera archive. Two ideas run through all of it:
 
-Two folders, two audiences. **`reports/`** holds the polished reports written for a reader;
-**`research/`** holds the detailed working material behind them, for the project owner.
+- **No cheating in the test.** The detector is only ever tested on camera sites it never trained on, so
+  its scores reflect genuinely new terrain — not memorized backgrounds.
+- **Field-realistic scoring.** Results are reported as detection rate and false alarms per camera per
+  day (the numbers an operator cares about), not a single lab score.
 
-- [`reports/`](reports/) — **two reports.** The [**findings report**](reports/smoke-detection-report.md)
-  is the one-stop technical read (recall-first framing, the findings arc from baseline to motion, the
-  deployability gap), with a table of contents linking each section to its full detail in `research/`.
-  The [**research narrative**](reports/research-narrative.md) tells the same story as it actually
-  unfolded — the human-and-LLM loop, the negative results, the resolution insight that rescued the
-  FIgLib control.
-- [`research/`](research/) — everything the reports draw on: the
-  [field survey](research/state-of-smoke-detection.md) and its source reviews (datasets, methods,
-  evaluation, literature, existing projects); the [metrics rationale](research/metrics.md); the full
-  per-stage findings ([baseline](research/baseline-findings.md),
-  [resolution](research/resolution-findings.md), [hard-negative](research/hard-negative-findings.md),
-  [temporal](research/temporal-findings.md), [confuser corpus](research/confuser-corpus.md),
-  [FIgLib](research/figlib-findings.md), [time-to-detection](research/ttd-findings.md),
-  [motion](research/motion-findings.md), [Phase C](research/phase-c-findings.md));
-  [background primers](research/background-topics.md); and
-  working notes (the [backlog](research/backlog.md), [data-quality flags](research/data-quality-flags.md),
-  [GPU plan](research/gcp-plan.md)).
-- [`src/data/`](src/data/) — dataset export, leak-safe splits, hard-negative mining, confuser corpus
-- [`src/models/`](src/models/) — training, operator-framed evaluation, temporal model + comparison
-- [`results/`](results/) — eval sweeps + mined hard-negative list
-- `data/` — datasets (gitignored; regenerate with `src/data/export_yolo.py`). The measured
-  data profile is in [`data/data-profile.md`](data/data-profile.md).
+Folder map:
+
+- **[`reports/`](reports/)** — the reader-facing write-ups: the
+  [Findings Report](reports/smoke-detection-report.md) and the
+  [project history](reports/research-project-history.md).
+- **[`research/`](research/)** — the detailed notes behind every result: the
+  [field survey](research/state-of-smoke-detection.md), the
+  [measurement rationale](research/metrics.md), and per-topic findings for
+  [baseline](research/findings%20-%20baseline.md), [resolution](research/findings%20-%20resolution.md),
+  [learning from mistakes](research/findings%20-%20hard-negative.md),
+  [what fools the detector](research/findings%20-%20confuser-corpus.md), [motion over time](research/findings%20-%20temporal.md),
+  [the California test](research/findings%20-%20figlib.md), [speed to detection](research/findings%20-%20ttd.md),
+  [the motion cue](research/findings%20-%20motion.md), and [region adaptation](research/findings%20-%20phase-c.md).
+  Working notes live alongside them (the [backlog](research/backlog.md),
+  [data-quality flags](research/data-quality-flags.md)).
+- **[`src/`](src/)** — the pipeline: dataset preparation and honest splits
+  ([`src/data/`](src/data/)), plus training, operator-focused evaluation, and the experiments
+  ([`src/models/`](src/models/)).
+- **[`results/`](results/)** — evaluation outputs and the list of frames that fool the detector.
+- `data/` — datasets (not stored in git; rebuilt with `src/data/export_yolo.py`). A measured summary is
+  in [`data/data-profile.md`](data/data-profile.md).
 
 ## Reproduce
 
 ```bash
 python -m venv .venv && .venv/bin/pip install datasets ultralytics pillow pyyaml pandas
-python src/data/export_yolo.py                                   # download + build splits
-python src/models/train.py --split grouped --epochs 40           # baseline
+python src/data/export_yolo.py                                   # download + build honest splits
+python src/models/train.py --split grouped --epochs 40           # train the baseline detector
 python src/models/evaluate.py --weights runs/grouped/weights/best.pt --split grouped
 ```
+
+## A note on maturity
+
+Many results here are *proof-scale* — run on a fraction of the data to test an idea quickly, so read
+the **direction** of the numbers, not the last decimal. The full-resolution training result is a
+complete run. False-alarm-per-day figures are informed estimates, not measured field rates. Where a
+result is preliminary or based on a small sample, it says so.
 
 ## Data & credit
 
 [pyro-sdis](https://huggingface.co/datasets/pyronear/pyro-sdis) (Apache-2.0) by
-[Pyronear](https://pyronear.org/) (Pyronear, 2025). FIgLib imagery courtesy of HPWREN
-(Dewangan et al., 2022; credit `http://hpwren.ucsd.edu/`). Image data and model weights are
-gitignored.
-
-*Mostly proof-scale results: read the direction of the numbers, not the absolute values. The
-native-resolution training row is a converged full-scale run (40 epochs, full data); the rest are
-one flag change away (drop `--fraction`, raise `--epochs`).*
+[Pyronear](https://pyronear.org/) (Pyronear, 2025). California fire imagery courtesy of HPWREN
+(Dewangan et al., 2022; credit `http://hpwren.ucsd.edu/`). Image data and model weights are not stored
+in git.
 
 ## Works Cited
 
 - Dewangan, A., Pande, Y., Braun, H.-W., Vernon, F., Perez, I., Altintas, I., Cottrell, G. W., &
   Nguyen, M. H. (2022). FIgLib & SmokeyNet: Dataset and deep learning model for real-time
-  wildland fire smoke detection. *Remote Sensing, 14*(4), 1007.
-  https://doi.org/10.3390/rs14041007
+  wildland fire smoke detection. *Remote Sensing, 14*(4), 1007. https://doi.org/10.3390/rs14041007
 - Govil, K., Welch, M. L., Ball, J. T., & Pennypacker, C. R. (2020). Preliminary results from a
   wildfire detection system using deep learning on remote camera images. *Remote Sensing,
   12*(1), 166. https://doi.org/10.3390/rs12010166
 - Pano AI. (2024). *Pano Rapid Detect: solution overview* [Product page]. https://www.pano.ai/solution
-  (dual-camera 360° stations, patented triangulation for GPS geolocation; the < 1 false-positive-
-  per-camera-per-day figure is Pano's own operational claim, not a peer-reviewed result).
 - Pyronear. (2025). *pyro-sdis* [Dataset]. Hugging Face.
   https://huggingface.co/datasets/pyronear/pyro-sdis
 
-<sub>Detailed per-topic sources — operational networks (Pano, ALERTCalifornia), NOAA GOES/NGFS,
-and meteorological verification (cost-loss / relative economic value) — are cited inline in
-[`research/metrics.md`](research/metrics.md) and [`research/`](research/).</sub>
+<sub>Detailed per-topic sources — operational networks (Pano, ALERTCalifornia), NOAA GOES/NGFS, and
+meteorological verification — are cited inline in [`research/metrics.md`](research/metrics.md) and
+[`research/`](research/).</sub>
