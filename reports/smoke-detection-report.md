@@ -215,7 +215,7 @@ recent CA fires against the *exact base model it started from*:
   (a threshold set on 5 fires transfers to the 6th) — that consistency is the shift closing.
 - **A correction to our own earlier claim**: the "misses Palisades/Coches/Tenaja" line was the
   *proof-scale* zero-shot model. The full-scale base already recovers Palisades and Tenaja; Phase C's
-  honest adds are Coches plus the halved false-alarm rate. Vista (2024) is still missed by both.
+  real adds are Coches plus the halved false-alarm rate. Vista (2024) is still missed by both.
 - **Motion generalizes**: horizon-anchored motion separates onset on the held-out fires at per-fire
   AUC **0.742** (CI excludes chance) — the cue transfers to recent CA smoke it was never tuned on.
 
@@ -281,7 +281,7 @@ has a specific meaning *in this project*, that meaning is given.
   into named failure types.
 - **Data leakage / leak-safe** — leakage is when the test accidentally shares information with training
   (e.g., the same camera in both), inflating scores; leak-safe means the test is kept genuinely separate.
-- **Site-holdout / whole-fire holdout / leave-one-fire-out** — ways to keep the test honest by holding
+- **Site-holdout / whole-fire holdout / leave-one-fire-out** — ways to keep the test clean by holding
   out entire camera sites or entire fires, so the model is only judged on things it never trained on.
 - **Zero-shot** — testing a model on a new dataset with no additional training.
 - **Fine-tuning (Phase C)** — taking an already-trained model and training it a little more on new,

@@ -65,7 +65,7 @@ mixed (Bahrman and Highway got faster). **Lowering TTD outright is the motion te
 Earlier writeups said the zero-shot detector "misses Palisades, Coches, Tenaja entirely." That was
 the **proof-scale** `grouped_proof` model. The **full-scale** base (`gcp_grouped_1280`, Phase C's
 actual starting point) already detects **Palisades and Tenaja** — so part of the original "recent
-miss" was a proof-scale artifact, not pure distribution shift. Phase C's specific, honest additions
+miss" was a proof-scale artifact, not pure distribution shift. Phase C's specific, verified additions
 over its own base are: **Coches rescued** and the **false-alarm rate more than halved**. Vista (2024)
 is still missed by both and is the remaining hard case.
 

@@ -1,7 +1,7 @@
 # Wildfire Smoke Detection
 
 Teaching a camera to spot a wildfire in its first minutes — and, just as importantly, measuring
-honestly whether it actually works in the real world.
+rigorously whether it actually works in the real world.
 
 ## Bottom line
 
@@ -25,7 +25,7 @@ The headline results:
   win until a careful check revealed it was quietly cheating (learning *when* in a clip a fire usually
   appears rather than *what* smoke looks like). Catching that was one of the most valuable moments in
   the project.
-- **The honest gap.** Even the best setup here still raises far more false alarms than a real operator
+- **The remaining gap.** Even the best setup here still raises far more false alarms than a real operator
   would tolerate. What it would take to close that gap is spelled out, not glossed over.
 
 ## Why this is hard
@@ -57,7 +57,7 @@ abbreviation), and a **[`research/`](research/)** folder holding the detailed no
 **Two common paths:**
 
 - **"How does the detector actually work?"** — the machine-learning and object-detection side: how
-  performance is measured, how the model was built and improved, and how evaluation was kept honest.
+  performance is measured, how the model was built and improved, and how evaluation was kept leakage-free.
   Start with the Findings Report, sections
   [2 (how we measure)](reports/smoke-detection-report.md#2-how-performance-is-measured--and-why-not-f1),
   [4 (the baseline)](reports/smoke-detection-report.md#4-baseline-the-precision-collapse),
@@ -65,7 +65,7 @@ abbreviation), and a **[`research/`](research/)** folder holding the detailed no
   [6 (learning from mistakes)](reports/smoke-detection-report.md#6-into-the-negatives-hard-negative-mining-and-the-confuser-corpus).
   The code lives in [`src/`](src/).
 - **"How well did it perform, and what was learned?"** — the results and the story behind them: the
-  region-adaptation win, the motion experiments, the honest negatives, and how far this is from being
+  region-adaptation win, the motion experiments, the hard negatives, and how far this is from being
   deployable. See Findings Report sections
   [8 (speed to detection)](reports/smoke-detection-report.md#8-time-to-detection),
   [9 (motion)](reports/smoke-detection-report.md#9-motion-horizon-anchored-change), and
@@ -108,7 +108,7 @@ Folder map:
   [the motion cue](research/findings%20-%20motion.md), and [region adaptation](research/findings%20-%20phase-c.md).
   Working notes live alongside them (the [backlog](research/backlog.md),
   [data-quality flags](research/data-quality-flags.md)).
-- **[`src/`](src/)** — the pipeline: dataset preparation and honest splits
+- **[`src/`](src/)** — the pipeline: dataset preparation and leakage-free splits
   ([`src/data/`](src/data/)), plus training, operator-focused evaluation, and the experiments
   ([`src/models/`](src/models/)).
 - **[`results/`](results/)** — evaluation outputs and the list of frames that fool the detector.
@@ -119,7 +119,7 @@ Folder map:
 
 ```bash
 python -m venv .venv && .venv/bin/pip install datasets ultralytics pillow pyyaml pandas
-python src/data/export_yolo.py                                   # download + build honest splits
+python src/data/export_yolo.py                                   # download + build leakage-free splits
 python src/models/train.py --split grouped --epochs 40           # train the baseline detector
 python src/models/evaluate.py --weights runs/grouped/weights/best.pt --split grouped
 ```

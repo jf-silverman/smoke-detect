@@ -2,7 +2,7 @@
 
 The motion probe ([figlib_ttd.py](figlib_ttd.py) --motion) showed anchored-motion change carries
 onset signal complementary to the appearance detector, but a *naive* equal-weight sum of the two
-HURTS (it dilutes the stronger feature). This trains the honest combiner the reports promised: a
+HURTS (it dilutes the stronger feature). This trains the properly weighted combiner the reports promised: a
 per-frame logistic regression over [conf, anchored_change, anchored_ratio, floating_change] ->
 onset probability.
 
