@@ -40,9 +40,12 @@ cameras.
 
 ## About the project author
 
-<!-- AUTHOR NARRATIVE GOES HERE — Joel to provide; paste it and I'll format it in. -->
+I'm Joel Silverman, a data scientist with an unusual background. I began my career as a wildland
+firefighter and fire ecologist for the National Park Service and Forest Service — fighting and managing
+fires and studying their effects on ecosystems — before a NASA-funded master's degree turned me toward
+satellite imagery and, eventually, data science. This project brings those two lives together.
 
-_Author narrative to be added._
+[Read the full background →](about_the_author.md)
 
 ## Find what you're looking for
 
