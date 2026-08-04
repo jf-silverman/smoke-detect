@@ -1,4 +1,4 @@
-# How this project was actually built: a research narrative
+# How this project was actually built: a research project history
 
 Most write-ups present findings as if they arrived in order, cleanly. This one didn't, and the
 messy version is more useful — because the sharpest turns came from the *interaction* between an

@@ -4,7 +4,7 @@ A single technical read on early wildfire smoke detection from fixed-camera imag
 throughout is **field-realistic evaluation**: measuring what a detector would actually do on a tower,
 not what it scores on a flattering benchmark. Each section summarizes a result and links to its full
 working notes in [`research/`](../research/); the companion
-[research narrative](research-narrative.md) tells the same story as it actually unfolded, decision by
+[project history](research-project-history.md) tells the same story as it actually unfolded, decision by
 decision.
 
 > **Scope & maturity.** Most numbers are *proof-scale* — read the direction, not the third decimal.
@@ -35,7 +35,7 @@ false alarm). Read against that yardstick, the results that matter:
 
 **Who this is for / how to read it.** For the framing and the outcomes, read §1, §2, and §10. For the
 modeling and evaluation method, read §2 and §4–§7. For the field-facing results and lessons, read
-§8–§10 and the companion [research narrative](research-narrative.md). A plain-language overview for a
+§8–§10 and the companion [project history](research-project-history.md). A plain-language overview for a
 general audience is in the [top-level README](../README.md).
 
 ## Contents

@@ -43,7 +43,7 @@ cameras.
 I'm Joel Silverman, a data scientist with an unusual background. I began my career as a wildland
 firefighter and fire ecologist for the National Park Service and Forest Service — fighting and managing
 fires and studying their effects on ecosystems — before a NASA-funded master's degree turned me toward
-satellite imagery and, eventually, data science. This project brings those two lives together.
+satellite imagery and, eventually, data science. This project brings those two parts together.
 
 [Read the full background →](about_the_author.md)
 
@@ -70,7 +70,7 @@ abbreviation), and a **[`research/`](research/)** folder holding the detailed no
   [8 (speed to detection)](reports/smoke-detection-report.md#8-time-to-detection),
   [9 (motion)](reports/smoke-detection-report.md#9-motion-horizon-anchored-change), and
   [10 (where the gap stands)](reports/smoke-detection-report.md#10-where-the-gap-stands-and-whats-next),
-  plus the plain-English **[research narrative](reports/research-narrative.md)** of how the work
+  plus the plain-English **[project history](reports/research-project-history.md)** of how the work
   unfolded, decision by decision.
 
 **By who you are:**
@@ -78,7 +78,7 @@ abbreviation), and a **[`research/`](research/)** folder holding the detailed no
 | If you are a… | Start here |
 |---|---|
 | **Recruiter / hiring manager** | This page, then the Findings Report [section 1](reports/smoke-detection-report.md#1-the-problem-and-the-frame) and [section 10](reports/smoke-detection-report.md#10-where-the-gap-stands-and-whats-next) — the framing and the outcomes. |
-| **ML / data scientist** | The "how does it work" path above, the [research narrative](reports/research-narrative.md), and the code in [`src/`](src/). |
+| **ML / data scientist** | The "how does it work" path above, the [project history](reports/research-project-history.md), and the code in [`src/`](src/). |
 | **Fire-detection researcher** | The [Findings Report](reports/smoke-detection-report.md) in full and the [field survey](research/state-of-smoke-detection.md) of datasets, methods, and how the field measures success. |
 | **Agency / wildfire manager** | This page, plus [section 10](reports/smoke-detection-report.md#10-where-the-gap-stands-and-whats-next) — what works today, what doesn't yet, and why. |
 
@@ -97,7 +97,7 @@ Folder map:
 
 - **[`reports/`](reports/)** — the reader-facing write-ups: the
   [Findings Report](reports/smoke-detection-report.md) and the
-  [research narrative](reports/research-narrative.md).
+  [project history](reports/research-project-history.md).
 - **[`research/`](research/)** — the detailed notes behind every result: the
   [field survey](research/state-of-smoke-detection.md), the
   [measurement rationale](research/metrics.md), and per-topic findings for
